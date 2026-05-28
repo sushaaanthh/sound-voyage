@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { Home, Volume2, RotateCcw, Cat, Dog, Fish, Bird, CheckCircle, XCircle } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import PhonemePop from './games/PhonemePop';
+import gameData from '../../data/gameData.json';
 
 interface Card {
   id: number;
@@ -21,6 +23,29 @@ export default function GameScreen() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [showFeedback, setShowFeedback] = useState<{ show: boolean; correct: boolean } | null>(null);
+
+  // Dynamic Routing & Load for Phoneme Pop clinical module
+  const gameLevels = (gameData as any)[gameId || ''];
+  const levelData = gameLevels ? gameLevels[level || ''] : null;
+
+  if (gameId === 'phoneme-pop') {
+    return (
+      <PhonemePop
+        levelData={levelData}
+        onComplete={(finalScore, totalQ) => {
+          navigate('/result', {
+            state: {
+              score: finalScore,
+              total: totalQ,
+              timeElapsed,
+              gameId,
+              level: Number(level),
+            },
+          });
+        }}
+      />
+    );
+  }
 
   // Game-specific states
   const [cards, setCards] = useState<Card[]>([]);

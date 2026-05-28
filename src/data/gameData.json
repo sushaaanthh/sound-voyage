@@ -1,0 +1,170 @@
+{
+  "phoneme-pop": {
+    "1": {
+      "level": 1,
+      "type": "binary",
+      "instruction": "Does this word start with the /b/ sound?",
+      "questions": [
+        {
+          "audio": "/audio/bat.mp3",
+          "correctAnswer": "yes",
+          "word": "Bat"
+        },
+        {
+          "audio": "/audio/cat.mp3",
+          "correctAnswer": "no",
+          "word": "Cat"
+        },
+        {
+          "audio": "/audio/ball.mp3",
+          "correctAnswer": "yes",
+          "word": "Ball"
+        },
+        {
+          "audio": "/audio/dog.mp3",
+          "correctAnswer": "no",
+          "word": "Dog"
+        },
+        {
+          "audio": "/audio/bus.mp3",
+          "correctAnswer": "yes",
+          "word": "Bus"
+        },
+        {
+          "audio": "/audio/fish.mp3",
+          "correctAnswer": "no",
+          "word": "Fish"
+        },
+        {
+          "audio": "/audio/boy.mp3",
+          "correctAnswer": "yes",
+          "word": "Boy"
+        },
+        {
+          "audio": "/audio/sun.mp3",
+          "correctAnswer": "no",
+          "word": "Sun"
+        },
+        {
+          "audio": "/audio/book.mp3",
+          "correctAnswer": "yes",
+          "word": "Book"
+        },
+        {
+          "audio": "/audio/hat.mp3",
+          "correctAnswer": "no",
+          "word": "Hat"
+        }
+      ]
+    },
+    "2": {
+      "level": 2,
+      "type": "binary",
+      "instruction": "Does this word end with the /t/ sound?",
+      "questions": [
+        {
+          "audio": "/audio/cat.mp3",
+          "correctAnswer": "yes",
+          "word": "Cat"
+        },
+        {
+          "audio": "/audio/dog.mp3",
+          "correctAnswer": "no",
+          "word": "Dog"
+        },
+        {
+          "audio": "/audio/hat.mp3",
+          "correctAnswer": "yes",
+          "word": "Hat"
+        },
+        {
+          "audio": "/audio/pig.mp3",
+          "correctAnswer": "no",
+          "word": "Pig"
+        },
+        {
+          "audio": "/audio/net.mp3",
+          "correctAnswer": "yes",
+          "word": "Net"
+        },
+        {
+          "audio": "/audio/frog.mp3",
+          "correctAnswer": "no",
+          "word": "Frog"
+        },
+        {
+          "audio": "/audio/boat.mp3",
+          "correctAnswer": "yes",
+          "word": "Boat"
+        },
+        {
+          "audio": "/audio/star.mp3",
+          "correctAnswer": "no",
+          "word": "Star"
+        },
+        {
+          "audio": "/audio/bat.mp3",
+          "correctAnswer": "yes",
+          "word": "Bat"
+        },
+        {
+          "audio": "/audio/car.mp3",
+          "correctAnswer": "no",
+          "word": "Car"
+        }
+      ]
+    },
+    "3": {
+      "level": 3,
+      "type": "multiple-choice",
+      "instruction": "Which word has the /k/ sound?",
+      "questions": [
+        {
+          "audio": "/audio/k_sound.mp3",
+          "options": [
+            { "label": "Cat", "isCorrect": true, "icon": "Cat" },
+            { "label": "Dog", "isCorrect": false, "icon": "Dog" },
+            { "label": "Fish", "isCorrect": false, "icon": "Fish" },
+            { "label": "Bird", "isCorrect": false, "icon": "Bird" }
+          ]
+        },
+        {
+          "audio": "/audio/k_sound.mp3",
+          "options": [
+            { "label": "Cow", "isCorrect": true, "icon": "Smile" },
+            { "label": "Pig", "isCorrect": false, "icon": "Flame" },
+            { "label": "Hen", "isCorrect": false, "icon": "Bird" },
+            { "label": "Duck", "isCorrect": false, "icon": "Fish" }
+          ]
+        },
+        {
+          "audio": "/audio/k_sound.mp3",
+          "options": [
+            { "label": "Car", "isCorrect": true, "icon": "Car" },
+            { "label": "Bus", "isCorrect": false, "icon": "Bus" },
+            { "label": "Train", "isCorrect": false, "icon": "Train" },
+            { "label": "Bike", "isCorrect": false, "icon": "Bike" }
+          ]
+        },
+        {
+          "audio": "/audio/k_sound.mp3",
+          "options": [
+            { "label": "Cup", "isCorrect": true, "icon": "Wine" },
+            { "label": "Spoon", "isCorrect": false, "icon": "Heart" },
+            { "label": "Plate", "isCorrect": false, "icon": "Circle" },
+            { "label": "Bowl", "isCorrect": false, "icon": "Box" }
+          ]
+        },
+        {
+          "audio": "/audio/k_sound.mp3",
+          "options": [
+            { "label": "Cake", "isCorrect": true, "icon": "Cookie" },
+            { "label": "Apple", "isCorrect": false, "icon": "Apple" },
+            { "label": "Banana", "isCorrect": false, "icon": "Banana" },
+            { "label": "Grape", "isCorrect": false, "icon": "Grape" }
+          ]
+        }
+      ]
+    }
+  }
+}
