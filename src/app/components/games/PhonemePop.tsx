@@ -5,6 +5,7 @@ import * as Icons from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
+import { useGameSession } from '../../context/GameSessionContext';
 
 interface Option {
   label: string;
@@ -67,15 +68,31 @@ function shuffleQuestions<T>(array: T[]): T[] {
 
 export default function PhonemePop({ levelData }: PhonemePopProps) {
   const navigate = useNavigate();
+  const { progressorId } = useGameSession();
   const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string | number | null>(null);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   // Timer Ref to track absolute elapsed time precisely
   const startTimeRef = useRef<number>(Date.now());
+
+  // Setup voices dynamically
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      const updateVoices = () => {
+        setVoices(window.speechSynthesis.getVoices());
+      };
+      updateVoices();
+      window.speechSynthesis.onvoiceschanged = updateVoices;
+      return () => {
+        window.speechSynthesis.onvoiceschanged = null;
+      };
+    }
+  }, []);
 
   // Setup/Reset game questions pool and capture start time
   useEffect(() => {
@@ -85,7 +102,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
     setScore(0);
     setSelectedAnswer(null);
 
-    if (levelData.level === 1) {
+    if (levelData?.level === 1) {
       const mappedPool = LEVEL_1_POOL.map(item => ({
         word: item.word,
         correctAnswer: (item.hasBSound ? 'yes' : 'no') as 'yes' | 'no',
@@ -96,8 +113,8 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
       setCurrentQuestions(selected);
     } else {
       // For other levels, shuffle and select the questions from levelData
-      const shuffled = shuffleQuestions(levelData.questions || []);
-      setCurrentQuestions(shuffled);
+      const shuffled = shuffleQuestions(levelData?.questions || []);
+      setCurrentQuestions(shuffled.slice(0, 10));
     }
   }, [levelData]);
 
@@ -121,7 +138,6 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
     
     // Find Indian English voice
     const indianVoice = voices.find(
@@ -170,7 +186,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
 
   const currentQuestion = currentQuestions[currentQuestionIndex];
   const totalQuestions = currentQuestions.length;
-  const progress = (currentQuestionIndex / totalQuestions) * 100;
+  const progressPercent = (currentQuestionIndex / totalQuestions) * 100;
 
   const playSound = () => {
     if (!currentQuestion) return;
@@ -184,7 +200,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const advanceQuestion = (isCorrect: boolean, nextScore: number) => {
+  const advanceQuestion = (nextScore: number) => {
     setSelectedAnswer(null);
     if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -199,7 +215,8 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
           totalQuestions,
           timeTaken: formattedTime,
           gameId: 'phoneme-pop',
-          level: levelData.level
+          level: levelData.level,
+          progressorId: progressorId || 'demo'
         }
       });
     }
@@ -228,7 +245,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
     }
 
     setTimeout(() => {
-      advanceQuestion(isCorrect, nextScore);
+      advanceQuestion(nextScore);
     }, 1000);
   };
 
@@ -254,7 +271,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
     }
 
     setTimeout(() => {
-      advanceQuestion(isCorrect, nextScore);
+      advanceQuestion(nextScore);
     }, 1000);
   };
 
@@ -305,7 +322,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
       <div className="bg-[#2C2B24] h-2 w-full">
         <div
           className="h-full bg-[#FF6347] transition-all duration-300"
-          style={{ width: `${progress}%` }}
+          style={{ width: `${progressPercent}%` }}
         />
       </div>
 

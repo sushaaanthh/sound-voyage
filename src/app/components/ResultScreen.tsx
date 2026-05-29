@@ -8,8 +8,7 @@ import { useGameSession } from '../context/GameSessionContext';
 export default function ResultScreen() {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const { progress, completeLevel } = useGameSession();
+  const { saveGameResult } = useGameSession();
 
   const state = location.state || {};
   const score = typeof state.score === 'number' ? state.score : 0;
@@ -20,24 +19,19 @@ export default function ResultScreen() {
   const timeTaken = typeof state.timeTaken === 'string' ? state.timeTaken : '00:00';
   const gameId = typeof state.gameId === 'string' ? state.gameId : 'phoneme-pop';
   const level = typeof state.level === 'number' ? state.level : 1;
+  const progressorId = typeof state.progressorId === 'string' ? state.progressorId : 'demo';
 
   const accuracy = Math.round((score / totalQuestions) * 100);
-  const explorerId = progress?.explorerId || 'demo';
 
   let title = '';
   let subtitle = '';
   let IconComponent = Trophy;
   let iconColorClass = '';
 
-  if (accuracy >= 80) {
-    title = 'Outstanding!';
-    subtitle = 'Excellent phoneme recognition.';
+  if (accuracy >= 60) {
+    title = `Completed Phoneme Pop - Level ${level}`;
+    subtitle = 'Excellent job on completing this level!';
     IconComponent = Trophy;
-    iconColorClass = 'text-[#FF6347]';
-  } else if (accuracy >= 60) {
-    title = 'Good Effort!';
-    subtitle = 'You are making great progress.';
-    IconComponent = ThumbsUp;
     iconColorClass = 'text-[#FF6347]';
   } else {
     title = 'Keep Practicing';
@@ -46,13 +40,12 @@ export default function ResultScreen() {
     iconColorClass = 'text-gray-400';
   }
 
-  // Record completion to Game Session Context on mount if accuracy meets threshold
+  // Save game result to Supabase exactly once on mount
   useEffect(() => {
-    if (accuracy >= 60) {
-      completeLevel(gameId, level, score, accuracy, timeTaken);
-    }
-  }, [accuracy, gameId, level, score, timeTaken, completeLevel]);
+    saveGameResult(gameId, level, score, accuracy, timeTaken);
+  }, []);
 
+  // Trigger confetti if they pass
   useEffect(() => {
     if (accuracy < 60) return;
 
@@ -91,13 +84,7 @@ export default function ResultScreen() {
   }, [accuracy]);
 
   const handleContinue = () => {
-    navigate(`/explorer/${explorerId}`, {
-      state: {
-        selectedGame: gameId,
-        completedLevel: level,
-        passed: true
-      }
-    });
+    navigate(`/progressor/${progressorId}`);
   };
 
   return (
@@ -116,7 +103,7 @@ export default function ResultScreen() {
             <IconComponent className={`w-16 h-16 ${iconColorClass}`} />
           </div>
 
-          <h1 className="mb-4 text-white">{title}</h1>
+          <h1 className="mb-4 text-white text-3xl font-bold">{title}</h1>
           <p className="mb-12 opacity-80 text-white" style={{ fontSize: '1.25rem' }}>
             {subtitle}
           </p>
@@ -126,7 +113,7 @@ export default function ResultScreen() {
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Target className="w-5 h-5 text-[#FF6347]" />
               </div>
-              <p className="text-3xl mb-1 text-white">{accuracy}%</p>
+              <p className="text-3xl mb-1 text-white font-extrabold">{accuracy}%</p>
               <p className="text-sm text-muted-foreground">Accuracy</p>
             </div>
 
@@ -134,7 +121,7 @@ export default function ResultScreen() {
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Trophy className="w-5 h-5 text-[#FF6347]" />
               </div>
-              <p className="text-3xl mb-1 text-white">
+              <p className="text-3xl mb-1 text-white font-extrabold">
                 {score}/{totalQuestions}
               </p>
               <p className="text-sm text-muted-foreground">Score</p>
@@ -144,23 +131,15 @@ export default function ResultScreen() {
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Clock className="w-5 h-5 text-[#FF6347]" />
               </div>
-              <p className="text-3xl mb-1 text-white">{timeTaken}</p>
+              <p className="text-3xl mb-1 text-white font-extrabold">{timeTaken}</p>
               <p className="text-sm text-muted-foreground">Time Taken</p>
             </div>
           </div>
 
-          {/* Conditional Completed Level Header */}
-          {accuracy >= 60 && (
-            <div className="mb-12 p-6 rounded-[1.5rem] bg-gradient-to-r from-[#FF6347]/5 to-[#FF6347]/10 border border-[#FF6347]/20">
-              <p className="text-muted-foreground mb-1">Completed</p>
-              <h3 className="capitalize text-white">{gameId.replace(/-/g, ' ')} - Level {level}</h3>
-            </div>
-          )}
-
           <div className="flex gap-4">
             <button
               onClick={() => navigate(`/game/${gameId}/${level}`)}
-              className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-[2rem] border border-[#3E3C33] bg-[#1D1C16] hover:bg-[#2C2B24] hover:scale-105 active:scale-95 transition-all duration-300 text-white"
+              className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-[2rem] border border-[#3E3C33] bg-[#1D1C16] hover:bg-[#2C2B24] hover:scale-105 active:scale-95 transition-all duration-300 text-white font-bold"
             >
               <RotateCcw className="w-5 h-5 text-[#FF6347]" />
               Try Again
@@ -178,10 +157,10 @@ export default function ResultScreen() {
           </div>
         </div>
 
-        {accuracy >= 80 && (
+        {accuracy >= 60 && (
           <div className="mt-6 flex items-center justify-center gap-2 text-[#FF6347] animate-pulse">
             <Star className="w-5 h-5 fill-[#FF6347]" />
-            <p>You unlocked the next level!</p>
+            <p className="font-semibold">Level Completed!</p>
             <Star className="w-5 h-5 fill-[#FF6347]" />
           </div>
         )}

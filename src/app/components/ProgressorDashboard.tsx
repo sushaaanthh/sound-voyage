@@ -50,12 +50,12 @@ const GAMES: Game[] = [
   },
 ];
 
-export default function ExplorerDashboard() {
-  const { explorerId } = useParams();
+export default function ProgressorDashboard() {
+  const { progressorId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { progress, setExplorer } = useGameSession();
+  const { completedLevels, setProgressor } = useGameSession();
 
   const [selectedGame, setSelectedGame] = useState<string | null>(() => {
     return location.state?.selectedGame || null;
@@ -63,12 +63,12 @@ export default function ExplorerDashboard() {
 
   const [assignedLevels] = useState([1, 2, 3]);
 
-  // Set the active explorer in context
+  // Set the active progressor in context
   useEffect(() => {
-    if (explorerId) {
-      setExplorer(explorerId);
+    if (progressorId) {
+      setProgressor(progressorId);
     }
-  }, [explorerId, setExplorer]);
+  }, [progressorId, setProgressor]);
 
   // Pre-select game if returning from result screen
   useEffect(() => {
@@ -85,8 +85,15 @@ export default function ExplorerDashboard() {
     if (levelNum > 3) return false;
     if (levelNum === 1) return true;
 
-    const completed = progress?.completedLevels[gameId] || [];
-    return completed.includes(levelNum - 1);
+    // Evaluate the completedLevels array.
+    // If Level 1 is NOT passed, Level 2 and Level 3 must be locked.
+    if (levelNum === 2) {
+      return completedLevels.includes(1);
+    }
+    if (levelNum === 3) {
+      return completedLevels.includes(1) && completedLevels.includes(2);
+    }
+    return false;
   };
 
   return (
@@ -104,7 +111,7 @@ export default function ExplorerDashboard() {
 
             <button
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-[#2C2B24] hover:bg-[#3E3C33] hover:scale-105 active:scale-95 transition-all border border-[#3E3C33]"
+              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-[#2C2B24] hover:bg-[#3E3C33] hover:scale-105 active:scale-95 transition-all border border-[#3E3C33] text-white font-bold"
             >
               <Home className="w-5 h-5 text-white" />
               Home
@@ -142,7 +149,7 @@ export default function ExplorerDashboard() {
           <div>
             <button
               onClick={() => setSelectedGame(null)}
-              className="mb-8 px-6 py-3 rounded-[1.5rem] bg-[#2C2B24] hover:bg-[#3E3C33] hover:scale-105 active:scale-95 transition-all duration-300 border border-[#3E3C33]"
+              className="mb-8 px-6 py-3 rounded-[1.5rem] bg-[#2C2B24] hover:bg-[#3E3C33] hover:scale-105 active:scale-95 transition-all duration-300 border border-[#3E3C33] text-white"
             >
               Back to Games
             </button>
@@ -171,8 +178,7 @@ export default function ExplorerDashboard() {
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
                   const isAssigned = assignedLevels.includes(level);
                   const isUnlocked = isLevelUnlocked(selectedGame, level);
-                  const completed = progress?.completedLevels[selectedGame] || [];
-                  const isCompleted = completed.includes(level);
+                  const isCompleted = completedLevels.includes(level);
 
                   return (
                     <button
@@ -202,7 +208,7 @@ export default function ExplorerDashboard() {
               <div className="mt-8 p-6 rounded-[1.5rem] bg-[#FF6347]/10 border border-[#FF6347]/20 flex items-center gap-2">
                 <Target className="w-5 h-5 text-[#FF6347]" />
                 <p className="text-sm text-[#FF6347]">
-                  Tip: Levels with a ring around them are assigned by your psychologist!
+                  Tip: Levels with a ring around them are assigned by your practitioner!
                 </p>
               </div>
             </div>

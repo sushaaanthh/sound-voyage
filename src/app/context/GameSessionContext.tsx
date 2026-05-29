@@ -1,119 +1,131 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 
-export interface SessionProgress {
-  explorerId: string;
-  completedLevels: {
-    [gameId: string]: number[];
-  };
-  scores: {
-    [gameId: string]: {
-      [level: number]: { score: number; accuracy: number; timeTaken: string };
-    };
-  };
-}
-
 interface GameSessionContextType {
-  progress: SessionProgress | null;
-  setExplorer: (explorerId: string) => void;
-  completeLevel: (
+  progressorId: string | null;
+  name: string | null;
+  completedLevels: number[];
+  setProgressor: (progressorId: string) => Promise<void>;
+  saveGameResult: (
     gameId: string,
     level: number,
     score: number,
     accuracy: number,
     timeTaken: string
-  ) => void;
-  updateProgress: (newProgress: SessionProgress) => void;
+  ) => Promise<void>;
+  updateSession: (id: string, name: string, completedLevels: number[]) => void;
 }
 
 const GameSessionContext = createContext<GameSessionContextType | undefined>(undefined);
 
 export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [progress, setProgress] = useState<SessionProgress | null>(null);
+  const [progressorId, setProgressorId] = useState<string | null>(() => {
+    return sessionStorage.getItem('voyage_progressor_id');
+  });
+  const [name, setName] = useState<string | null>(() => {
+    return sessionStorage.getItem('voyage_progressor_name');
+  });
+  const [completedLevels, setCompletedLevels] = useState<number[]>(() => {
+    const saved = sessionStorage.getItem('voyage_completed_levels');
+    return saved ? JSON.parse(saved) : [];
+  });
 
-  const setExplorer = (explorerId: string) => {
-    if (progress && progress.explorerId === explorerId) return;
+  const updateSession = (id: string, newName: string, levels: number[]) => {
+    setProgressorId(id);
+    setName(newName);
+    setCompletedLevels(levels);
+    sessionStorage.setItem('voyage_progressor_id', id);
+    sessionStorage.setItem('voyage_progressor_name', newName);
+    sessionStorage.setItem('voyage_completed_levels', JSON.stringify(levels));
+  };
 
-    const saved = sessionStorage.getItem(`voyage_progress_${explorerId}`);
-    if (saved) {
-      try {
-        setProgress(JSON.parse(saved));
-        return;
-      } catch (e) {
-        console.error('Failed to parse progress', e);
+  const setProgressor = async (id: string) => {
+    if (progressorId === id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('progressors')
+        .select('name, completed_levels')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching progressor profile:', error.message);
+        // Fallback to offline/mock progressor if not found in DB
+        updateSession(id, 'Demo Progressor', []);
+      } else if (data) {
+        updateSession(id, data.name || '', data.completed_levels || []);
       }
+    } catch (err) {
+      console.error('Failed to set progressor:', err);
+      updateSession(id, 'Demo Progressor', []);
     }
-
-    const newProgress: SessionProgress = {
-      explorerId,
-      completedLevels: {},
-      scores: {},
-    };
-    setProgress(newProgress);
-    sessionStorage.setItem(`voyage_progress_${explorerId}`, JSON.stringify(newProgress));
   };
 
-  const updateProgress = (newProgress: SessionProgress) => {
-    setProgress(newProgress);
-    sessionStorage.setItem(`voyage_progress_${newProgress.explorerId}`, JSON.stringify(newProgress));
-  };
-
-  const completeLevel = (
+  const saveGameResult = async (
     gameId: string,
     level: number,
     score: number,
     accuracy: number,
     timeTaken: string
   ) => {
-    if (!progress) return;
+    const activeId = progressorId || 'demo';
+    
+    try {
+      // 1. Write the session result to the game_sessions table
+      const { error: sessionError } = await supabase
+        .from('game_sessions')
+        .insert([
+          {
+            progressor_id: activeId,
+            game_id: gameId,
+            level: level,
+            score: score,
+            accuracy: accuracy,
+            time_taken: timeTaken,
+          },
+        ]);
 
-    const completed = progress.completedLevels[gameId] || [];
-    const updatedCompleted = completed.includes(level)
-      ? completed
-      : [...completed, level].sort((a, b) => a - b);
-
-    const gameScores = progress.scores[gameId] || {};
-    const updatedScores = {
-      ...gameScores,
-      [level]: { score, accuracy, timeTaken },
-    };
-
-    const updatedProgress: SessionProgress = {
-      ...progress,
-      completedLevels: {
-        ...progress.completedLevels,
-        [gameId]: updatedCompleted,
-      },
-      scores: {
-        ...progress.scores,
-        [gameId]: updatedScores,
-      },
-    };
-
-    setProgress(updatedProgress);
-    sessionStorage.setItem(
-      `voyage_progress_${progress.explorerId}`,
-      JSON.stringify(updatedProgress)
-    );
-
-    // Sync back to Supabase database if user is logged in
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        supabase
-          .from('explorers')
-          .update({ progress_data: JSON.stringify(updatedProgress) })
-          .eq('auth_user_id', user.id)
-          .then(({ error }) => {
-            if (error) {
-              console.error('Failed to sync progress to Supabase:', error);
-            }
-          });
+      if (sessionError) {
+        console.error('Failed to write game session to Supabase:', sessionError.message);
       }
-    });
+
+      // 2. If score is passing (accuracy >= 60%), append to completedLevels and update progressors table
+      if (accuracy >= 60) {
+        const updatedLevels = completedLevels.includes(level)
+          ? completedLevels
+          : [...completedLevels, level].sort((a, b) => a - b);
+
+        setCompletedLevels(updatedLevels);
+        sessionStorage.setItem('voyage_completed_levels', JSON.stringify(updatedLevels));
+
+        if (activeId !== 'demo') {
+          const { error: progressorError } = await supabase
+            .from('progressors')
+            .update({ completed_levels: updatedLevels })
+            .eq('id', activeId);
+
+          if (progressorError) {
+            console.error('Failed to update progressor levels in Supabase:', progressorError.message);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to save game result:', err);
+    }
   };
 
   return (
-    <GameSessionContext.Provider value={{ progress, setExplorer, completeLevel, updateProgress }}>
+    <GameSessionContext.Provider
+      value={{
+        progressorId,
+        name,
+        completedLevels,
+        setProgressor,
+        saveGameResult,
+        updateSession,
+      }}
+    >
       {children}
     </GameSessionContext.Provider>
   );

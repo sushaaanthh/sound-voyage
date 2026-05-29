@@ -4,7 +4,7 @@ import { Search, Plus, X, TrendingUp, Home, Users, BarChart3, Target, Map, Route
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 
-interface Explorer {
+interface Progressor {
   id: string;
   name: string;
   age: number;
@@ -25,7 +25,7 @@ const GAMES: Game[] = [
   { id: 'sound-sorter', name: 'Sound Sorter', icon: PackageSearch },
 ];
 
-const mockExplorers: Explorer[] = [
+const mockProgressors: Progressor[] = [
   { id: 'E001', name: 'Sushanth Kumar', age: 8, lastSession: '2026-04-20' },
   { id: 'E002', name: 'Priya Sharma', age: 10, lastSession: '2026-04-22' },
   { id: 'E003', name: 'Rohan Patel', age: 7, lastSession: '2026-04-18' },
@@ -38,27 +38,27 @@ const mockAnalytics = [
   { week: 'Week 4', phonemePop: 85, positionPilot: 88, soundTrail: 82, soundSynk: 78, soundSorter: 86 },
 ];
 
-export default function PsychologistDashboard() {
-  const [activeView, setActiveView] = useState<'explorers' | 'analytics' | 'tasks'>('explorers');
-  const [selectedExplorer, setSelectedExplorer] = useState<Explorer | null>(null);
+export default function PractitionerDashboard() {
+  const [activeView, setActiveView] = useState<'progressors' | 'analytics' | 'tasks'>('progressors');
+  const [selectedProgressor, setSelectedProgressor] = useState<Progressor | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newExplorerName, setNewExplorerName] = useState('');
-  const [newExplorerAge, setNewExplorerAge] = useState('');
+  const [newProgressorName, setNewProgressorName] = useState('');
+  const [newProgressorAge, setNewProgressorAge] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const filteredExplorers = mockExplorers.filter(e =>
+  const filteredProgressors = mockProgressors.filter(e =>
     e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     e.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCreateExplorer = () => {
-    const newId = `E${String(mockExplorers.length + 1).padStart(3, '0')}`;
-    alert(`New Explorer Created!\nExplorer ID: ${newId}\nName: ${newExplorerName}\nAge: ${newExplorerAge}`);
+  const handleCreateProgressor = () => {
+    const newId = `E${String(mockProgressors.length + 1).padStart(3, '0')}`;
+    alert(`New Progressor Created!\nProgressor ID: ${newId}\nName: ${newProgressorName}\nAge: ${newProgressorAge}`);
     setShowCreateModal(false);
-    setNewExplorerName('');
-    setNewExplorerAge('');
+    setNewProgressorName('');
+    setNewProgressorAge('');
   };
 
   return (
@@ -70,32 +70,32 @@ export default function PsychologistDashboard() {
         </div>
 
         <div className="mb-12">
-          <h2 className="mb-2" style={{ fontSize: '1.75rem' }}>Clinical Dashboard</h2>
+          <h2 className="mb-2 text-white" style={{ fontSize: '1.75rem' }}>Clinical Dashboard</h2>
           <p className="text-sm text-muted-foreground">Practitioner Portal</p>
         </div>
 
         <nav className="space-y-3">
           <button
-            onClick={() => setActiveView('explorers')}
+            onClick={() => setActiveView('progressors')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${
-              activeView === 'explorers'
-                ? 'bg-primary text-primary-foreground shadow-lg'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent'
+              activeView === 'progressors'
+                ? 'bg-primary text-primary-foreground shadow-lg font-bold'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent text-white'
             }`}
           >
-            <Users className="w-5 h-5" />
-            Explorer Registry
+            <Users className="w-5 h-5 text-white" />
+            Progressor Registry
           </button>
 
           <button
             onClick={() => setActiveView('analytics')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${
               activeView === 'analytics'
-                ? 'bg-primary text-primary-foreground shadow-lg'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent'
+                ? 'bg-primary text-primary-foreground shadow-lg font-bold'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent text-white'
             }`}
           >
-            <BarChart3 className="w-5 h-5" />
+            <BarChart3 className="w-5 h-5 text-white" />
             Analytics
           </button>
 
@@ -103,18 +103,18 @@ export default function PsychologistDashboard() {
             onClick={() => setActiveView('tasks')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${
               activeView === 'tasks'
-                ? 'bg-primary text-primary-foreground shadow-lg'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent'
+                ? 'bg-primary text-primary-foreground shadow-lg font-bold'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent text-white'
             }`}
           >
-            <TrendingUp className="w-5 h-5" />
+            <TrendingUp className="w-5 h-5 text-white" />
             Task Assignments
           </button>
         </nav>
 
         <button
           onClick={() => navigate('/')}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] text-sidebar-foreground hover:bg-sidebar-accent hover:scale-105 active:scale-95 transition-all mt-auto absolute bottom-6"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] text-sidebar-foreground hover:bg-sidebar-accent hover:scale-105 active:scale-95 transition-all mt-auto absolute bottom-6 text-white"
         >
           <Home className="w-5 h-5" />
           Logout
@@ -123,17 +123,17 @@ export default function PsychologistDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 p-8">
-        {/* Explorer Registry View */}
-        {activeView === 'explorers' && (
+        {/* Progressor Registry View */}
+        {activeView === 'progressors' && (
           <div>
             <div className="flex items-center justify-between mb-8">
-              <h1>Explorer Registry</h1>
+              <h1 className="text-white">Progressor Registry</h1>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 px-6 py-3 rounded-[2rem] bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300"
+                className="flex items-center gap-2 px-6 py-3 rounded-[2rem] bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 font-bold"
               >
                 <Plus className="w-5 h-5" />
-                Create New Explorer
+                Create New Progressor
               </button>
             </div>
 
@@ -142,29 +142,29 @@ export default function PsychologistDashboard() {
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search explorers by name or ID..."
+                placeholder="Search progressors by name or ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-6 py-4 rounded-[2rem] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full pl-14 pr-6 py-4 rounded-[2rem] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary text-white"
               />
             </div>
 
-            {/* Explorer List */}
+            {/* Progressor List */}
             <div className="grid gap-4">
-              {filteredExplorers.map((explorer) => (
+              {filteredProgressors.map((progressor) => (
                 <div
-                  key={explorer.id}
+                  key={progressor.id}
                   className="bg-card p-6 rounded-[2rem] border border-border hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
-                  onClick={() => setSelectedExplorer(explorer)}
+                  onClick={() => setSelectedProgressor(progressor)}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3>{explorer.name}</h3>
+                      <h3 className="text-white">{progressor.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        ID: {explorer.id} • Age: {explorer.age} • Last Session: {explorer.lastSession}
+                        ID: {progressor.id} • Age: {progressor.age} • Last Session: {progressor.lastSession}
                       </p>
                     </div>
-                    <div className="px-4 py-2 rounded-[1rem] bg-primary/10 text-primary">
+                    <div className="px-4 py-2 rounded-[1rem] bg-primary/10 text-primary font-bold">
                       View Details
                     </div>
                   </div>
@@ -177,25 +177,25 @@ export default function PsychologistDashboard() {
         {/* Analytics View */}
         {activeView === 'analytics' && (
           <div>
-            <h1 className="mb-8">Analytics Dashboard</h1>
+            <h1 className="mb-8 text-white">Analytics Dashboard</h1>
 
-            {selectedExplorer ? (
+            {selectedProgressor ? (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2>{selectedExplorer.name}</h2>
+                    <h2 className="text-white">{selectedProgressor.name}</h2>
                     <p className="text-muted-foreground">Progress Overview</p>
                   </div>
                   <button
-                    onClick={() => setSelectedExplorer(null)}
-                    className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
+                    onClick={() => setSelectedProgressor(null)}
+                    className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 text-white"
                   >
                     Back to List
                   </button>
                 </div>
 
                 <div className="bg-card p-8 rounded-[2rem] border border-border">
-                  <h3 className="mb-6">Explorer Progress Across All Games</h3>
+                  <h3 className="mb-6 text-white">Progressor Progress Across All Games</h3>
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={mockAnalytics}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
@@ -215,7 +215,7 @@ export default function PsychologistDashboard() {
             ) : (
               <div className="text-center py-20">
                 <BarChart3 className="w-20 h-20 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Select an explorer from the Explorer Registry to view analytics</p>
+                <p className="text-muted-foreground">Select a progressor from the Progressor Registry to view analytics</p>
               </div>
             )}
           </div>
@@ -224,18 +224,18 @@ export default function PsychologistDashboard() {
         {/* Task Assignment View */}
         {activeView === 'tasks' && (
           <div>
-            <h1 className="mb-8">Task Assignments</h1>
+            <h1 className="mb-8 text-white">Task Assignments</h1>
 
-            {selectedExplorer ? (
+            {selectedProgressor ? (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2>Assign Tasks to {selectedExplorer.name}</h2>
+                    <h2 className="text-white">Assign Tasks to {selectedProgressor.name}</h2>
                     <p className="text-muted-foreground">Select a game and level</p>
                   </div>
                   <button
-                    onClick={() => setSelectedExplorer(null)}
-                    className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
+                    onClick={() => setSelectedProgressor(null)}
+                    className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 text-white"
                   >
                     Back to List
                   </button>
@@ -248,12 +248,12 @@ export default function PsychologistDashboard() {
                       <div key={game.id} className="bg-card rounded-[2rem] border border-border overflow-hidden">
                         <button
                           onClick={() => setSelectedGame(selectedGame === game.id ? null : game.id)}
-                          className="w-full p-6 hover:bg-secondary/50 hover:scale-105 active:scale-95 transition-all"
+                          className="w-full p-6 hover:bg-secondary/50 hover:scale-105 active:scale-95 transition-all text-white"
                         >
                           <div className="w-16 h-16 rounded-2xl bg-[#FF6347]/10 flex items-center justify-center mb-3 mx-auto">
                             <Icon className="w-10 h-10 text-[#FF6347]" />
                           </div>
-                          <h3 className="text-lg">{game.name}</h3>
+                          <h3 className="text-lg text-white">{game.name}</h3>
                         </button>
 
                         {selectedGame === game.id && (
@@ -263,7 +263,7 @@ export default function PsychologistDashboard() {
                               {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => (
                                 <button
                                   key={level}
-                                  className="aspect-square rounded-[1rem] bg-[#FF6347] text-white hover:scale-110 active:scale-95 transition-all shadow-md"
+                                  className="aspect-square rounded-[1rem] bg-[#FF6347] text-white hover:scale-110 active:scale-95 transition-all shadow-md font-bold"
                                 >
                                   {level}
                                 </button>
@@ -279,22 +279,22 @@ export default function PsychologistDashboard() {
             ) : (
               <div className="text-center py-20">
                 <TrendingUp className="w-20 h-20 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Select an explorer from the Explorer Registry to assign tasks</p>
+                <p className="text-muted-foreground">Select a progressor from the Progressor Registry to assign tasks</p>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Create Explorer Modal */}
+      {/* Create Progressor Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
-          <div className="bg-card rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300">
+          <div className="bg-card rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300 border border-border">
             <div className="flex items-center justify-between mb-6">
-              <h2>Create New Explorer</h2>
+              <h2 className="text-white">Create New Progressor</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300"
+                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -302,32 +302,32 @@ export default function PsychologistDashboard() {
 
             <div className="space-y-6">
               <div>
-                <label className="block mb-2">Explorer Name</label>
+                <label className="block mb-2 text-white">Progressor Name</label>
                 <input
                   type="text"
-                  value={newExplorerName}
-                  onChange={(e) => setNewExplorerName(e.target.value)}
+                  value={newProgressorName}
+                  onChange={(e) => setNewProgressorName(e.target.value)}
                   placeholder="Enter full name"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-white"
                 />
               </div>
 
               <div>
-                <label className="block mb-2">Age</label>
+                <label className="block mb-2 text-white">Age</label>
                 <input
                   type="number"
-                  value={newExplorerAge}
-                  onChange={(e) => setNewExplorerAge(e.target.value)}
+                  value={newProgressorAge}
+                  onChange={(e) => setNewProgressorAge(e.target.value)}
                   placeholder="Enter age"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-white"
                 />
               </div>
 
               <button
-                onClick={handleCreateExplorer}
-                className="w-full px-8 py-4 rounded-[2rem] bg-[#FF6347] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300"
+                onClick={handleCreateProgressor}
+                className="w-full px-8 py-4 rounded-[2rem] bg-[#FF6347] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 font-bold"
               >
-                Generate Explorer ID
+                Generate Progressor ID
               </button>
             </div>
           </div>

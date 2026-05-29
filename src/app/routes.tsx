@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import LandingPage from "./components/LandingPage";
-import PsychologistDashboard from "./components/PsychologistDashboard";
-import ExplorerDashboard from "./components/ExplorerDashboard";
+import PractitionerDashboard from "./components/PractitionerDashboard";
+import ProgressorDashboard from "./components/ProgressorDashboard";
 import ParentDashboard from "./components/ParentDashboard";
 import GameScreen from "./components/GameScreen";
 import ResultScreen from "./components/ResultScreen";
@@ -12,15 +12,15 @@ export const router = createBrowserRouter([
     Component: LandingPage,
   },
   {
-    path: "/psychologist",
-    Component: PsychologistDashboard,
+    path: "/practitioner",
+    Component: PractitionerDashboard,
   },
   {
-    path: "/explorer/:explorerId",
-    Component: ExplorerDashboard,
+    path: "/progressor/:progressorId",
+    Component: ProgressorDashboard,
   },
   {
-    path: "/parent/:explorerId",
+    path: "/parent/:progressorId",
     Component: ParentDashboard,
   },
   {

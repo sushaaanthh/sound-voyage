@@ -6,7 +6,7 @@ import { useGameSession } from '../context/GameSessionContext';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 
-type Role = 'explorer' | 'parent' | 'psychologist';
+type Role = 'progressor' | 'parent' | 'practitioner';
 
 const IMPACT_GUIDES = [
   {
@@ -27,8 +27,8 @@ const IMPACT_GUIDES = [
 ];
 
 export default function LandingPage() {
-  const [selectedRole, setSelectedRole] = useState<Role>('explorer');
-  const [explorerId, setExplorerId] = useState('');
+  const [selectedRole, setSelectedRole] = useState<Role>('progressor');
+  const [progressorId, setProgressorId] = useState('');
   const [practitionerId, setPractitionerId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -37,47 +37,47 @@ export default function LandingPage() {
   // Sign-Up states
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
-  const [signupExplorerId, setSignupExplorerId] = useState('');
+  const [signupProgressorId, setSignupProgressorId] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
 
   const navigate = useNavigate();
   const loginRef = useRef<HTMLDivElement>(null);
-  const { updateProgress } = useGameSession();
+  const { updateSession } = useGameSession();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedRole === 'psychologist') {
-      navigate('/psychologist');
+    if (selectedRole === 'practitioner') {
+      navigate('/practitioner');
       return;
     }
 
     try {
       let emailToAuth = '';
-      let activeExplorerId = '';
+      let activeProgressorId = '';
 
-      if (explorerId.includes('@')) {
-        emailToAuth = explorerId;
-        const { data: explorerData } = await supabase
-          .from('explorers')
+      if (progressorId.includes('@')) {
+        emailToAuth = progressorId;
+        const { data: progressorData } = await supabase
+          .from('progressors')
           .select('id')
-          .eq('email', explorerId)
+          .eq('email', progressorId)
           .single();
-        if (explorerData) {
-          activeExplorerId = explorerData.id;
+        if (progressorData) {
+          activeProgressorId = progressorData.id;
         }
       } else {
-        activeExplorerId = explorerId;
-        const { data: explorerData, error: explorerError } = await supabase
-          .from('explorers')
+        activeProgressorId = progressorId;
+        const { data: progressorData, error: progressorError } = await supabase
+          .from('progressors')
           .select('email')
-          .eq('id', explorerId)
+          .eq('id', progressorId)
           .single();
 
-        if (explorerError || !explorerData) {
-          toast.error('Explorer ID not found. Please verify with your psychologist.');
+        if (progressorError || !progressorData) {
+          toast.error('Progressor ID not found. Please verify with your practitioner.');
           return;
         }
-        emailToAuth = explorerData.email;
+        emailToAuth = progressorData.email;
       }
 
       // Authenticate via Supabase Auth
@@ -92,27 +92,26 @@ export default function LandingPage() {
       }
 
       // Fetch dynamic historical progress
-      const { data: explorerProfile } = await supabase
-        .from('explorers')
+      const { data: progressorProfile } = await supabase
+        .from('progressors')
         .select('*')
         .eq('auth_user_id', authData.user.id)
         .single();
 
-      if (explorerProfile && explorerProfile.progress_data) {
-        try {
-          const parsedProgress = JSON.parse(explorerProfile.progress_data);
-          updateProgress(parsedProgress);
-        } catch (e) {
-          console.warn('Failed to parse progress_data', e);
-        }
+      if (progressorProfile) {
+        updateSession(
+          activeProgressorId || 'demo',
+          progressorProfile.name || '',
+          progressorProfile.completed_levels || []
+        );
       }
 
       toast.success('Successfully logged in');
       
-      if (selectedRole === 'explorer') {
-        navigate(`/explorer/${activeExplorerId || 'demo'}`);
+      if (selectedRole === 'progressor') {
+        navigate(`/progressor/${activeProgressorId || 'demo'}`);
       } else {
-        navigate(`/parent/${activeExplorerId || 'demo'}`);
+        navigate(`/parent/${activeProgressorId || 'demo'}`);
       }
     } catch (err) {
       console.error('Login error', err);
@@ -123,31 +122,31 @@ export default function LandingPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (selectedRole !== 'explorer') {
-      toast.error('Only Explorers can sign up directly.');
+    if (selectedRole !== 'progressor') {
+      toast.error('Only Progressors can sign up directly.');
       return;
     }
 
-    if (!signupExplorerId) {
-      toast.error('Explorer ID is required.');
+    if (!signupProgressorId) {
+      toast.error('Progressor ID is required.');
       return;
     }
 
     try {
-      // 1. Verify Explorer ID exists in the database
-      const { data: explorerData, error: checkError } = await supabase
-        .from('explorers')
+      // 1. Verify Progressor ID exists in the database
+      const { data: progressorData, error: checkError } = await supabase
+        .from('progressors')
         .select('*')
-        .eq('id', signupExplorerId)
+        .eq('id', signupProgressorId)
         .single();
 
-      if (checkError || !explorerData) {
-        toast.error('Invalid Explorer ID. Please request one from your psychologist.');
+      if (checkError || !progressorData) {
+        toast.error('Invalid Progressor ID. Please request one from your practitioner.');
         return;
       }
 
-      if (explorerData.auth_user_id) {
-        toast.error('This Explorer ID has already been registered.');
+      if (progressorData.auth_user_id) {
+        toast.error('This Progressor ID has already been registered.');
         return;
       }
 
@@ -167,15 +166,15 @@ export default function LandingPage() {
         return;
       }
 
-      // 3. Map auth.user.id to explorers row
+      // 3. Map auth.user.id to progressors row
       const { error: updateError } = await supabase
-        .from('explorers')
+        .from('progressors')
         .update({
           auth_user_id: signUpData.user.id,
           email: signupEmail,
           name: signupName
         })
-        .eq('id', signupExplorerId);
+        .eq('id', signupProgressorId);
 
       if (updateError) {
         toast.error('Account created, but failed to link profile: ' + updateError.message);
@@ -188,7 +187,7 @@ export default function LandingPage() {
       // Clear fields
       setSignupName('');
       setSignupEmail('');
-      setSignupExplorerId('');
+      setSignupProgressorId('');
       setSignupPassword('');
     } catch (err) {
       console.error('Sign-up error', err);
@@ -260,10 +259,10 @@ export default function LandingPage() {
                 className="absolute top-1.5 bottom-1.5 bg-primary rounded-[1.5rem] shadow-lg transition-all duration-300 ease-in-out"
                 style={{
                   width: 'calc(33.333% - 0.375rem)',
-                  left: selectedRole === 'explorer' ? '0.375rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% - 0.125rem)',
+                  left: selectedRole === 'progressor' ? '0.375rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% - 0.125rem)',
                 }}
               />
-              {(['explorer', 'parent', 'psychologist'] as Role[]).map((role) => (
+              {(['progressor', 'parent', 'practitioner'] as Role[]).map((role) => (
                 <button
                   key={role}
                   onClick={() => setSelectedRole(role)}
@@ -281,7 +280,7 @@ export default function LandingPage() {
 
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-6">
-            {selectedRole === 'psychologist' ? (
+            {selectedRole === 'practitioner' ? (
               <div className="text-left">
                 <label htmlFor="practitionerId" className="block mb-2 text-foreground">
                   Practitioner ID / Username
@@ -297,14 +296,14 @@ export default function LandingPage() {
               </div>
             ) : (
               <div className="text-left">
-                <label htmlFor="explorerId" className="block mb-2 text-foreground">
-                  Explorer ID
+                <label htmlFor="progressorId" className="block mb-2 text-foreground">
+                  Progressor ID
                 </label>
                 <input
-                  id="explorerId"
+                  id="progressorId"
                   type="text"
-                  value={explorerId}
-                  onChange={(e) => setExplorerId(e.target.value)}
+                  value={progressorId}
+                  onChange={(e) => setProgressorId(e.target.value)}
                   placeholder="Enter your ID"
                   className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
@@ -362,13 +361,13 @@ export default function LandingPage() {
 
             {/* Quick Links */}
             <div className="text-sm text-muted-foreground space-y-2 pt-4">
-              {selectedRole !== 'psychologist' && (
+              {selectedRole !== 'practitioner' && (
                 <button
                   type="button"
-                  onClick={() => setSelectedRole('psychologist')}
+                  onClick={() => setSelectedRole('practitioner')}
                   className="block w-full text-center hover:text-primary transition-colors"
                 >
-                  Are you a Psychologist? Click here
+                  Are you a Practitioner? Click here
                 </button>
               )}
               {selectedRole !== 'parent' && (
@@ -415,10 +414,10 @@ export default function LandingPage() {
                     className="absolute top-1.5 bottom-1.5 bg-primary rounded-[1.5rem] shadow-lg transition-all duration-300 ease-in-out"
                     style={{
                       width: 'calc(33.333% - 0.375rem)',
-                      left: selectedRole === 'explorer' ? '0.375rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% - 0.125rem)',
+                      left: selectedRole === 'progressor' ? '0.375rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% - 0.125rem)',
                     }}
                   />
-                  {(['explorer', 'parent', 'psychologist'] as Role[]).map((role) => (
+                  {(['progressor', 'parent', 'practitioner'] as Role[]).map((role) => (
                     <button
                       key={role}
                       type="button"
@@ -468,22 +467,22 @@ export default function LandingPage() {
               </div>
 
               {/* ID Field (conditional) */}
-              {selectedRole === 'explorer' ? (
+              {selectedRole === 'progressor' ? (
                 <div>
-                  <label htmlFor="signup-explorer-id" className="block mb-2 text-foreground">
-                    Explorer ID
+                  <label htmlFor="signup-progressor-id" className="block mb-2 text-foreground">
+                    Progressor ID
                   </label>
                   <input
-                    id="signup-explorer-id"
+                    id="signup-progressor-id"
                     type="text"
                     required
-                    value={signupExplorerId}
-                    onChange={(e) => setSignupExplorerId(e.target.value)}
-                    placeholder="Enter Explorer ID (e.g. E001)"
+                    value={signupProgressorId}
+                    onChange={(e) => setSignupProgressorId(e.target.value)}
+                    placeholder="Enter Progressor ID (e.g. E001)"
                     className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
                 </div>
-              ) : selectedRole === 'psychologist' ? (
+              ) : selectedRole === 'practitioner' ? (
                 <div>
                   <label htmlFor="signup-license" className="block mb-2 text-foreground">
                     Practitioner License Number
@@ -499,12 +498,12 @@ export default function LandingPage() {
               ) : selectedRole === 'parent' ? (
                 <div>
                   <label htmlFor="signup-child-id" className="block mb-2 text-foreground">
-                    Child's Explorer ID (if available)
+                    Child's Progressor ID (if available)
                   </label>
                   <input
                     id="signup-child-id"
                     type="text"
-                    placeholder="Enter Explorer ID (optional)"
+                    placeholder="Enter Progressor ID (optional)"
                     className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
                 </div>
