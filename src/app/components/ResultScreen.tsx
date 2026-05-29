@@ -3,10 +3,13 @@ import { useLocation, useNavigate } from 'react-router';
 import { Trophy, ThumbsUp, Target, Clock, RotateCcw, ArrowRight, Star } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ThemeToggle } from './ThemeToggle';
+import { useGameSession } from '../context/GameSessionContext';
 
 export default function ResultScreen() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { progress, completeLevel } = useGameSession();
 
   const state = location.state || {};
   const score = typeof state.score === 'number' ? state.score : 0;
@@ -14,12 +17,12 @@ export default function ResultScreen() {
     ? state.totalQuestions
     : (typeof state.total === 'number' ? state.total : 10);
 
-  // Directly display the formatted time taken string passed in state
   const timeTaken = typeof state.timeTaken === 'string' ? state.timeTaken : '00:00';
   const gameId = typeof state.gameId === 'string' ? state.gameId : 'phoneme-pop';
   const level = typeof state.level === 'number' ? state.level : 1;
 
   const accuracy = Math.round((score / totalQuestions) * 100);
+  const patientId = progress?.patientId || 'demo';
 
   let title = '';
   let subtitle = '';
@@ -42,6 +45,13 @@ export default function ResultScreen() {
     IconComponent = Target;
     iconColorClass = 'text-gray-400';
   }
+
+  // Record completion to Game Session Context on mount if accuracy meets threshold
+  useEffect(() => {
+    if (accuracy >= 60) {
+      completeLevel(gameId, level, score, accuracy, timeTaken);
+    }
+  }, [accuracy, gameId, level, score, timeTaken, completeLevel]);
 
   useEffect(() => {
     if (accuracy < 60) return;
@@ -80,11 +90,21 @@ export default function ResultScreen() {
     return () => clearInterval(interval);
   }, [accuracy]);
 
+  const handleContinue = () => {
+    navigate(`/patient/${patientId}`, {
+      state: {
+        selectedGame: gameId,
+        completedLevel: level,
+        passed: true
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-[#1D1C16] text-white flex items-center justify-center p-6 relative overflow-hidden">
       {/* Visual background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.15),transparent_60%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(255,99,71,0.1),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(255,99,71,0.155),transparent_50%)]" />
 
       <div className="absolute top-8 right-8 z-50">
         <ThemeToggle />
@@ -148,7 +168,7 @@ export default function ResultScreen() {
 
             {accuracy >= 60 && (
               <button
-                onClick={() => navigate('/patient/levels')}
+                onClick={handleContinue}
                 className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-[2rem] bg-[#FF6347] hover:bg-[#FF6347]/90 hover:scale-105 active:scale-95 transition-all duration-300 text-white font-bold"
               >
                 Continue

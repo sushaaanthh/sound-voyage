@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router';
-import { Bell, Home, Lock, Target, Map, Route, Shuffle, PackageSearch, LucideIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router';
+import { Home, Lock, Target, Map, Route, Shuffle, PackageSearch, LucideIcon } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { useGameSession } from '../context/GameSessionContext';
 
 interface Game {
   id: string;
@@ -52,63 +53,65 @@ const GAMES: Game[] = [
 export default function PatientDashboard() {
   const { patientId } = useParams();
   const navigate = useNavigate();
-  const [selectedGame, setSelectedGame] = useState<string | null>(null);
-  const [showNotifications, setShowNotifications] = useState(false);
+  const location = useLocation();
+
+  const { progress, setPatient } = useGameSession();
+
+  const [selectedGame, setSelectedGame] = useState<string | null>(() => {
+    return location.state?.selectedGame || null;
+  });
+
   const [assignedLevels] = useState([1, 2, 3]);
+
+  // Set the active patient in context
+  useEffect(() => {
+    if (patientId) {
+      setPatient(patientId);
+    }
+  }, [patientId, setPatient]);
+
+  // Pre-select game if returning from result screen
+  useEffect(() => {
+    if (location.state?.selectedGame) {
+      setSelectedGame(location.state.selectedGame);
+    }
+  }, [location.state]);
 
   const handleLevelClick = (gameId: string, level: number) => {
     navigate(`/game/${gameId}/${level}`);
   };
 
+  const isLevelUnlocked = (gameId: string, levelNum: number) => {
+    if (levelNum > 3) return false;
+    if (levelNum === 1) return true;
+
+    const completed = progress?.completedLevels[gameId] || [];
+    return completed.includes(levelNum - 1);
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#12110D] text-white">
       {/* Header */}
-      <div className="bg-card border-b border-border px-8 py-6">
+      <div className="bg-[#1D1C16] border-b border-[#2C2B24] px-8 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="mb-1">Hey {patientId}! Ready for your Voyage?</h1>
+            <h1 className="mb-1 text-white">Ready for your Voyage?</h1>
             <p className="text-muted-foreground">Choose a game to start playing</p>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Notification Bell */}
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-4 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all"
-            >
-              <Bell className="w-6 h-6" />
-              <span className="absolute top-2 right-2 w-3 h-3 bg-primary rounded-full border-2 border-card" />
-            </button>
-
             <ThemeToggle />
 
             <button
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all"
+              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-[#2C2B24] hover:bg-[#3E3C33] hover:scale-105 active:scale-95 transition-all border border-[#3E3C33]"
             >
-              <Home className="w-5 h-5" />
+              <Home className="w-5 h-5 text-white" />
               Home
             </button>
           </div>
         </div>
       </div>
-
-      {/* Notifications Dropdown */}
-      {showNotifications && (
-        <div className="absolute top-24 right-8 w-96 bg-card rounded-[2rem] shadow-2xl border border-border p-6 z-50">
-          <h3 className="mb-4">Task Notifications</h3>
-          <div className="space-y-3">
-            <div className="p-4 rounded-[1.5rem] bg-primary/10 border border-primary/20">
-              <p className="text-sm">
-                <span className="text-primary">New Assignment:</span> Phoneme Pop - Levels 1, 2, 3
-              </p>
-            </div>
-            <div className="p-4 rounded-[1.5rem] bg-secondary">
-              <p className="text-sm text-muted-foreground">No other notifications</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-8 py-12">
@@ -120,15 +123,15 @@ export default function PatientDashboard() {
                 <button
                   key={game.id}
                   onClick={() => setSelectedGame(game.id)}
-                  className="group bg-card rounded-[2rem] border border-border p-8 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 text-left overflow-hidden relative animate-in fade-in slide-in-from-bottom-4"
+                  className="group bg-[#1D1C16] rounded-[2rem] border border-[#2C2B24] p-8 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 text-left overflow-hidden relative animate-in fade-in slide-in-from-bottom-4"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
                   <div className="relative z-10">
-                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <Icon className="w-10 h-10 text-primary" />
+                    <div className="w-16 h-16 rounded-2xl bg-[#FF6347]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Icon className="w-10 h-10 text-[#FF6347]" />
                     </div>
-                    <h2 className="mb-2">{game.name}</h2>
+                    <h2 className="mb-2 text-white">{game.name}</h2>
                     <p className="text-sm text-muted-foreground">{game.description}</p>
                   </div>
                 </button>
@@ -139,23 +142,23 @@ export default function PatientDashboard() {
           <div>
             <button
               onClick={() => setSelectedGame(null)}
-              className="mb-8 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
+              className="mb-8 px-6 py-3 rounded-[1.5rem] bg-[#2C2B24] hover:bg-[#3E3C33] hover:scale-105 active:scale-95 transition-all duration-300 border border-[#3E3C33]"
             >
-              ← Back to Games
+              Back to Games
             </button>
 
-            <div className="bg-card rounded-[2rem] border border-border p-8">
+            <div className="bg-[#1D1C16] rounded-[2rem] border border-[#2C2B24] p-8">
               <div className="flex items-center gap-6 mb-8">
                 {(() => {
                   const game = GAMES.find((g) => g.id === selectedGame);
                   const Icon = game?.icon;
                   return (
                     <>
-                      <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center">
-                        {Icon && <Icon className="w-16 h-16 text-primary" />}
+                      <div className="w-24 h-24 rounded-3xl bg-[#FF6347]/10 flex items-center justify-center">
+                        {Icon && <Icon className="w-16 h-16 text-[#FF6347]" />}
                       </div>
                       <div>
-                        <h1 className="mb-2">{game?.name}</h1>
+                        <h1 className="mb-2 text-white">{game?.name}</h1>
                         <p className="text-muted-foreground">{game?.description}</p>
                       </div>
                     </>
@@ -163,36 +166,43 @@ export default function PatientDashboard() {
                 })()}
               </div>
 
-              <h3 className="mb-6">Select a Level</h3>
+              <h3 className="mb-6 text-white">Select a Level</h3>
               <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
                   const isAssigned = assignedLevels.includes(level);
-                  const isUnlocked = level <= 3;
+                  const isUnlocked = isLevelUnlocked(selectedGame, level);
+                  const completed = progress?.completedLevels[selectedGame] || [];
+                  const isCompleted = completed.includes(level);
 
                   return (
                     <button
                       key={level}
                       onClick={() => isUnlocked && handleLevelClick(selectedGame, level)}
                       disabled={!isUnlocked}
-                      className={`aspect-square rounded-[1.5rem] transition-all duration-300 shadow-lg relative ${
+                      className={`aspect-square rounded-[1.5rem] transition-all duration-300 shadow-lg relative flex flex-col items-center justify-center p-2 border ${
                         isUnlocked
-                          ? 'bg-primary text-primary-foreground hover:scale-110 hover:shadow-2xl active:scale-95'
-                          : 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
-                      } ${isAssigned ? 'ring-4 ring-primary/50 animate-pulse' : ''}`}
+                          ? isCompleted
+                            ? 'bg-[#FF6347]/20 border-[#FF6347] text-white hover:scale-110'
+                            : 'bg-[#FF6347] text-white hover:scale-110 hover:shadow-2xl active:scale-95 border-[#FF6347]'
+                          : 'bg-[#2C2B24] border-[#3E3C33] text-muted-foreground cursor-not-allowed opacity-50'
+                      } ${isAssigned && isUnlocked ? 'ring-4 ring-[#FF6347]/50' : ''}`}
                     >
-                      {isUnlocked ? (
-                        <span className="text-2xl">{level}</span>
-                      ) : (
-                        <Lock className="w-6 h-6 mx-auto" />
+                      <div className="flex items-center justify-center gap-1.5">
+                        <span className="text-2xl font-bold">{level}</span>
+                        {!isUnlocked && <Lock className="w-4 h-4 text-muted-foreground" />}
+                      </div>
+                      {isCompleted && (
+                        <span className="text-[10px] text-[#FF6347] font-semibold mt-1">Done</span>
                       )}
                     </button>
                   );
                 })}
               </div>
 
-              <div className="mt-8 p-6 rounded-[1.5rem] bg-primary/10 border border-primary/20">
-                <p className="text-sm text-primary">
-                  💡 Tip: Levels with a ring around them are assigned by your psychologist!
+              <div className="mt-8 p-6 rounded-[1.5rem] bg-[#FF6347]/10 border border-[#FF6347]/20 flex items-center gap-2">
+                <Target className="w-5 h-5 text-[#FF6347]" />
+                <p className="text-sm text-[#FF6347]">
+                  Tip: Levels with a ring around them are assigned by your psychologist!
                 </p>
               </div>
             </div>
