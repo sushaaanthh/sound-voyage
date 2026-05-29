@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState } from 'react';
+import { supabase } from '../../lib/supabase';
 
 export interface SessionProgress {
-  patientId: string;
+  explorerId: string;
   completedLevels: {
     [gameId: string]: number[];
   };
@@ -14,7 +15,7 @@ export interface SessionProgress {
 
 interface GameSessionContextType {
   progress: SessionProgress | null;
-  setPatient: (patientId: string) => void;
+  setExplorer: (explorerId: string) => void;
   completeLevel: (
     gameId: string,
     level: number,
@@ -22,6 +23,7 @@ interface GameSessionContextType {
     accuracy: number,
     timeTaken: string
   ) => void;
+  updateProgress: (newProgress: SessionProgress) => void;
 }
 
 const GameSessionContext = createContext<GameSessionContextType | undefined>(undefined);
@@ -29,10 +31,10 @@ const GameSessionContext = createContext<GameSessionContextType | undefined>(und
 export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [progress, setProgress] = useState<SessionProgress | null>(null);
 
-  const setPatient = (patientId: string) => {
-    if (progress && progress.patientId === patientId) return;
+  const setExplorer = (explorerId: string) => {
+    if (progress && progress.explorerId === explorerId) return;
 
-    const saved = sessionStorage.getItem(`voyage_progress_${patientId}`);
+    const saved = sessionStorage.getItem(`voyage_progress_${explorerId}`);
     if (saved) {
       try {
         setProgress(JSON.parse(saved));
@@ -43,12 +45,17 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
 
     const newProgress: SessionProgress = {
-      patientId,
+      explorerId,
       completedLevels: {},
       scores: {},
     };
     setProgress(newProgress);
-    sessionStorage.setItem(`voyage_progress_${patientId}`, JSON.stringify(newProgress));
+    sessionStorage.setItem(`voyage_progress_${explorerId}`, JSON.stringify(newProgress));
+  };
+
+  const updateProgress = (newProgress: SessionProgress) => {
+    setProgress(newProgress);
+    sessionStorage.setItem(`voyage_progress_${newProgress.explorerId}`, JSON.stringify(newProgress));
   };
 
   const completeLevel = (
@@ -85,13 +92,28 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     setProgress(updatedProgress);
     sessionStorage.setItem(
-      `voyage_progress_${progress.patientId}`,
+      `voyage_progress_${progress.explorerId}`,
       JSON.stringify(updatedProgress)
     );
+
+    // Sync back to Supabase database if user is logged in
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase
+          .from('explorers')
+          .update({ progress_data: JSON.stringify(updatedProgress) })
+          .eq('auth_user_id', user.id)
+          .then(({ error }) => {
+            if (error) {
+              console.error('Failed to sync progress to Supabase:', error);
+            }
+          });
+      }
+    });
   };
 
   return (
-    <GameSessionContext.Provider value={{ progress, setPatient, completeLevel }}>
+    <GameSessionContext.Provider value={{ progress, setExplorer, completeLevel, updateProgress }}>
       {children}
     </GameSessionContext.Provider>
   );

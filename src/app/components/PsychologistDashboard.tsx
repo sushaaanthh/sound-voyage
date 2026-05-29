@@ -4,7 +4,7 @@ import { Search, Plus, X, TrendingUp, Home, Users, BarChart3, Target, Map, Route
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 
-interface Patient {
+interface Explorer {
   id: string;
   name: string;
   age: number;
@@ -25,10 +25,10 @@ const GAMES: Game[] = [
   { id: 'sound-sorter', name: 'Sound Sorter', icon: PackageSearch },
 ];
 
-const mockPatients: Patient[] = [
-  { id: 'P001', name: 'Sushanth Kumar', age: 8, lastSession: '2026-04-20' },
-  { id: 'P002', name: 'Priya Sharma', age: 10, lastSession: '2026-04-22' },
-  { id: 'P003', name: 'Rohan Patel', age: 7, lastSession: '2026-04-18' },
+const mockExplorers: Explorer[] = [
+  { id: 'E001', name: 'Sushanth Kumar', age: 8, lastSession: '2026-04-20' },
+  { id: 'E002', name: 'Priya Sharma', age: 10, lastSession: '2026-04-22' },
+  { id: 'E003', name: 'Rohan Patel', age: 7, lastSession: '2026-04-18' },
 ];
 
 const mockAnalytics = [
@@ -39,26 +39,26 @@ const mockAnalytics = [
 ];
 
 export default function PsychologistDashboard() {
-  const [activeView, setActiveView] = useState<'patients' | 'analytics' | 'tasks'>('patients');
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [activeView, setActiveView] = useState<'explorers' | 'analytics' | 'tasks'>('explorers');
+  const [selectedExplorer, setSelectedExplorer] = useState<Explorer | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newPatientName, setNewPatientName] = useState('');
-  const [newPatientAge, setNewPatientAge] = useState('');
+  const [newExplorerName, setNewExplorerName] = useState('');
+  const [newExplorerAge, setNewExplorerAge] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const filteredPatients = mockPatients.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.id.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredExplorers = mockExplorers.filter(e =>
+    e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    e.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCreatePatient = () => {
-    const newId = `P${String(mockPatients.length + 1).padStart(3, '0')}`;
-    alert(`New Patient Created!\nPatient ID: ${newId}\nName: ${newPatientName}\nAge: ${newPatientAge}`);
+  const handleCreateExplorer = () => {
+    const newId = `E${String(mockExplorers.length + 1).padStart(3, '0')}`;
+    alert(`New Explorer Created!\nExplorer ID: ${newId}\nName: ${newExplorerName}\nAge: ${newExplorerAge}`);
     setShowCreateModal(false);
-    setNewPatientName('');
-    setNewPatientAge('');
+    setNewExplorerName('');
+    setNewExplorerAge('');
   };
 
   return (
@@ -76,15 +76,15 @@ export default function PsychologistDashboard() {
 
         <nav className="space-y-3">
           <button
-            onClick={() => setActiveView('patients')}
+            onClick={() => setActiveView('explorers')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${
-              activeView === 'patients'
+              activeView === 'explorers'
                 ? 'bg-primary text-primary-foreground shadow-lg'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent'
             }`}
           >
             <Users className="w-5 h-5" />
-            Patient Registry
+            Explorer Registry
           </button>
 
           <button
@@ -123,17 +123,17 @@ export default function PsychologistDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 p-8">
-        {/* Patient Registry View */}
-        {activeView === 'patients' && (
+        {/* Explorer Registry View */}
+        {activeView === 'explorers' && (
           <div>
             <div className="flex items-center justify-between mb-8">
-              <h1>Patient Registry</h1>
+              <h1>Explorer Registry</h1>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="flex items-center gap-2 px-6 py-3 rounded-[2rem] bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300"
               >
                 <Plus className="w-5 h-5" />
-                Create New Patient
+                Create New Explorer
               </button>
             </div>
 
@@ -142,26 +142,26 @@ export default function PsychologistDashboard() {
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search patients by name or ID..."
+                placeholder="Search explorers by name or ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-14 pr-6 py-4 rounded-[2rem] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
-            {/* Patient List */}
+            {/* Explorer List */}
             <div className="grid gap-4">
-              {filteredPatients.map((patient) => (
+              {filteredExplorers.map((explorer) => (
                 <div
-                  key={patient.id}
+                  key={explorer.id}
                   className="bg-card p-6 rounded-[2rem] border border-border hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
-                  onClick={() => setSelectedPatient(patient)}
+                  onClick={() => setSelectedExplorer(explorer)}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3>{patient.name}</h3>
+                      <h3>{explorer.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        ID: {patient.id} • Age: {patient.age} • Last Session: {patient.lastSession}
+                        ID: {explorer.id} • Age: {explorer.age} • Last Session: {explorer.lastSession}
                       </p>
                     </div>
                     <div className="px-4 py-2 rounded-[1rem] bg-primary/10 text-primary">
@@ -179,15 +179,15 @@ export default function PsychologistDashboard() {
           <div>
             <h1 className="mb-8">Analytics Dashboard</h1>
 
-            {selectedPatient ? (
+            {selectedExplorer ? (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2>{selectedPatient.name}</h2>
+                    <h2>{selectedExplorer.name}</h2>
                     <p className="text-muted-foreground">Progress Overview</p>
                   </div>
                   <button
-                    onClick={() => setSelectedPatient(null)}
+                    onClick={() => setSelectedExplorer(null)}
                     className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
                   >
                     Back to List
@@ -195,7 +195,7 @@ export default function PsychologistDashboard() {
                 </div>
 
                 <div className="bg-card p-8 rounded-[2rem] border border-border">
-                  <h3 className="mb-6">Weekly Progress Across All Games</h3>
+                  <h3 className="mb-6">Explorer Progress Across All Games</h3>
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={mockAnalytics}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
@@ -215,7 +215,7 @@ export default function PsychologistDashboard() {
             ) : (
               <div className="text-center py-20">
                 <BarChart3 className="w-20 h-20 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Select a patient from the Patient Registry to view analytics</p>
+                <p className="text-muted-foreground">Select an explorer from the Explorer Registry to view analytics</p>
               </div>
             )}
           </div>
@@ -226,15 +226,15 @@ export default function PsychologistDashboard() {
           <div>
             <h1 className="mb-8">Task Assignments</h1>
 
-            {selectedPatient ? (
+            {selectedExplorer ? (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2>Assign Tasks to {selectedPatient.name}</h2>
+                    <h2>Assign Tasks to {selectedExplorer.name}</h2>
                     <p className="text-muted-foreground">Select a game and level</p>
                   </div>
                   <button
-                    onClick={() => setSelectedPatient(null)}
+                    onClick={() => setSelectedExplorer(null)}
                     className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
                   >
                     Back to List
@@ -250,8 +250,8 @@ export default function PsychologistDashboard() {
                           onClick={() => setSelectedGame(selectedGame === game.id ? null : game.id)}
                           className="w-full p-6 hover:bg-secondary/50 hover:scale-105 active:scale-95 transition-all"
                         >
-                          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-3 mx-auto">
-                            <Icon className="w-10 h-10 text-primary" />
+                          <div className="w-16 h-16 rounded-2xl bg-[#FF6347]/10 flex items-center justify-center mb-3 mx-auto">
+                            <Icon className="w-10 h-10 text-[#FF6347]" />
                           </div>
                           <h3 className="text-lg">{game.name}</h3>
                         </button>
@@ -263,7 +263,7 @@ export default function PsychologistDashboard() {
                               {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => (
                                 <button
                                   key={level}
-                                  className="aspect-square rounded-[1rem] bg-primary text-primary-foreground hover:scale-110 active:scale-95 transition-all shadow-md"
+                                  className="aspect-square rounded-[1rem] bg-[#FF6347] text-white hover:scale-110 active:scale-95 transition-all shadow-md"
                                 >
                                   {level}
                                 </button>
@@ -279,19 +279,19 @@ export default function PsychologistDashboard() {
             ) : (
               <div className="text-center py-20">
                 <TrendingUp className="w-20 h-20 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Select a patient from the Patient Registry to assign tasks</p>
+                <p className="text-muted-foreground">Select an explorer from the Explorer Registry to assign tasks</p>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Create Patient Modal */}
+      {/* Create Explorer Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
           <div className="bg-card rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300">
             <div className="flex items-center justify-between mb-6">
-              <h2>Create New Patient</h2>
+              <h2>Create New Explorer</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300"
@@ -302,13 +302,13 @@ export default function PsychologistDashboard() {
 
             <div className="space-y-6">
               <div>
-                <label className="block mb-2">Patient Name</label>
+                <label className="block mb-2">Explorer Name</label>
                 <input
                   type="text"
-                  value={newPatientName}
-                  onChange={(e) => setNewPatientName(e.target.value)}
+                  value={newExplorerName}
+                  onChange={(e) => setNewExplorerName(e.target.value)}
                   placeholder="Enter full name"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
                 />
               </div>
 
@@ -316,18 +316,18 @@ export default function PsychologistDashboard() {
                 <label className="block mb-2">Age</label>
                 <input
                   type="number"
-                  value={newPatientAge}
-                  onChange={(e) => setNewPatientAge(e.target.value)}
+                  value={newExplorerAge}
+                  onChange={(e) => setNewExplorerAge(e.target.value)}
                   placeholder="Enter age"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
                 />
               </div>
 
               <button
-                onClick={handleCreatePatient}
-                className="w-full px-8 py-4 rounded-[2rem] bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300"
+                onClick={handleCreateExplorer}
+                className="w-full px-8 py-4 rounded-[2rem] bg-[#FF6347] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300"
               >
-                Generate Patient ID
+                Generate Explorer ID
               </button>
             </div>
           </div>

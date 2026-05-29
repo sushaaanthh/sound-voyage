@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import LandingPage from "./components/LandingPage";
 import PsychologistDashboard from "./components/PsychologistDashboard";
-import PatientDashboard from "./components/PatientDashboard";
+import ExplorerDashboard from "./components/ExplorerDashboard";
 import ParentDashboard from "./components/ParentDashboard";
 import GameScreen from "./components/GameScreen";
 import ResultScreen from "./components/ResultScreen";
@@ -16,11 +16,11 @@ export const router = createBrowserRouter([
     Component: PsychologistDashboard,
   },
   {
-    path: "/patient/:patientId",
-    Component: PatientDashboard,
+    path: "/explorer/:explorerId",
+    Component: ExplorerDashboard,
   },
   {
-    path: "/parent/:patientId",
+    path: "/parent/:explorerId",
     Component: ParentDashboard,
   },
   {

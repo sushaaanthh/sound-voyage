@@ -43,7 +43,7 @@ const psychologistNotes = [
 ];
 
 export default function ParentDashboard() {
-  const { patientId } = useParams();
+  const { explorerId } = useParams();
   const navigate = useNavigate();
 
   const totalMinutes = weeklyData.reduce((sum, day) => sum + day.minutes, 0);
@@ -57,7 +57,7 @@ export default function ParentDashboard() {
       <div className="bg-card border-b border-border px-8 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="mb-1">Hey {patientId}'s Parent</h1>
+            <h1 className="mb-1">Hey {explorerId}'s Parent</h1>
             <p className="text-muted-foreground">Observation Deck - View Only Access</p>
           </div>
 

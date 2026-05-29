@@ -50,12 +50,12 @@ const GAMES: Game[] = [
   },
 ];
 
-export default function PatientDashboard() {
-  const { patientId } = useParams();
+export default function ExplorerDashboard() {
+  const { explorerId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { progress, setPatient } = useGameSession();
+  const { progress, setExplorer } = useGameSession();
 
   const [selectedGame, setSelectedGame] = useState<string | null>(() => {
     return location.state?.selectedGame || null;
@@ -63,12 +63,12 @@ export default function PatientDashboard() {
 
   const [assignedLevels] = useState([1, 2, 3]);
 
-  // Set the active patient in context
+  // Set the active explorer in context
   useEffect(() => {
-    if (patientId) {
-      setPatient(patientId);
+    if (explorerId) {
+      setExplorer(explorerId);
     }
-  }, [patientId, setPatient]);
+  }, [explorerId, setExplorer]);
 
   // Pre-select game if returning from result screen
   useEffect(() => {

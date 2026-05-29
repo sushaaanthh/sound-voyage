@@ -2,8 +2,11 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { Target, Route, Shuffle, Eye, EyeOff, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { useGameSession } from '../context/GameSessionContext';
+import { supabase } from '../../lib/supabase';
+import { toast } from 'sonner';
 
-type Role = 'patient' | 'parent' | 'psychologist';
+type Role = 'explorer' | 'parent' | 'psychologist';
 
 const IMPACT_GUIDES = [
   {
@@ -24,23 +27,172 @@ const IMPACT_GUIDES = [
 ];
 
 export default function LandingPage() {
-  const [selectedRole, setSelectedRole] = useState<Role>('patient');
-  const [patientId, setPatientId] = useState('');
+  const [selectedRole, setSelectedRole] = useState<Role>('explorer');
+  const [explorerId, setExplorerId] = useState('');
   const [practitionerId, setPractitionerId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
+  
+  // Sign-Up states
+  const [signupName, setSignupName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupExplorerId, setSignupExplorerId] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+
   const navigate = useNavigate();
   const loginRef = useRef<HTMLDivElement>(null);
+  const { updateProgress } = useGameSession();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedRole === 'psychologist') {
       navigate('/psychologist');
-    } else if (selectedRole === 'patient') {
-      navigate(`/patient/${patientId || 'demo'}`);
-    } else {
-      navigate(`/parent/${patientId || 'demo'}`);
+      return;
+    }
+
+    try {
+      let emailToAuth = '';
+      let activeExplorerId = '';
+
+      if (explorerId.includes('@')) {
+        emailToAuth = explorerId;
+        const { data: explorerData } = await supabase
+          .from('explorers')
+          .select('id')
+          .eq('email', explorerId)
+          .single();
+        if (explorerData) {
+          activeExplorerId = explorerData.id;
+        }
+      } else {
+        activeExplorerId = explorerId;
+        const { data: explorerData, error: explorerError } = await supabase
+          .from('explorers')
+          .select('email')
+          .eq('id', explorerId)
+          .single();
+
+        if (explorerError || !explorerData) {
+          toast.error('Explorer ID not found. Please verify with your psychologist.');
+          return;
+        }
+        emailToAuth = explorerData.email;
+      }
+
+      // Authenticate via Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: emailToAuth,
+        password: password,
+      });
+
+      if (authError || !authData.user) {
+        toast.error(authError?.message || 'Login failed. Please check your credentials.');
+        return;
+      }
+
+      // Fetch dynamic historical progress
+      const { data: explorerProfile } = await supabase
+        .from('explorers')
+        .select('*')
+        .eq('auth_user_id', authData.user.id)
+        .single();
+
+      if (explorerProfile && explorerProfile.progress_data) {
+        try {
+          const parsedProgress = JSON.parse(explorerProfile.progress_data);
+          updateProgress(parsedProgress);
+        } catch (e) {
+          console.warn('Failed to parse progress_data', e);
+        }
+      }
+
+      toast.success('Successfully logged in');
+      
+      if (selectedRole === 'explorer') {
+        navigate(`/explorer/${activeExplorerId || 'demo'}`);
+      } else {
+        navigate(`/parent/${activeExplorerId || 'demo'}`);
+      }
+    } catch (err) {
+      console.error('Login error', err);
+      toast.error('An unexpected error occurred during login.');
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (selectedRole !== 'explorer') {
+      toast.error('Only Explorers can sign up directly.');
+      return;
+    }
+
+    if (!signupExplorerId) {
+      toast.error('Explorer ID is required.');
+      return;
+    }
+
+    try {
+      // 1. Verify Explorer ID exists in the database
+      const { data: explorerData, error: checkError } = await supabase
+        .from('explorers')
+        .select('*')
+        .eq('id', signupExplorerId)
+        .single();
+
+      if (checkError || !explorerData) {
+        toast.error('Invalid Explorer ID. Please request one from your psychologist.');
+        return;
+      }
+
+      if (explorerData.auth_user_id) {
+        toast.error('This Explorer ID has already been registered.');
+        return;
+      }
+
+      // 2. Sign Up in Supabase Auth
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: signupEmail,
+        password: signupPassword,
+        options: {
+          data: {
+            name: signupName,
+          }
+        }
+      });
+
+      if (signUpError || !signUpData.user) {
+        toast.error(signUpError?.message || 'Failed to create account.');
+        return;
+      }
+
+      // 3. Map auth.user.id to explorers row
+      const { error: updateError } = await supabase
+        .from('explorers')
+        .update({
+          auth_user_id: signUpData.user.id,
+          email: signupEmail,
+          name: signupName
+        })
+        .eq('id', signupExplorerId);
+
+      if (updateError) {
+        toast.error('Account created, but failed to link profile: ' + updateError.message);
+        return;
+      }
+
+      toast.success('Account successfully created. Please log in.');
+      setShowSignUp(false);
+      
+      // Clear fields
+      setSignupName('');
+      setSignupEmail('');
+      setSignupExplorerId('');
+      setSignupPassword('');
+    } catch (err) {
+      console.error('Sign-up error', err);
+      toast.error('An unexpected error occurred during registration.');
     }
   };
 
@@ -108,10 +260,10 @@ export default function LandingPage() {
                 className="absolute top-1.5 bottom-1.5 bg-primary rounded-[1.5rem] shadow-lg transition-all duration-300 ease-in-out"
                 style={{
                   width: 'calc(33.333% - 0.375rem)',
-                  left: selectedRole === 'patient' ? '0.375rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% - 0.125rem)',
+                  left: selectedRole === 'explorer' ? '0.375rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% - 0.125rem)',
                 }}
               />
-              {(['patient', 'parent', 'psychologist'] as Role[]).map((role) => (
+              {(['explorer', 'parent', 'psychologist'] as Role[]).map((role) => (
                 <button
                   key={role}
                   onClick={() => setSelectedRole(role)}
@@ -145,14 +297,14 @@ export default function LandingPage() {
               </div>
             ) : (
               <div className="text-left">
-                <label htmlFor="patientId" className="block mb-2 text-foreground">
-                  Patient ID
+                <label htmlFor="explorerId" className="block mb-2 text-foreground">
+                  Explorer ID
                 </label>
                 <input
-                  id="patientId"
+                  id="explorerId"
                   type="text"
-                  value={patientId}
-                  onChange={(e) => setPatientId(e.target.value)}
+                  value={explorerId}
+                  onChange={(e) => setExplorerId(e.target.value)}
                   placeholder="Enter your ID"
                   className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
@@ -254,7 +406,7 @@ export default function LandingPage() {
               </button>
             </div>
 
-            <form className="space-y-6">
+            <form onSubmit={handleSignUp} className="space-y-6">
               {/* Role Selection */}
               <div>
                 <label className="block mb-2 text-foreground">I am a...</label>
@@ -263,10 +415,10 @@ export default function LandingPage() {
                     className="absolute top-1.5 bottom-1.5 bg-primary rounded-[1.5rem] shadow-lg transition-all duration-300 ease-in-out"
                     style={{
                       width: 'calc(33.333% - 0.375rem)',
-                      left: selectedRole === 'patient' ? '0.375rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% - 0.125rem)',
+                      left: selectedRole === 'explorer' ? '0.375rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% - 0.125rem)',
                     }}
                   />
-                  {(['patient', 'parent', 'psychologist'] as Role[]).map((role) => (
+                  {(['explorer', 'parent', 'psychologist'] as Role[]).map((role) => (
                     <button
                       key={role}
                       type="button"
@@ -291,6 +443,9 @@ export default function LandingPage() {
                 <input
                   id="signup-name"
                   type="text"
+                  required
+                  value={signupName}
+                  onChange={(e) => setSignupName(e.target.value)}
                   placeholder="Enter your full name"
                   className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
@@ -304,33 +459,52 @@ export default function LandingPage() {
                 <input
                   id="signup-email"
                   type="email"
+                  required
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
                   placeholder="Enter your email"
                   className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
               </div>
 
               {/* ID Field (conditional) */}
-              {selectedRole === 'psychologist' ? (
+              {selectedRole === 'explorer' ? (
                 <div>
-                  <label htmlFor="signup-id" className="block mb-2 text-foreground">
+                  <label htmlFor="signup-explorer-id" className="block mb-2 text-foreground">
+                    Explorer ID
+                  </label>
+                  <input
+                    id="signup-explorer-id"
+                    type="text"
+                    required
+                    value={signupExplorerId}
+                    onChange={(e) => setSignupExplorerId(e.target.value)}
+                    placeholder="Enter Explorer ID (e.g. E001)"
+                    className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                  />
+                </div>
+              ) : selectedRole === 'psychologist' ? (
+                <div>
+                  <label htmlFor="signup-license" className="block mb-2 text-foreground">
                     Practitioner License Number
                   </label>
                   <input
-                    id="signup-id"
+                    id="signup-license"
                     type="text"
+                    required
                     placeholder="Enter your license number"
                     className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
                 </div>
               ) : selectedRole === 'parent' ? (
                 <div>
-                  <label htmlFor="signup-id" className="block mb-2 text-foreground">
-                    Child's Patient ID (if available)
+                  <label htmlFor="signup-child-id" className="block mb-2 text-foreground">
+                    Child's Explorer ID (if available)
                   </label>
                   <input
-                    id="signup-id"
+                    id="signup-child-id"
                     type="text"
-                    placeholder="Enter patient ID (optional)"
+                    placeholder="Enter Explorer ID (optional)"
                     className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
                 </div>
@@ -345,6 +519,9 @@ export default function LandingPage() {
                   <input
                     id="signup-password"
                     type={showPassword ? 'text' : 'password'}
+                    required
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
                     placeholder="Create a password"
                     className="w-full px-6 py-4 pr-14 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   />

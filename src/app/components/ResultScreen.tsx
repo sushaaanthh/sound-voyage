@@ -22,7 +22,7 @@ export default function ResultScreen() {
   const level = typeof state.level === 'number' ? state.level : 1;
 
   const accuracy = Math.round((score / totalQuestions) * 100);
-  const patientId = progress?.patientId || 'demo';
+  const explorerId = progress?.explorerId || 'demo';
 
   let title = '';
   let subtitle = '';
@@ -91,7 +91,7 @@ export default function ResultScreen() {
   }, [accuracy]);
 
   const handleContinue = () => {
-    navigate(`/patient/${patientId}`, {
+    navigate(`/explorer/${explorerId}`, {
       state: {
         selectedGame: gameId,
         completedLevel: level,
@@ -104,7 +104,7 @@ export default function ResultScreen() {
     <div className="min-h-screen bg-[#1D1C16] text-white flex items-center justify-center p-6 relative overflow-hidden">
       {/* Visual background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.15),transparent_60%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(255,99,71,0.155),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(255,99,71,0.15),transparent_50%)]" />
 
       <div className="absolute top-8 right-8 z-50">
         <ThemeToggle />
