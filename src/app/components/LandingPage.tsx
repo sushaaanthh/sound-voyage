@@ -5,6 +5,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
+import ForgotPasswordModal from './auth/ForgotPasswordModal';
 
 type Role = 'progressor' | 'parent' | 'practitioner';
 
@@ -33,6 +34,7 @@ export default function LandingPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   
   // Sign-Up states
   const [signupName, setSignupName] = useState('');
@@ -336,9 +338,13 @@ export default function LandingPage() {
                   )}
                 </button>
               </div>
-              <a href="#" className="text-sm text-primary hover:underline mt-2 inline-block transition-all">
-                Forgot your password?
-              </a>
+              <button
+                type="button"
+                onClick={() => setIsResetModalOpen(true)}
+                className="text-xs text-muted-foreground hover:text-[#FF6347] mt-2 inline-block transition-all"
+              >
+                Forgot Password?
+              </button>
             </div>
 
             <button
@@ -484,14 +490,14 @@ export default function LandingPage() {
                 </div>
               ) : selectedRole === 'practitioner' ? (
                 <div>
-                  <label htmlFor="signup-license" className="block mb-2 text-foreground">
-                    Practitioner License Number
+                  <label htmlFor="signup-practitioner-id" className="block mb-2 text-foreground">
+                    Practitioner ID
                   </label>
                   <input
-                    id="signup-license"
+                    id="signup-practitioner-id"
                     type="text"
                     required
-                    placeholder="Enter your license number"
+                    placeholder="Enter your Practitioner ID"
                     className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
                 </div>
@@ -560,6 +566,10 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+      <ForgotPasswordModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+      />
     </div>
   );
 }
