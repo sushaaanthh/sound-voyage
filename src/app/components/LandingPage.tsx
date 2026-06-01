@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Target, Route, Shuffle, Eye, EyeOff, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
@@ -41,10 +41,16 @@ export default function LandingPage() {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupProgressorId, setSignupProgressorId] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+  const [signupError, setSignupError] = useState('');
 
   const navigate = useNavigate();
   const loginRef = useRef<HTMLDivElement>(null);
   const { updateSession } = useGameSession();
+
+  // Clear signup error on role change
+  useEffect(() => {
+    setSignupError('');
+  }, [selectedRole]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,26 +136,36 @@ export default function LandingPage() {
     }
 
     if (!signupProgressorId) {
-      toast.error('Progressor ID is required.');
+      const errMsg = 'Progressor ID is required.';
+      setSignupError(errMsg);
+      toast.error(errMsg);
       return;
     }
 
     try {
-      // 1. Verify Progressor ID exists in the database
-      const { data: progressorData, error: checkError } = await supabase
-        .from('progressors')
-        .select('*')
-        .eq('id', signupProgressorId)
-        .single();
+      // 1. Verify Progressor ID exists in the database (bypass for DEV environments if it is email or 'DEV-1234')
+      const isDevFallback = import.meta.env.DEV && (signupProgressorId.includes('@') || signupProgressorId === 'DEV-1234');
+      
+      if (!isDevFallback) {
+        const { data, error: checkError } = await supabase
+          .from('progressors')
+          .select('*')
+          .eq('id', signupProgressorId)
+          .single();
 
-      if (checkError || !progressorData) {
-        toast.error('Invalid Progressor ID. Please request one from your practitioner.');
-        return;
-      }
+        if (checkError || !data) {
+          const errMsg = 'Invalid Progressor ID. Please request one from your practitioner.';
+          setSignupError(errMsg);
+          toast.error(errMsg);
+          return;
+        }
 
-      if (progressorData.auth_user_id) {
-        toast.error('This Progressor ID has already been registered.');
-        return;
+        if (data.auth_user_id) {
+          const errMsg = 'This Progressor ID has already been registered.';
+          setSignupError(errMsg);
+          toast.error(errMsg);
+          return;
+        }
       }
 
       // 2. Sign Up in Supabase Auth
@@ -169,22 +185,40 @@ export default function LandingPage() {
       }
 
       // 3. Map auth.user.id to progressors row
-      const { error: updateError } = await supabase
-        .from('progressors')
-        .update({
-          auth_user_id: signUpData.user.id,
-          email: signupEmail,
-          name: signupName
-        })
-        .eq('id', signupProgressorId);
+      if (isDevFallback) {
+        // Upsert the row so we have a progressor entry for local testing logins
+        const { error: upsertError } = await supabase
+          .from('progressors')
+          .upsert({
+            id: signupProgressorId,
+            auth_user_id: signUpData.user.id,
+            email: signupEmail,
+            name: signupName,
+            completed_levels: []
+          });
+        if (upsertError) {
+          toast.error('Account created, but failed to link profile: ' + upsertError.message);
+          return;
+        }
+      } else {
+        const { error: updateError } = await supabase
+          .from('progressors')
+          .update({
+            auth_user_id: signUpData.user.id,
+            email: signupEmail,
+            name: signupName
+          })
+          .eq('id', signupProgressorId);
 
-      if (updateError) {
-        toast.error('Account created, but failed to link profile: ' + updateError.message);
-        return;
+        if (updateError) {
+          toast.error('Account created, but failed to link profile: ' + updateError.message);
+          return;
+        }
       }
 
       toast.success('Account successfully created. Please log in.');
       setShowSignUp(false);
+      setSignupError('');
       
       // Clear fields
       setSignupName('');
@@ -358,7 +392,10 @@ export default function LandingPage() {
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => setShowSignUp(true)}
+                onClick={() => {
+                  setSignupError('');
+                  setShowSignUp(true);
+                }}
                 className="text-primary hover:underline transition-all"
               >
                 New User? Sign Up
@@ -483,10 +520,18 @@ export default function LandingPage() {
                     type="text"
                     required
                     value={signupProgressorId}
-                    onChange={(e) => setSignupProgressorId(e.target.value)}
+                    onChange={(e) => {
+                      setSignupProgressorId(e.target.value);
+                      if (signupError) setSignupError('');
+                    }}
                     placeholder="Enter Progressor ID (e.g. E001)"
-                    className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                    className={`w-full px-6 py-4 rounded-[1.5rem] bg-input-background border ${
+                      signupError ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary'
+                    } focus:outline-none focus:ring-2 transition-all`}
                   />
+                  {signupError && (
+                    <p className="text-red-500 text-xs mt-1 pl-2">{signupError}</p>
+                  )}
                 </div>
               ) : selectedRole === 'practitioner' ? (
                 <div>
