@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, Plus, X, TrendingUp, Home, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
+import { supabase } from '../../lib/supabase';
 
 interface Progressor {
   id: string;
@@ -46,19 +47,103 @@ export default function PractitionerDashboard() {
   const [newProgressorAge, setNewProgressorAge] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [progressors, setProgressors] = useState<Progressor[]>(mockProgressors);
   const navigate = useNavigate();
 
-  const filteredProgressors = mockProgressors.filter(e =>
+  // Setup dynamic loading of progressors
+  useEffect(() => {
+    const fetchProgressors = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('progressors')
+          .select('*')
+          .order('name');
+        
+        if (error) {
+          console.error('Error fetching progressors:', error.message);
+        } else if (data && data.length > 0) {
+          setProgressors(data.map(p => ({
+            id: p.id,
+            name: p.name || 'Unnamed Progressor',
+            age: p.age || 0,
+            lastSession: p.last_session || 'No sessions yet'
+          })));
+        }
+      } catch (err) {
+        console.error('Failed to load progressors:', err);
+      }
+    };
+    fetchProgressors();
+  }, []);
+
+  const filteredProgressors = progressors.filter(e =>
     e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     e.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCreateProgressor = () => {
-    const newId = `E${String(mockProgressors.length + 1).padStart(3, '0')}`;
-    alert(`New Progressor Created!\nProgressor ID: ${newId}\nName: ${newProgressorName}\nAge: ${newProgressorAge}`);
-    setShowCreateModal(false);
-    setNewProgressorName('');
-    setNewProgressorAge('');
+  const handleCreateProgressor = async () => {
+    const nextNum = progressors.length + 1;
+    const newId = `E${String(nextNum).padStart(3, '0')}`;
+
+    try {
+      // Get practitioner auth session
+      const { data: { user } } = await supabase.auth.getUser();
+      const practitionerId = user?.id || null;
+
+      // 1. Insert into progressor_ids table
+      const { error: idError } = await supabase
+        .from('progressor_ids')
+        .insert([
+          {
+            id: newId,
+            practitioner_id: practitionerId,
+            is_claimed: false,
+            assigned_email: null
+          }
+        ]);
+
+      if (idError) {
+        console.error('Error inserting progressor ID:', idError.message);
+        alert('Failed to generate Progressor ID: ' + idError.message);
+        return;
+      }
+
+      // 2. Insert into progressors profile table
+      const { error: profileError } = await supabase
+        .from('progressors')
+        .insert([
+          {
+            id: newId,
+            name: newProgressorName,
+            age: parseInt(newProgressorAge, 10) || 0,
+            completed_levels: []
+          }
+        ]);
+
+      if (profileError) {
+        console.error('Error creating progressor profile:', profileError.message);
+        alert('ID generated in progressor_ids, but profile creation failed: ' + profileError.message);
+        return;
+      }
+
+      // Update state list
+      const newProgressor: Progressor = {
+        id: newId,
+        name: newProgressorName,
+        age: parseInt(newProgressorAge, 10) || 0,
+        lastSession: 'No sessions yet'
+      };
+
+      setProgressors(prev => [...prev, newProgressor]);
+      alert(`New Progressor Created!\nProgressor ID: ${newId}\nName: ${newProgressorName}\nAge: ${newProgressorAge}`);
+    } catch (err) {
+      console.error('Failed to create progressor:', err);
+      alert('An unexpected error occurred during progressor creation.');
+    } finally {
+      setShowCreateModal(false);
+      setNewProgressorName('');
+      setNewProgressorAge('');
+    }
   };
 
   return (

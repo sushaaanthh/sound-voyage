@@ -143,25 +143,19 @@ export default function LandingPage() {
     }
 
     try {
-      // 1. Verify Progressor ID exists in the database (bypass for DEV environments if it is email or 'DEV-1234')
+      // 1. Verify Progressor ID exists and is unclaimed (bypass for DEV environments if it is email or 'DEV-1234')
       const isDevFallback = import.meta.env.DEV && (signupProgressorId.includes('@') || signupProgressorId === 'DEV-1234');
       
       if (!isDevFallback) {
-        const { data, error: checkError } = await supabase
-          .from('progressors')
+        const { data: claimData, error: claimError } = await supabase
+          .from('progressor_ids')
           .select('*')
           .eq('id', signupProgressorId)
+          .eq('is_claimed', false)
           .single();
 
-        if (checkError || !data) {
+        if (claimError || !claimData) {
           const errMsg = 'Invalid Progressor ID. Please request one from your practitioner.';
-          setSignupError(errMsg);
-          toast.error(errMsg);
-          return;
-        }
-
-        if (data.auth_user_id) {
-          const errMsg = 'This Progressor ID has already been registered.';
           setSignupError(errMsg);
           toast.error(errMsg);
           return;
@@ -184,7 +178,24 @@ export default function LandingPage() {
         return;
       }
 
-      // 3. Map auth.user.id to progressors row
+      // 3. Map auth.user.id and mark as claimed in progressor_ids
+      if (!isDevFallback) {
+        const { error: claimUpdateError } = await supabase
+          .from('progressor_ids')
+          .update({
+            is_claimed: true,
+            auth_user_id: signUpData.user.id
+          })
+          .eq('id', signupProgressorId);
+
+        if (claimUpdateError) {
+          console.error('Failed to claim ID in progressor_ids:', claimUpdateError.message);
+          toast.error('Account created, but failed to link ID registration: ' + claimUpdateError.message);
+          return;
+        }
+      }
+
+      // 4. Map auth.user.id to progressors profile row
       if (isDevFallback) {
         // Upsert the row so we have a progressor entry for local testing logins
         const { error: upsertError } = await supabase
