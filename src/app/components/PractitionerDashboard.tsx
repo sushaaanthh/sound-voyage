@@ -155,7 +155,7 @@ export default function PractitionerDashboard() {
         </div>
 
         <div className="mb-12">
-          <h2 className="mb-2 text-white" style={{ fontSize: '1.75rem' }}>Clinical Dashboard</h2>
+          <h2 className="mb-2 text-foreground" style={{ fontSize: '1.75rem' }}>Clinical Dashboard</h2>
           <p className="text-sm text-muted-foreground">Practitioner Portal</p>
         </div>
 
@@ -165,10 +165,10 @@ export default function PractitionerDashboard() {
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${
               activeView === 'progressors'
                 ? 'bg-primary text-primary-foreground shadow-lg font-bold'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent text-white'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent'
             }`}
           >
-            <Users className="w-5 h-5 text-white" />
+            <Users className="w-5 h-5" />
             Progressor Registry
           </button>
 
@@ -177,10 +177,10 @@ export default function PractitionerDashboard() {
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${
               activeView === 'analytics'
                 ? 'bg-primary text-primary-foreground shadow-lg font-bold'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent text-white'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent'
             }`}
           >
-            <BarChart3 className="w-5 h-5 text-white" />
+            <BarChart3 className="w-5 h-5" />
             Analytics
           </button>
 
@@ -189,17 +189,17 @@ export default function PractitionerDashboard() {
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${
               activeView === 'tasks'
                 ? 'bg-primary text-primary-foreground shadow-lg font-bold'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent text-white'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent'
             }`}
           >
-            <TrendingUp className="w-5 h-5 text-white" />
+            <TrendingUp className="w-5 h-5" />
             Task Assignments
           </button>
         </nav>
 
         <button
           onClick={() => navigate('/')}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] text-sidebar-foreground hover:bg-sidebar-accent hover:scale-105 active:scale-95 transition-all mt-auto absolute bottom-6 text-white"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] text-sidebar-foreground hover:bg-sidebar-accent hover:scale-105 active:scale-95 transition-all mt-auto absolute bottom-6"
         >
           <Home className="w-5 h-5" />
           Logout
@@ -212,7 +212,7 @@ export default function PractitionerDashboard() {
         {activeView === 'progressors' && (
           <div>
             <div className="flex items-center justify-between mb-8">
-              <h1 className="text-white">Progressor Registry</h1>
+              <h1 className="text-foreground">Progressor Registry</h1>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="flex items-center gap-2 px-6 py-3 rounded-[2rem] bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 font-bold"
@@ -230,7 +230,7 @@ export default function PractitionerDashboard() {
                 placeholder="Search progressors by name or ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-6 py-4 rounded-[2rem] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary text-white"
+                className="w-full pl-14 pr-6 py-4 rounded-[2rem] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground"
               />
             </div>
 
@@ -244,7 +244,7 @@ export default function PractitionerDashboard() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-white">{progressor.name}</h3>
+                      <h3 className="text-foreground">{progressor.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
                         ID: {progressor.id} • Age: {progressor.age} • Last Session: {progressor.lastSession}
                       </p>
@@ -262,25 +262,25 @@ export default function PractitionerDashboard() {
         {/* Analytics View */}
         {activeView === 'analytics' && (
           <div>
-            <h1 className="mb-8 text-white">Analytics Dashboard</h1>
+            <h1 className="mb-8 text-foreground">Analytics Dashboard</h1>
 
             {selectedProgressor ? (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-white">{selectedProgressor.name}</h2>
+                    <h2 className="text-foreground">{selectedProgressor.name}</h2>
                     <p className="text-muted-foreground">Progress Overview</p>
                   </div>
                   <button
                     onClick={() => setSelectedProgressor(null)}
-                    className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 text-white"
+                    className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 text-foreground border border-border"
                   >
                     Back to List
                   </button>
                 </div>
 
                 <div className="bg-card p-8 rounded-[2rem] border border-border">
-                  <h3 className="mb-6 text-white">Progressor Progress Across All Games</h3>
+                  <h3 className="mb-6 text-foreground">Progressor Progress Across All Games</h3>
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={mockAnalytics}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
@@ -309,18 +309,18 @@ export default function PractitionerDashboard() {
         {/* Task Assignment View */}
         {activeView === 'tasks' && (
           <div>
-            <h1 className="mb-8 text-white">Task Assignments</h1>
+            <h1 className="mb-8 text-foreground">Task Assignments</h1>
 
             {selectedProgressor ? (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-white">Assign Tasks to {selectedProgressor.name}</h2>
+                    <h2 className="text-foreground">Assign Tasks to {selectedProgressor.name}</h2>
                     <p className="text-muted-foreground">Select a game and level</p>
                   </div>
                   <button
                     onClick={() => setSelectedProgressor(null)}
-                    className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 text-white"
+                    className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 text-foreground border border-border"
                   >
                     Back to List
                   </button>
@@ -333,12 +333,12 @@ export default function PractitionerDashboard() {
                       <div key={game.id} className="bg-card rounded-[2rem] border border-border overflow-hidden">
                         <button
                           onClick={() => setSelectedGame(selectedGame === game.id ? null : game.id)}
-                          className="w-full p-6 hover:bg-secondary/50 hover:scale-105 active:scale-95 transition-all text-white"
+                          className="w-full p-6 hover:bg-secondary/50 hover:scale-105 active:scale-95 transition-all text-foreground"
                         >
                           <div className="w-16 h-16 rounded-2xl bg-[#FF6347]/10 flex items-center justify-center mb-3 mx-auto">
                             <Icon className="w-10 h-10 text-[#FF6347]" />
                           </div>
-                          <h3 className="text-lg text-white">{game.name}</h3>
+                          <h3 className="text-lg text-foreground">{game.name}</h3>
                         </button>
 
                         {selectedGame === game.id && (
@@ -376,10 +376,10 @@ export default function PractitionerDashboard() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
           <div className="bg-card rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300 border border-border">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-white">Create New Progressor</h2>
+              <h2 className="text-foreground">Create New Progressor</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 text-white"
+                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 text-foreground"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -387,24 +387,24 @@ export default function PractitionerDashboard() {
 
             <div className="space-y-6">
               <div>
-                <label className="block mb-2 text-white">Progressor Name</label>
+                <label className="block mb-2 text-foreground">Progressor Name</label>
                 <input
                   type="text"
                   value={newProgressorName}
                   onChange={(e) => setNewProgressorName(e.target.value)}
                   placeholder="Enter full name"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-white"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-foreground placeholder-muted-foreground"
                 />
               </div>
 
               <div>
-                <label className="block mb-2 text-white">Age</label>
+                <label className="block mb-2 text-foreground">Age</label>
                 <input
                   type="number"
                   value={newProgressorAge}
                   onChange={(e) => setNewProgressorAge(e.target.value)}
                   placeholder="Enter age"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-white"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-foreground placeholder-muted-foreground"
                 />
               </div>
 

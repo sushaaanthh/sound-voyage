@@ -97,12 +97,12 @@ export default function ProgressorDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#12110D] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="bg-[#1D1C16] border-b border-[#2C2B24] px-8 py-6">
+      <div className="bg-card border-b border-border px-8 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="mb-1 text-white">Ready for your Voyage?</h1>
+            <h1 className="mb-1 text-foreground">Ready for your Voyage?</h1>
             <p className="text-muted-foreground">Choose a game to start playing</p>
           </div>
 
@@ -111,9 +111,9 @@ export default function ProgressorDashboard() {
 
             <button
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-[#2C2B24] hover:bg-[#3E3C33] hover:scale-105 active:scale-95 transition-all border border-[#3E3C33] text-white font-bold"
+              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all border border-border text-foreground font-bold"
             >
-              <Home className="w-5 h-5 text-white" />
+              <Home className="w-5 h-5" />
               Home
             </button>
           </div>
@@ -130,7 +130,7 @@ export default function ProgressorDashboard() {
                 <button
                   key={game.id}
                   onClick={() => setSelectedGame(game.id)}
-                  className="group bg-[#1D1C16] rounded-[2rem] border border-[#2C2B24] p-8 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 text-left overflow-hidden relative animate-in fade-in slide-in-from-bottom-4"
+                  className="group bg-card rounded-[2rem] border border-border p-8 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 text-left overflow-hidden relative animate-in fade-in slide-in-from-bottom-4"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
@@ -138,7 +138,7 @@ export default function ProgressorDashboard() {
                     <div className="w-16 h-16 rounded-2xl bg-[#FF6347]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                       <Icon className="w-10 h-10 text-[#FF6347]" />
                     </div>
-                    <h2 className="mb-2 text-white">{game.name}</h2>
+                    <h2 className="mb-2 text-foreground">{game.name}</h2>
                     <p className="text-sm text-muted-foreground">{game.description}</p>
                   </div>
                 </button>
@@ -149,12 +149,12 @@ export default function ProgressorDashboard() {
           <div>
             <button
               onClick={() => setSelectedGame(null)}
-              className="mb-8 px-6 py-3 rounded-[1.5rem] bg-[#2C2B24] hover:bg-[#3E3C33] hover:scale-105 active:scale-95 transition-all duration-300 border border-[#3E3C33] text-white"
+              className="mb-8 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 border border-border text-foreground"
             >
               Back to Games
             </button>
 
-            <div className="bg-[#1D1C16] rounded-[2rem] border border-[#2C2B24] p-8">
+            <div className="bg-card rounded-[2rem] border border-border p-8">
               <div className="flex items-center gap-6 mb-8">
                 {(() => {
                   const game = GAMES.find((g) => g.id === selectedGame);
@@ -165,7 +165,7 @@ export default function ProgressorDashboard() {
                         {Icon && <Icon className="w-16 h-16 text-[#FF6347]" />}
                       </div>
                       <div>
-                        <h1 className="mb-2 text-white">{game?.name}</h1>
+                        <h1 className="mb-2 text-foreground">{game?.name}</h1>
                         <p className="text-muted-foreground">{game?.description}</p>
                       </div>
                     </>
@@ -173,7 +173,7 @@ export default function ProgressorDashboard() {
                 })()}
               </div>
 
-              <h3 className="mb-6 text-white">Select a Level</h3>
+              <h3 className="mb-6 text-foreground">Select a Level</h3>
               <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
                   const isAssigned = assignedLevels.includes(level);
@@ -190,7 +190,7 @@ export default function ProgressorDashboard() {
                           ? isCompleted
                             ? 'bg-[#FF6347]/20 border-[#FF6347] text-white hover:scale-110'
                             : 'bg-[#FF6347] text-white hover:scale-110 hover:shadow-2xl active:scale-95 border-[#FF6347]'
-                          : 'bg-[#2C2B24] border-[#3E3C33] text-muted-foreground cursor-not-allowed opacity-50'
+                          : 'bg-secondary border-border text-muted-foreground cursor-not-allowed opacity-50'
                       } ${isAssigned && isUnlocked ? 'ring-4 ring-[#FF6347]/50' : ''}`}
                     >
                       <div className="flex items-center justify-center gap-1.5">

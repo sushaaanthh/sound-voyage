@@ -182,12 +182,12 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    
+
     // Find Indian English voice
     const indianVoice = voices.find(
-      (voice) => 
-        voice.lang === 'en-IN' || 
-        voice.lang.startsWith('en-IN') || 
+      (voice) =>
+        voice.lang === 'en-IN' ||
+        voice.lang.startsWith('en-IN') ||
         voice.lang.replace('_', '-').includes('en-IN')
     );
 
@@ -256,7 +256,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
     } else {
       const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
       const formattedTime = formatTime(elapsedSeconds);
-      
+
       // Navigate to /result with final payload
       navigate('/result', {
         state: {
@@ -390,11 +390,10 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
             {levelStr !== '2' && (
               <button
                 onClick={playSound}
-                className={`mb-12 w-32 h-32 rounded-full text-white shadow-2xl transition-all duration-300 flex items-center justify-center ${
-                  isPlaying && playingWord === 'main'
-                    ? 'bg-[#FF6347]/80 scale-105 animate-pulse' 
+                className={`mb-12 w-32 h-32 rounded-full text-white shadow-2xl transition-all duration-300 flex items-center justify-center ${isPlaying && playingWord === 'main'
+                    ? 'bg-[#FF6347]/80 scale-105 animate-pulse'
                     : 'bg-[#FF6347] hover:scale-110 active:scale-95'
-                }`}
+                  }`}
               >
                 <Volume2 className="w-12 h-12 animate-in zoom-in" />
               </button>
@@ -418,11 +417,10 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
                   <div className="flex-1 p-8 rounded-[2rem] bg-[#2C2B24] border border-[#3E3C33] flex flex-col items-center justify-between shadow-md text-center transition-all hover:border-[#FF6347]/30 min-h-[220px]">
                     <button
                       onClick={() => playIndianAudio(currentQuestion.word1 || '', 'word1')}
-                      className={`mb-6 w-24 h-24 rounded-full text-white shadow-lg transition-all duration-300 flex items-center justify-center ${
-                        playingWord === 'word1'
+                      className={`mb-6 w-24 h-24 rounded-full text-white shadow-lg transition-all duration-300 flex items-center justify-center ${playingWord === 'word1'
                           ? 'bg-[#FF6347]/80 scale-105 animate-pulse'
                           : 'bg-[#FF6347] hover:scale-110 active:scale-95'
-                      }`}
+                        }`}
                     >
                       <Volume2 className="w-10 h-10 animate-in zoom-in" />
                     </button>
@@ -435,11 +433,10 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
                   <div className="flex-1 p-8 rounded-[2rem] bg-[#2C2B24] border border-[#3E3C33] flex flex-col items-center justify-between shadow-md text-center transition-all hover:border-[#FF6347]/30 min-h-[220px]">
                     <button
                       onClick={() => playIndianAudio(currentQuestion.word2 || '', 'word2')}
-                      className={`mb-6 w-24 h-24 rounded-full text-white shadow-lg transition-all duration-300 flex items-center justify-center ${
-                        playingWord === 'word2'
+                      className={`mb-6 w-24 h-24 rounded-full text-white shadow-lg transition-all duration-300 flex items-center justify-center ${playingWord === 'word2'
                           ? 'bg-[#FF6347]/80 scale-105 animate-pulse'
                           : 'bg-[#FF6347] hover:scale-110 active:scale-95'
-                      }`}
+                        }`}
                     >
                       <Volume2 className="w-10 h-10 animate-in zoom-in" />
                     </button>
@@ -454,8 +451,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
                   <button
                     onClick={() => handleBinaryAnswer('yes')}
                     disabled={selectedAnswer !== null}
-                    className={`flex-1 h-32 rounded-[2rem] border-2 text-2xl font-bold transition-all duration-300 flex items-center justify-center ${
-                      selectedAnswer === null
+                    className={`flex-1 h-32 rounded-[2rem] border-2 text-2xl font-bold transition-all duration-300 flex items-center justify-center ${selectedAnswer === null
                         ? 'border-[#2C2B24] bg-[#2C2B24] hover:border-green-500 hover:bg-green-500/10 hover:scale-105 active:scale-95 text-white'
                         : selectedAnswer === 'yes'
                           ? isCorrectBinary('yes')
@@ -464,15 +460,14 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
                           : isCorrectBinary('yes')
                             ? 'border-green-500 bg-green-500/15 text-green-400'
                             : 'border-[#2C2B24] bg-[#2C2B24] opacity-50 text-white'
-                    }`}
+                      }`}
                   >
                     YES
                   </button>
                   <button
                     onClick={() => handleBinaryAnswer('no')}
                     disabled={selectedAnswer !== null}
-                    className={`flex-1 h-32 rounded-[2rem] border-2 text-2xl font-bold transition-all duration-300 flex items-center justify-center ${
-                      selectedAnswer === null
+                    className={`flex-1 h-32 rounded-[2rem] border-2 text-2xl font-bold transition-all duration-300 flex items-center justify-center ${selectedAnswer === null
                         ? 'border-[#2C2B24] bg-[#2C2B24] hover:border-red-500 hover:bg-red-500/10 hover:scale-105 active:scale-95 text-white'
                         : selectedAnswer === 'no'
                           ? isCorrectBinary('no')
@@ -481,7 +476,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
                           : isCorrectBinary('no')
                             ? 'border-green-500 bg-green-500/15 text-green-400'
                             : 'border-[#2C2B24] bg-[#2C2B24] opacity-50 text-white'
-                    }`}
+                      }`}
                   >
                     NO
                   </button>
@@ -501,8 +496,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
                   <button
                     onClick={() => handleBinaryAnswer('yes')}
                     disabled={selectedAnswer !== null}
-                    className={`flex-1 h-32 rounded-[2rem] border-2 text-2xl font-bold transition-all duration-300 flex items-center justify-center ${
-                      selectedAnswer === null
+                    className={`flex-1 h-32 rounded-[2rem] border-2 text-2xl font-bold transition-all duration-300 flex items-center justify-center ${selectedAnswer === null
                         ? 'border-[#2C2B24] bg-[#2C2B24] hover:border-green-500 hover:bg-green-500/10 hover:scale-105 active:scale-95 text-white'
                         : selectedAnswer === 'yes'
                           ? isCorrectBinary('yes')
@@ -511,15 +505,14 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
                           : isCorrectBinary('yes')
                             ? 'border-green-500 bg-green-500/15 text-green-400'
                             : 'border-[#2C2B24] bg-[#2C2B24] opacity-50 text-white'
-                    }`}
+                      }`}
                   >
                     YES
                   </button>
                   <button
                     onClick={() => handleBinaryAnswer('no')}
                     disabled={selectedAnswer !== null}
-                    className={`flex-1 h-32 rounded-[2rem] border-2 text-2xl font-bold transition-all duration-300 flex items-center justify-center ${
-                      selectedAnswer === null
+                    className={`flex-1 h-32 rounded-[2rem] border-2 text-2xl font-bold transition-all duration-300 flex items-center justify-center ${selectedAnswer === null
                         ? 'border-[#2C2B24] bg-[#2C2B24] hover:border-red-500 hover:bg-red-500/10 hover:scale-105 active:scale-95 text-white'
                         : selectedAnswer === 'no'
                           ? isCorrectBinary('no')
@@ -528,7 +521,7 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
                           : isCorrectBinary('no')
                             ? 'border-green-500 bg-green-500/15 text-green-400'
                             : 'border-[#2C2B24] bg-[#2C2B24] opacity-50 text-white'
-                    }`}
+                      }`}
                   >
                     NO
                   </button>
@@ -560,11 +553,10 @@ export default function PhonemePop({ levelData }: PhonemePopProps) {
                       disabled={selectedAnswer !== null}
                       className={`p-8 rounded-[2rem] border-2 transition-all duration-300 flex flex-col items-center ${cardStyles}`}
                     >
-                      <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
-                        selectedAnswer !== null && option.isCorrect
+                      <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${selectedAnswer !== null && option.isCorrect
                           ? 'bg-green-500/20 text-green-400'
                           : 'bg-[#FF6347]/10 text-[#FF6347]'
-                      }`}>
+                        }`}>
                         <Icon className="w-12 h-12" />
                       </div>
                       <h3 className="font-bold text-center text-xl">{option.label}</h3>

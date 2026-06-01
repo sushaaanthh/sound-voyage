@@ -57,7 +57,7 @@ export default function ParentDashboard() {
       <div className="bg-card border-b border-border px-8 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="mb-1 text-white">Hey {progressorId}'s Parent</h1>
+            <h1 className="mb-1 text-foreground">Hey {progressorId}'s Parent</h1>
             <p className="text-muted-foreground">Observation Deck - View Only Access</p>
           </div>
 
@@ -66,7 +66,7 @@ export default function ParentDashboard() {
 
             <button
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all text-white border border-border"
+              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all text-foreground border border-border"
             >
               <Home className="w-5 h-5" />
               Home
@@ -87,7 +87,7 @@ export default function ParentDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Play Time</p>
-                <h2 className="text-white">{totalMinutes} mins</h2>
+                <h2 className="text-foreground">{totalMinutes} mins</h2>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">This week</p>
@@ -101,7 +101,7 @@ export default function ParentDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Top Game</p>
-                <h3 className="text-white">{topGame.game}</h3>
+                <h3 className="text-foreground">{topGame.game}</h3>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">{topGame.score}% accuracy</p>
@@ -115,7 +115,7 @@ export default function ParentDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Overall Progress</p>
-                <h2 className="text-white">Excellent</h2>
+                <h2 className="text-foreground">Excellent</h2>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">Above average</p>
@@ -126,7 +126,7 @@ export default function ParentDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Weekly Play Time Chart */}
           <div className="bg-card rounded-[2rem] border border-border p-8">
-            <h3 className="mb-6 text-white">Weekly Play Time</h3>
+            <h3 className="mb-6 text-foreground">Weekly Play Time</h3>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={weeklyData}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
@@ -140,7 +140,7 @@ export default function ParentDashboard() {
 
           {/* Game Performance Chart */}
           <div className="bg-card rounded-[2rem] border border-border p-8">
-            <h3 className="mb-6 text-white">Game Performance</h3>
+            <h3 className="mb-6 text-foreground">Game Performance</h3>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={gamePerformance} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
@@ -157,7 +157,7 @@ export default function ParentDashboard() {
         <div className="bg-card rounded-[2rem] border border-border p-8">
           <div className="flex items-center gap-3 mb-8">
             <MessageSquare className="w-6 h-6 text-primary" />
-            <h2 className="text-white">Practitioner Updates</h2>
+            <h2 className="text-foreground">Practitioner Updates</h2>
           </div>
 
           <div className="space-y-4">
@@ -166,8 +166,8 @@ export default function ParentDashboard() {
                 key={note.id}
                 className={`p-6 rounded-[1.5rem] border ${
                   note.type === 'positive'
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-white'
-                    : 'bg-secondary border-border text-white'
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-900 dark:text-green-200'
+                    : 'bg-secondary border-border text-foreground'
                 }`}
               >
                 <div className="flex items-start justify-between mb-3">
@@ -187,7 +187,7 @@ export default function ParentDashboard() {
         {/* Info Banner */}
         <div className="mt-12 p-6 rounded-[2rem] bg-primary/10 border border-primary/20 text-center">
           <MessageSquare className="w-8 h-8 mx-auto mb-3 text-primary" />
-          <h3 className="mb-2 text-white">View-Only Access</h3>
+          <h3 className="mb-2 text-foreground">View-Only Access</h3>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             As a parent, you have read-only access to monitor your child's progress. For task
             assignments or detailed analytics, please contact your assigned practitioner.

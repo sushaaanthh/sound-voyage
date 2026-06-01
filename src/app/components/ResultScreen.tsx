@@ -88,7 +88,7 @@ export default function ResultScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1D1C16] text-white flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6 relative overflow-hidden">
       {/* Visual background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.15),transparent_60%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(255,99,71,0.15),transparent_50%)]" />
@@ -98,40 +98,40 @@ export default function ResultScreen() {
       </div>
 
       <div className="relative z-10 max-w-2xl w-full animate-in fade-in zoom-in duration-500">
-        <div className="bg-[#2C2B24] border border-[#3E3C33] rounded-[2rem] shadow-2xl p-12 text-center">
-          <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-[#1D1C16] border border-[#3E3C33] mb-8 shadow-2xl animate-in zoom-in duration-700">
+        <div className="bg-card border border-border rounded-[2rem] shadow-2xl p-12 text-center">
+          <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-background border border-border mb-8 shadow-2xl animate-in zoom-in duration-700">
             <IconComponent className={`w-16 h-16 ${iconColorClass}`} />
           </div>
 
-          <h1 className="mb-4 text-white text-3xl font-bold">{title}</h1>
-          <p className="mb-12 opacity-80 text-white" style={{ fontSize: '1.25rem' }}>
+          <h1 className="mb-4 text-foreground text-3xl font-bold">{title}</h1>
+          <p className="mb-12 opacity-80 text-foreground" style={{ fontSize: '1.25rem' }}>
             {subtitle}
           </p>
 
           <div className="grid grid-cols-3 gap-6 mb-12">
-            <div className="p-6 rounded-[1.5rem] bg-[#1D1C16] border border-[#3E3C33] animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '200ms' }}>
+            <div className="p-6 rounded-[1.5rem] bg-background border border-border animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '200ms' }}>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Target className="w-5 h-5 text-[#FF6347]" />
               </div>
-              <p className="text-3xl mb-1 text-white font-extrabold">{accuracy}%</p>
+              <p className="text-3xl mb-1 text-foreground font-extrabold">{accuracy}%</p>
               <p className="text-sm text-muted-foreground">Accuracy</p>
             </div>
 
-            <div className="p-6 rounded-[1.5rem] bg-[#1D1C16] border border-[#3E3C33] animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '300ms' }}>
+            <div className="p-6 rounded-[1.5rem] bg-background border border-border animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '300ms' }}>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Trophy className="w-5 h-5 text-[#FF6347]" />
               </div>
-              <p className="text-3xl mb-1 text-white font-extrabold">
+              <p className="text-3xl mb-1 text-foreground font-extrabold">
                 {score}/{totalQuestions}
               </p>
               <p className="text-sm text-muted-foreground">Score</p>
             </div>
 
-            <div className="p-6 rounded-[1.5rem] bg-[#1D1C16] border border-[#3E3C33] animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '400ms' }}>
+            <div className="p-6 rounded-[1.5rem] bg-background border border-border animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '400ms' }}>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Clock className="w-5 h-5 text-[#FF6347]" />
               </div>
-              <p className="text-3xl mb-1 text-white font-extrabold">{timeTaken}</p>
+              <p className="text-3xl mb-1 text-foreground font-extrabold">{timeTaken}</p>
               <p className="text-sm text-muted-foreground">Time Taken</p>
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function ResultScreen() {
           <div className="flex gap-4">
             <button
               onClick={() => navigate(`/game/${gameId}/${level}`)}
-              className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-[2rem] border border-[#3E3C33] bg-[#1D1C16] hover:bg-[#2C2B24] hover:scale-105 active:scale-95 transition-all duration-300 text-white font-bold"
+              className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-[2rem] border border-border bg-background hover:bg-secondary hover:scale-105 active:scale-95 transition-all duration-300 text-foreground font-bold"
             >
               <RotateCcw className="w-5 h-5 text-[#FF6347]" />
               Try Again

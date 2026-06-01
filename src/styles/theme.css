@@ -18,9 +18,9 @@
   --accent-foreground: #ffffff;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
+  --border: rgba(0, 0, 0, 0.25);
   --input: transparent;
-  --input-background: #f8f8f8;
+  --input-background: #f0f2f5;
   --switch-background: #cbced4;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -37,7 +37,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f5f5f5;
   --sidebar-accent-foreground: #1a1a1a;
-  --sidebar-border: rgba(0, 0, 0, 0.1);
+  --sidebar-border: rgba(0, 0, 0, 0.15);
   --sidebar-ring: #FF6347;
 }
 
@@ -58,8 +58,9 @@
   --accent-foreground: #ffffff;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.15);
   --input: rgba(255, 255, 255, 0.1);
+  --input-background: #14130f;
   --ring: #FF6347;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -74,7 +75,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #3a3932;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-border: rgba(255, 255, 255, 0.15);
   --sidebar-ring: #FF6347;
 }
 
