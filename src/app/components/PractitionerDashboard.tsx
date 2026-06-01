@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, Plus, X, TrendingUp, Home, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon } from 'lucide-react';
+import { Search, Plus, X, Trash2, History, ShieldAlert, Eye, TrendingUp, Home, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 import { supabase } from '../../lib/supabase';
@@ -10,6 +10,17 @@ interface Progressor {
   name: string;
   age: number;
   lastSession: string;
+  assignedEmail?: string;
+}
+
+interface GameSession {
+  id: string;
+  game_id: string;
+  level: number;
+  score: number;
+  accuracy: number;
+  time_taken: string;
+  created_at: string;
 }
 
 interface Game {
@@ -45,9 +56,20 @@ export default function PractitionerDashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newProgressorName, setNewProgressorName] = useState('');
   const [newProgressorAge, setNewProgressorAge] = useState('');
+  const [newProgressorEmail, setNewProgressorEmail] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [progressors, setProgressors] = useState<Progressor[]>(mockProgressors);
+
+  // Deletion modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [progressorToDelete, setProgressorToDelete] = useState<Progressor | null>(null);
+
+  // View details modal state
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedDetailsProgressor, setSelectedDetailsProgressor] = useState<Progressor | null>(null);
+  const [sessions, setSessions] = useState<GameSession[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
   const navigate = useNavigate();
 
   // Setup dynamic loading of progressors
@@ -66,6 +88,7 @@ export default function PractitionerDashboard() {
             id: p.id,
             name: p.name || 'Unnamed Progressor',
             age: p.age || 0,
+            assignedEmail: p.assigned_email || '',
             lastSession: p.last_session || 'No sessions yet'
           })));
         }
@@ -98,7 +121,7 @@ export default function PractitionerDashboard() {
             id: newId,
             practitioner_id: practitionerId,
             is_claimed: false,
-            assigned_email: null
+            assigned_email: newProgressorEmail || null
           }
         ]);
 
@@ -116,7 +139,8 @@ export default function PractitionerDashboard() {
             id: newId,
             name: newProgressorName,
             age: parseInt(newProgressorAge, 10) || 0,
-            completed_levels: []
+            completed_levels: [],
+            assigned_email: newProgressorEmail || null
           }
         ]);
 
@@ -131,6 +155,7 @@ export default function PractitionerDashboard() {
         id: newId,
         name: newProgressorName,
         age: parseInt(newProgressorAge, 10) || 0,
+        assignedEmail: newProgressorEmail || '',
         lastSession: 'No sessions yet'
       };
 
@@ -143,6 +168,69 @@ export default function PractitionerDashboard() {
       setShowCreateModal(false);
       setNewProgressorName('');
       setNewProgressorAge('');
+      setNewProgressorEmail('');
+    }
+  };
+
+  // Fetch game sessions for details modal
+  const fetchGameSessions = async (progressorId: string) => {
+    setLoadingSessions(true);
+    try {
+      const { data, error } = await supabase
+        .from('game_sessions')
+        .select('*')
+        .eq('progressor_id', progressorId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching game sessions:', error.message);
+      } else {
+        setSessions(data || []);
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching sessions:', err);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  const handleOpenDetails = (progressor: Progressor) => {
+    setSelectedDetailsProgressor(progressor);
+    setShowDetailsModal(true);
+    fetchGameSessions(progressor.id);
+  };
+
+  // Delete Progressor logic
+  const handleDeleteProgressor = async () => {
+    if (!progressorToDelete) return;
+    try {
+      // 1. Delete from progressors profile table
+      const { error: profileError } = await supabase
+        .from('progressors')
+        .delete()
+        .eq('id', progressorToDelete.id);
+
+      if (profileError) {
+        console.error('Error deleting progressor profile:', profileError.message);
+      }
+
+      // 2. Delete from progressor_ids table
+      const { error: idError } = await supabase
+        .from('progressor_ids')
+        .delete()
+        .eq('id', progressorToDelete.id);
+
+      if (idError) {
+        console.error('Error deleting progressor ID:', idError.message);
+      }
+
+      setProgressors(prev => prev.filter(p => p.id !== progressorToDelete.id));
+      alert(`Progressor ${progressorToDelete.name} has been deleted successfully.`);
+    } catch (err) {
+      console.error('Failed to delete progressor:', err);
+    } finally {
+      setShowDeleteModal(false);
+      setProgressorToDelete(null);
     }
   };
 
@@ -230,7 +318,7 @@ export default function PractitionerDashboard() {
                 placeholder="Search progressors by name or ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-6 py-4 rounded-[2rem] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground"
+                className="w-full pl-14 pr-6 py-4 rounded-[2rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-primary text-[#24292E] placeholder-muted-foreground"
               />
             </div>
 
@@ -249,8 +337,28 @@ export default function PractitionerDashboard() {
                         ID: {progressor.id} • Age: {progressor.age} • Last Session: {progressor.lastSession}
                       </p>
                     </div>
-                    <div className="px-4 py-2 rounded-[1rem] bg-primary/10 text-primary font-bold">
-                      View Details
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDetails(progressor);
+                        }}
+                        className="px-4 py-2 rounded-[1rem] bg-primary/10 text-primary hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 font-bold font-sans"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProgressorToDelete(progressor);
+                          setShowDeleteModal(true);
+                        }}
+                        className="p-2.5 rounded-[1rem] bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:scale-105 active:scale-95 transition-all duration-300"
+                        title="Delete Progressor ID"
+                      >
+                        <Trash2 size={18} />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -376,7 +484,7 @@ export default function PractitionerDashboard() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
           <div className="bg-card rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300 border border-border">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-foreground">Create New Progressor</h2>
+              <h2 className="text-foreground font-sans font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>Create New Progressor</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 text-foreground"
@@ -387,33 +495,197 @@ export default function PractitionerDashboard() {
 
             <div className="space-y-6">
               <div>
-                <label className="block mb-2 text-foreground">Progressor Name</label>
+                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Progressor Name</label>
                 <input
                   type="text"
                   value={newProgressorName}
                   onChange={(e) => setNewProgressorName(e.target.value)}
                   placeholder="Enter full name"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-foreground placeholder-muted-foreground"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6B4A] text-[#24292E] placeholder-muted-foreground"
                 />
               </div>
 
               <div>
-                <label className="block mb-2 text-foreground">Age</label>
+                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Age</label>
                 <input
                   type="number"
                   value={newProgressorAge}
                   onChange={(e) => setNewProgressorAge(e.target.value)}
                   placeholder="Enter age"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-foreground placeholder-muted-foreground"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6B4A] text-[#24292E] placeholder-muted-foreground"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Assigned Email</label>
+                <input
+                  type="email"
+                  value={newProgressorEmail}
+                  onChange={(e) => setNewProgressorEmail(e.target.value)}
+                  placeholder="Enter email address"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6B4A] text-[#24292E] placeholder-muted-foreground"
                 />
               </div>
 
               <button
                 onClick={handleCreateProgressor}
-                className="w-full px-8 py-4 rounded-[2rem] bg-[#FF6347] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 font-bold"
+                className="w-full px-8 py-4 rounded-[2rem] bg-[#FF6B4A] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 font-bold font-sans"
+                style={{ fontFamily: "'Inter', sans-serif" }}
               >
                 Generate Progressor ID
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && progressorToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
+          <div className="bg-card rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300 border border-border">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-foreground font-sans font-semibold text-xl" style={{ fontFamily: "'Inter', sans-serif" }}>
+                Confirm Deletion
+              </h2>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setProgressorToDelete(null);
+                }}
+                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="text-center py-2">
+                <ShieldAlert className="w-16 h-16 mx-auto mb-4 text-[#FF6B4A]" />
+                <p className="text-foreground font-sans leading-relaxed text-base" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  Are you sure you want to delete this Progressor ID? This action cannot be undone.
+                </p>
+                <p className="text-sm text-muted-foreground font-mono mt-2" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                  ID: {progressorToDelete.id} • {progressorToDelete.name}
+                </p>
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={handleDeleteProgressor}
+                  className="flex-1 px-6 py-3.5 rounded-[1.5rem] bg-[#FF6B4A] text-white hover:scale-105 active:scale-95 transition-all duration-300 font-bold font-sans"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  Yes, Delete
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setProgressorToDelete(null);
+                  }}
+                  className="flex-1 px-6 py-3.5 rounded-[1.5rem] bg-secondary hover:bg-muted text-foreground border border-border hover:scale-105 active:scale-95 transition-all duration-300 font-sans"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Details Modal */}
+      {showDetailsModal && selectedDetailsProgressor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
+          <div className="bg-card rounded-[2rem] p-8 max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in duration-300 border border-border overflow-hidden">
+            <div className="flex items-center justify-between mb-6 flex-shrink-0">
+              <div>
+                <h2 className="text-2xl font-semibold text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  Session History: {selectedDetailsProgressor.name}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                  Progressor ID: {selectedDetailsProgressor.id}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedDetailsProgressor(null);
+                  setSessions([]);
+                }}
+                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable table container with explicit padding boundaries */}
+            <div className="flex-1 overflow-y-auto pr-2 min-h-0">
+              {loadingSessions ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FF6B4A] mb-4"></div>
+                  <p className="text-muted-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Loading session history...</p>
+                </div>
+              ) : sessions.length === 0 ? (
+                <div className="text-center py-20">
+                  <History className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>No session records found for this progressor.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-border rounded-xl">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-secondary/50">
+                      <tr>
+                        <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          Game ID
+                        </th>
+                        <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          Game Level
+                        </th>
+                        <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          Score achieved
+                        </th>
+                        <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          Accuracy percentage
+                        </th>
+                        <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          Session Time
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border bg-card">
+                      {sessions.map((session) => (
+                        <tr key={session.id} className="hover:bg-secondary/30 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            {session.game_id === 'phoneme-pop' ? 'Phoneme Pop' : 
+                             session.game_id === 'position-pilot' ? 'Position Pilot' :
+                             session.game_id === 'sound-trail' ? 'Sound Trail' :
+                             session.game_id === 'sound-synk' ? 'Sound Synk' :
+                             session.game_id === 'sound-sorter' ? 'Sound Sorter' : session.game_id}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                            Level {session.level}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                            {session.score}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                            {session.accuracy}%
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                            {new Date(session.created_at).toLocaleString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>

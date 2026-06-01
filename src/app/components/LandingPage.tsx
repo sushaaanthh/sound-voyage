@@ -68,7 +68,7 @@ export default function LandingPage() {
         const { data: progressorData } = await supabase
           .from('progressors')
           .select('id')
-          .eq('email', progressorId)
+          .eq('assigned_email', progressorId)
           .single();
         if (progressorData) {
           activeProgressorId = progressorData.id;
@@ -77,7 +77,7 @@ export default function LandingPage() {
         activeProgressorId = progressorId;
         const { data: progressorData, error: progressorError } = await supabase
           .from('progressors')
-          .select('email')
+          .select('assigned_email')
           .eq('id', progressorId)
           .single();
 
@@ -85,7 +85,7 @@ export default function LandingPage() {
           toast.error('Progressor ID not found. Please verify with your practitioner.');
           return;
         }
-        emailToAuth = progressorData.email;
+        emailToAuth = progressorData.assigned_email;
       }
 
       // Authenticate via Supabase Auth
@@ -203,7 +203,7 @@ export default function LandingPage() {
           .upsert({
             id: signupProgressorId,
             auth_user_id: signUpData.user.id,
-            email: signupEmail,
+            assigned_email: signupEmail,
             name: signupName,
             completed_levels: []
           });
@@ -216,7 +216,7 @@ export default function LandingPage() {
           .from('progressors')
           .update({
             auth_user_id: signUpData.user.id,
-            email: signupEmail,
+            assigned_email: signupEmail,
             name: signupName
           })
           .eq('id', signupProgressorId);
@@ -338,7 +338,7 @@ export default function LandingPage() {
                   value={practitionerId}
                   onChange={(e) => setPractitionerId(e.target.value)}
                   placeholder="Enter your practitioner ID"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border text-[#24292E] placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
               </div>
             ) : (
@@ -352,7 +352,7 @@ export default function LandingPage() {
                   value={progressorId}
                   onChange={(e) => setProgressorId(e.target.value)}
                   placeholder="Enter your ID"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border text-[#24292E] placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
               </div>
             )}
@@ -368,7 +368,7 @@ export default function LandingPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full px-6 py-4 pr-14 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                  className="w-full px-6 py-4 pr-14 rounded-[1.5rem] bg-[#F2F5F3] border border-border text-[#24292E] placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
                 <button
                   type="button"
@@ -500,7 +500,7 @@ export default function LandingPage() {
                   value={signupName}
                   onChange={(e) => setSignupName(e.target.value)}
                   placeholder="Enter your full name"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border text-[#24292E] placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
               </div>
 
@@ -516,7 +516,7 @@ export default function LandingPage() {
                   value={signupEmail}
                   onChange={(e) => setSignupEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border text-[#24292E] placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
               </div>
 
@@ -536,9 +536,9 @@ export default function LandingPage() {
                       if (signupError) setSignupError('');
                     }}
                     placeholder="Enter Progressor ID (e.g. E001)"
-                    className={`w-full px-6 py-4 rounded-[1.5rem] bg-input-background border ${
+                    className={`w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border ${
                       signupError ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary'
-                    } text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all`}
+                    } text-[#24292E] placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all`}
                   />
                   {signupError && (
                     <p className="text-red-500 text-xs mt-1 pl-2">{signupError}</p>
@@ -554,7 +554,7 @@ export default function LandingPage() {
                     type="text"
                     required
                     placeholder="Enter your Practitioner ID"
-                    className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                    className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border text-[#24292E] placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
                 </div>
               ) : selectedRole === 'parent' ? (
@@ -566,7 +566,7 @@ export default function LandingPage() {
                     id="signup-child-id"
                     type="text"
                     placeholder="Enter Progressor ID (optional)"
-                    className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                    className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border text-[#24292E] placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
                 </div>
               ) : null}
@@ -584,7 +584,7 @@ export default function LandingPage() {
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
                     placeholder="Create a password"
-                    className="w-full px-6 py-4 pr-14 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                    className="w-full px-6 py-4 pr-14 rounded-[1.5rem] bg-[#F2F5F3] border border-border text-[#24292E] placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
                   <button
                     type="button"
