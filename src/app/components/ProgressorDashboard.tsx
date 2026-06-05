@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
-import { Home, Lock, Target, Map, Route, Shuffle, PackageSearch, LucideIcon } from 'lucide-react';
+import { Home, Lock, Target, Map, Route, Shuffle, PackageSearch, LucideIcon, Bell } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
 
@@ -63,6 +63,31 @@ export default function ProgressorDashboard() {
 
   const [assignedLevels] = useState([1, 2, 3]);
 
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: "Dr. Akhila assigned: Phoneme Pop Level 4", read: false },
+    { id: 2, text: "Dr. Akhila assigned: Phoneme Pop Level 2", read: false },
+    { id: 3, text: "Dr. Akhila assigned: Sound Synk Level 1", read: true },
+  ]);
+
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  const hasUnread = notifications.some(n => !n.read);
+
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Set the active progressor in context
   useEffect(() => {
     if (progressorId) {
@@ -82,18 +107,8 @@ export default function ProgressorDashboard() {
   };
 
   const isLevelUnlocked = (levelNum: number) => {
-    if (levelNum > 3) return false;
     if (levelNum === 1) return true;
-
-    // Evaluate the completedLevels array.
-    // If Level 1 is NOT passed, Level 2 and Level 3 must be locked.
-    if (levelNum === 2) {
-      return completedLevels.includes(1);
-    }
-    if (levelNum === 3) {
-      return completedLevels.includes(1) && completedLevels.includes(2);
-    }
-    return false;
+    return completedLevels.includes(levelNum - 1);
   };
 
   return (
@@ -108,6 +123,44 @@ export default function ProgressorDashboard() {
 
           <div className="flex items-center gap-4">
             <ThemeToggle />
+
+            <div className="relative" ref={popoverRef}>
+              <button
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  markAllRead();
+                }}
+                className="p-4 rounded-[2rem] bg-card shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 border border-border relative flex items-center justify-center text-foreground"
+                aria-label="Notifications"
+              >
+                <Bell className="w-6 h-6" />
+                {hasUnread && (
+                  <span className="absolute top-2 right-2 w-3.5 h-3.5 bg-[#FF6347] rounded-full ring-2 ring-card" />
+                )}
+              </button>
+
+              {showNotifications && (
+                <div className="absolute right-0 mt-3 w-80 bg-card border border-border rounded-[2rem] shadow-2xl p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
+                    <h3 className="text-foreground font-bold">Practitioner Assignments</h3>
+                  </div>
+                  <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                    {notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        className={`p-3 rounded-[1.25rem] text-sm transition-colors border ${
+                          notif.read
+                            ? 'bg-secondary/40 border-transparent text-muted-foreground'
+                            : 'bg-primary/10 border-primary/20 text-foreground font-medium'
+                        }`}
+                      >
+                        {notif.text}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             <button
               onClick={() => navigate('/')}
@@ -135,8 +188,8 @@ export default function ProgressorDashboard() {
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
                   <div className="relative z-10">
-                    <div className="w-16 h-16 rounded-2xl bg-[#FF6347]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <Icon className="w-10 h-10 text-[#FF6347]" />
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Icon className="w-10 h-10 text-primary" />
                     </div>
                     <h2 className="mb-2 text-foreground">{game.name}</h2>
                     <p className="text-sm text-muted-foreground">{game.description}</p>
@@ -161,8 +214,8 @@ export default function ProgressorDashboard() {
                   const Icon = game?.icon;
                   return (
                     <>
-                      <div className="w-24 h-24 rounded-3xl bg-[#FF6347]/10 flex items-center justify-center">
-                        {Icon && <Icon className="w-16 h-16 text-[#FF6347]" />}
+                      <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center">
+                        {Icon && <Icon className="w-16 h-16 text-primary" />}
                       </div>
                       <div>
                         <h1 className="mb-2 text-foreground">{game?.name}</h1>
@@ -188,26 +241,26 @@ export default function ProgressorDashboard() {
                       className={`aspect-square rounded-[1.5rem] transition-all duration-300 shadow-lg relative flex flex-col items-center justify-center p-2 border ${
                         isUnlocked
                           ? isCompleted
-                            ? 'bg-[#FF6347]/20 border-[#FF6347] text-white hover:scale-110'
-                            : 'bg-[#FF6347] text-white hover:scale-110 hover:shadow-2xl active:scale-95 border-[#FF6347]'
+                            ? 'bg-primary/20 border-primary text-primary hover:scale-110'
+                            : 'bg-primary text-primary-foreground hover:scale-110 hover:shadow-2xl active:scale-95 border-primary'
                           : 'bg-secondary border-border text-muted-foreground cursor-not-allowed opacity-50'
-                      } ${isAssigned && isUnlocked ? 'ring-4 ring-[#FF6347]/50' : ''}`}
+                      } ${isAssigned && isUnlocked ? 'ring-4 ring-primary/50' : ''}`}
                     >
                       <div className="flex items-center justify-center gap-1.5">
                         <span className="text-2xl font-bold">{level}</span>
                         {!isUnlocked && <Lock className="w-4 h-4 text-muted-foreground" />}
                       </div>
                       {isCompleted && (
-                        <span className="text-[10px] text-[#FF6347] font-semibold mt-1">Done</span>
+                        <span className="text-[10px] text-primary font-semibold mt-1">Done</span>
                       )}
                     </button>
                   );
                 })}
               </div>
 
-              <div className="mt-8 p-6 rounded-[1.5rem] bg-[#FF6347]/10 border border-[#FF6347]/20 flex items-center gap-2">
-                <Target className="w-5 h-5 text-[#FF6347]" />
-                <p className="text-sm text-[#FF6347]">
+              <div className="mt-8 p-6 rounded-[1.5rem] bg-primary/10 border border-primary/20 flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary" />
+                <p className="text-sm text-primary">
                   Tip: Levels with a ring around them are assigned by your practitioner!
                 </p>
               </div>

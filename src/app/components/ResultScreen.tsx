@@ -22,6 +22,7 @@ export default function ResultScreen() {
   const progressorId = typeof state.progressorId === 'string' ? state.progressorId : 'demo';
 
   const accuracy = Math.round((score / totalQuestions) * 100);
+  const missedWords = Array.isArray(state.missedWords) ? state.missedWords : [];
 
   let title = '';
   let subtitle = '';
@@ -84,7 +85,9 @@ export default function ResultScreen() {
   }, [accuracy]);
 
   const handleContinue = () => {
-    navigate(`/progressor/${progressorId}`);
+    navigate(`/progressor/${progressorId}`, {
+      state: { selectedGame: gameId }
+    });
   };
 
   return (
@@ -138,7 +141,17 @@ export default function ResultScreen() {
 
           <div className="flex gap-4">
             <button
-              onClick={() => navigate(`/game/${gameId}/${level}`)}
+              onClick={() => {
+                if (accuracy >= 60) {
+                  navigate(`/progressor/${progressorId}`, {
+                    state: { selectedGame: gameId }
+                  });
+                } else {
+                  navigate(`/game/${gameId}/${level}`, {
+                    state: { missedWords }
+                  });
+                }
+              }}
               className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-[2rem] border border-border bg-background hover:bg-secondary hover:scale-105 active:scale-95 transition-all duration-300 text-foreground font-bold"
             >
               <RotateCcw className="w-5 h-5 text-[#FF6347]" />

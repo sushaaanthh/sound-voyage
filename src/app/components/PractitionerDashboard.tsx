@@ -325,7 +325,7 @@ export default function PractitionerDashboard() {
                 placeholder="Search progressors by name or ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-6 py-4 rounded-[2rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-primary text-[#24292E] placeholder-muted-foreground"
+                className="w-full pl-14 pr-6 py-4 rounded-[2rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground"
               />
             </div>
 
@@ -508,7 +508,7 @@ export default function PractitionerDashboard() {
                   value={newProgressorName}
                   onChange={(e) => setNewProgressorName(e.target.value)}
                   placeholder="Enter full name"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6B4A] text-[#24292E] placeholder-muted-foreground"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground"
                 />
               </div>
 
@@ -519,7 +519,7 @@ export default function PractitionerDashboard() {
                   value={newProgressorAge}
                   onChange={(e) => setNewProgressorAge(e.target.value)}
                   placeholder="Enter age"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6B4A] text-[#24292E] placeholder-muted-foreground"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground"
                 />
               </div>
 
@@ -530,7 +530,7 @@ export default function PractitionerDashboard() {
                   value={newProgressorEmail}
                   onChange={(e) => setNewProgressorEmail(e.target.value)}
                   placeholder="Enter email address"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6B4A] text-[#24292E] placeholder-muted-foreground"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground"
                 />
               </div>
 
@@ -541,7 +541,7 @@ export default function PractitionerDashboard() {
                   value={parentName}
                   onChange={(e) => setParentName(e.target.value)}
                   placeholder="Suresh S Sapare"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6B4A] text-[#24292E] placeholder-muted-foreground"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground"
                 />
               </div>
 
