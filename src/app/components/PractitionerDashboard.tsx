@@ -11,6 +11,7 @@ interface Progressor {
   age: number;
   lastSession: string;
   assignedEmail?: string;
+  parentName?: string;
 }
 
 interface GameSession {
@@ -57,6 +58,7 @@ export default function PractitionerDashboard() {
   const [newProgressorName, setNewProgressorName] = useState('');
   const [newProgressorAge, setNewProgressorAge] = useState('');
   const [newProgressorEmail, setNewProgressorEmail] = useState('');
+  const [parentName, setParentName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [progressors, setProgressors] = useState<Progressor[]>(mockProgressors);
@@ -89,6 +91,7 @@ export default function PractitionerDashboard() {
             name: p.name || 'Unnamed Progressor',
             age: p.age || 0,
             assignedEmail: p.assigned_email || '',
+            parentName: p.parent_name || '',
             lastSession: p.last_session || 'No sessions yet'
           })));
         }
@@ -107,6 +110,7 @@ export default function PractitionerDashboard() {
   const handleCreateProgressor = async () => {
     const nextNum = progressors.length + 1;
     const newId = `E${String(nextNum).padStart(3, '0')}`;
+    const assignedEmail = newProgressorEmail;
 
     try {
       // Get practitioner auth session
@@ -121,7 +125,7 @@ export default function PractitionerDashboard() {
             id: newId,
             practitioner_id: practitionerId,
             is_claimed: false,
-            assigned_email: newProgressorEmail || null
+            assigned_email: assignedEmail || null
           }
         ]);
 
@@ -140,7 +144,8 @@ export default function PractitionerDashboard() {
             name: newProgressorName,
             age: parseInt(newProgressorAge, 10) || 0,
             completed_levels: [],
-            assigned_email: newProgressorEmail || null
+            assigned_email: assignedEmail || null,
+            parent_name: parentName || null
           }
         ]);
 
@@ -155,7 +160,8 @@ export default function PractitionerDashboard() {
         id: newId,
         name: newProgressorName,
         age: parseInt(newProgressorAge, 10) || 0,
-        assignedEmail: newProgressorEmail || '',
+        assignedEmail: assignedEmail || '',
+        parentName: parentName || '',
         lastSession: 'No sessions yet'
       };
 
@@ -169,6 +175,7 @@ export default function PractitionerDashboard() {
       setNewProgressorName('');
       setNewProgressorAge('');
       setNewProgressorEmail('');
+      setParentName('');
     }
   };
 
@@ -482,7 +489,7 @@ export default function PractitionerDashboard() {
       {/* Create Progressor Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
-          <div className="bg-card rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300 border border-border">
+          <div className="bg-card rounded-[2rem] p-8 max-w-md w-full max-h-[95vh] overflow-y-auto shadow-2xl animate-in zoom-in duration-300 border border-border">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-foreground font-sans font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>Create New Progressor</h2>
               <button
@@ -523,6 +530,17 @@ export default function PractitionerDashboard() {
                   value={newProgressorEmail}
                   onChange={(e) => setNewProgressorEmail(e.target.value)}
                   placeholder="Enter email address"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6B4A] text-[#24292E] placeholder-muted-foreground"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Parent's Full Name</label>
+                <input
+                  type="text"
+                  value={parentName}
+                  onChange={(e) => setParentName(e.target.value)}
+                  placeholder="Suresh S Sapare"
                   className="w-full px-6 py-4 rounded-[1.5rem] bg-[#F2F5F3] border border-border focus:outline-none focus:ring-2 focus:ring-[#FF6B4A] text-[#24292E] placeholder-muted-foreground"
                 />
               </div>
