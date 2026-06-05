@@ -81,7 +81,7 @@ export default function ProgressorDashboard() {
     navigate(`/game/${gameId}/${level}`);
   };
 
-  const isLevelUnlocked = (gameId: string, levelNum: number) => {
+  const isLevelUnlocked = (levelNum: number) => {
     if (levelNum > 3) return false;
     if (levelNum === 1) return true;
 
@@ -177,7 +177,7 @@ export default function ProgressorDashboard() {
               <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
                   const isAssigned = assignedLevels.includes(level);
-                  const isUnlocked = isLevelUnlocked(selectedGame, level);
+                  const isUnlocked = isLevelUnlocked(level);
                   const isCompleted = completedLevels.includes(level);
 
                   return (

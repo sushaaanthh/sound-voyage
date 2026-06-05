@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { Trophy, ThumbsUp, Target, Clock, RotateCcw, ArrowRight, Star } from 'lucide-react';
+import { Trophy, Target, Clock, RotateCcw, ArrowRight, Star } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
