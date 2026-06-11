@@ -54,41 +54,37 @@ export default function LandingPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedRole === 'practitioner') {
-      navigate('/practitioner');
-      return;
-    }
 
     try {
       let emailToAuth = '';
-      let activeProgressorId = '';
 
-      if (progressorId.includes('@')) {
-        emailToAuth = progressorId;
-        const { data: progressorData } = await supabase
-          .from('progressors')
-          .select('id')
-          .eq('assigned_email', progressorId)
-          .single();
-        if (progressorData) {
-          activeProgressorId = progressorData.id;
-        }
+      if (selectedRole === 'practitioner') {
+        emailToAuth = practitionerId;
       } else {
-        activeProgressorId = progressorId;
-        const { data: progressorData, error: progressorError } = await supabase
-          .from('progressors')
-          .select('assigned_email')
-          .eq('id', progressorId)
-          .single();
+        // Progressor or Parent
+        if (progressorId.includes('@')) {
+          emailToAuth = progressorId;
+        } else {
+          const { data: progressorData, error: progressorError } = await supabase
+            .from('progressors')
+            .select('assigned_email')
+            .eq('id', progressorId)
+            .maybeSingle();
 
-        if (progressorError || !progressorData) {
-          toast.error('Progressor ID not found. Please verify with your practitioner.');
-          return;
+          if (progressorError || !progressorData) {
+            toast.error('Progressor ID not found. Please verify with your practitioner.');
+            return;
+          }
+          emailToAuth = progressorData.assigned_email || '';
         }
-        emailToAuth = progressorData.assigned_email;
       }
 
-      // Authenticate via Supabase Auth
+      if (!emailToAuth) {
+        toast.error('Please enter a valid email or ID.');
+        return;
+      }
+
+      // Execute supabase.auth.signInWithPassword({ email, password }).
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: emailToAuth,
         password: password,
@@ -99,28 +95,44 @@ export default function LandingPage() {
         return;
       }
 
-      // Fetch dynamic historical progress
+      // 1. Query practitioners table for a matching auth_user_id. If found, route to /practitioner.
+      const { data: practitionerData } = await supabase
+        .from('practitioners')
+        .select('*')
+        .eq('auth_user_id', authData.user.id)
+        .maybeSingle();
+
+      if (practitionerData) {
+        toast.success('Successfully logged in as Practitioner');
+        navigate('/practitioner');
+        return;
+      }
+
+      // 2. Query progressors table for a matching auth_user_id. If found, route to /progressor/:id.
       const { data: progressorProfile } = await supabase
         .from('progressors')
         .select('*')
         .eq('auth_user_id', authData.user.id)
-        .single();
+        .maybeSingle();
 
       if (progressorProfile) {
         updateSession(
-          activeProgressorId || 'demo',
+          progressorProfile.id,
           progressorProfile.name || '',
           progressorProfile.completed_levels || []
         );
+
+        if (selectedRole === 'parent') {
+          toast.success('Successfully logged in as Parent');
+          navigate(`/parent/${progressorProfile.id}`);
+        } else {
+          toast.success('Successfully logged in as Progressor');
+          navigate(`/progressor/${progressorProfile.id}`);
+        }
+        return;
       }
 
-      toast.success('Successfully logged in');
-      
-      if (selectedRole === 'progressor') {
-        navigate(`/progressor/${activeProgressorId || 'demo'}`);
-      } else {
-        navigate(`/parent/${activeProgressorId || 'demo'}`);
-      }
+      toast.error('User profile not found in database.');
     } catch (err) {
       console.error('Login error', err);
       toast.error('An unexpected error occurred during login.');
@@ -143,26 +155,30 @@ export default function LandingPage() {
     }
 
     try {
-      // 1. Verify Progressor ID exists and is unclaimed (bypass for DEV environments if it is email or 'DEV-1234')
-      const isDevFallback = import.meta.env.DEV && (signupProgressorId.includes('@') || signupProgressorId === 'DEV-1234');
-      
-      if (!isDevFallback) {
-        const { data: claimData, error: claimError } = await supabase
-          .from('progressor_ids')
-          .select('*')
-          .eq('id', signupProgressorId)
-          .eq('is_claimed', false)
-          .single();
+      // 1. Query the progressors table for the provided progressorId.
+      const { data: progressorData, error: progressorError } = await supabase
+        .from('progressors')
+        .select('*')
+        .eq('id', signupProgressorId)
+        .maybeSingle();
 
-        if (claimError || !claimData) {
-          const errMsg = 'Invalid Progressor ID. Please request one from your practitioner.';
-          setSignupError(errMsg);
-          toast.error(errMsg);
-          return;
-        }
+      // 2. If it does not exist, throw an error: "Invalid ID. Please check with your Practitioner."
+      if (progressorError || !progressorData) {
+        const errMsg = 'Invalid ID. Please check with your Practitioner.';
+        setSignupError(errMsg);
+        toast.error(errMsg);
+        return;
       }
 
-      // 2. Sign Up in Supabase Auth
+      // 3. If it exists but auth_user_id is NOT null, throw an error: "This ID is already registered."
+      if (progressorData.auth_user_id !== null) {
+        const errMsg = 'This ID is already registered.';
+        setSignupError(errMsg);
+        toast.error(errMsg);
+        return;
+      }
+
+      // 4. If valid, execute supabase.auth.signUp({ email, password }).
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: signupEmail,
         password: signupPassword,
@@ -178,54 +194,32 @@ export default function LandingPage() {
         return;
       }
 
-      // 3. Map auth.user.id and mark as claimed in progressor_ids
-      if (!isDevFallback) {
-        const { error: claimUpdateError } = await supabase
-          .from('progressor_ids')
-          .update({
-            is_claimed: true,
-            auth_user_id: signUpData.user.id
-          })
-          .eq('id', signupProgressorId);
+      // 5. On success, execute an UPDATE on the progressors table, setting the auth_user_id to the newly created auth.user.id where id === progressorId.
+      // 6. Update the name column with the name provided in the sign-up form.
+      const { error: updateError } = await supabase
+        .from('progressors')
+        .update({
+          auth_user_id: signUpData.user.id,
+          name: signupName,
+          assigned_email: signupEmail,
+          is_claimed: true
+        })
+        .eq('id', signupProgressorId);
 
-        if (claimUpdateError) {
-          console.error('Failed to claim ID in progressor_ids:', claimUpdateError.message);
-          toast.error('Account created, but failed to link ID registration: ' + claimUpdateError.message);
-          return;
-        }
+      if (updateError) {
+        toast.error('Account created, but failed to link profile: ' + updateError.message);
+        return;
       }
 
-      // 4. Map auth.user.id to progressors profile row
-      if (isDevFallback) {
-        // Upsert the row so we have a progressor entry for local testing logins
-        const { error: upsertError } = await supabase
-          .from('progressors')
-          .upsert({
-            id: signupProgressorId,
-            auth_user_id: signUpData.user.id,
-            assigned_email: signupEmail,
-            name: signupName,
-            completed_levels: []
-          });
-        if (upsertError) {
-          toast.error('Account created, but failed to link profile: ' + upsertError.message);
-          return;
-        }
-      } else {
-        const { error: updateError } = await supabase
-          .from('progressors')
-          .update({
-            auth_user_id: signUpData.user.id,
-            assigned_email: signupEmail,
-            name: signupName
-          })
-          .eq('id', signupProgressorId);
-
-        if (updateError) {
-          toast.error('Account created, but failed to link profile: ' + updateError.message);
-          return;
-        }
-      }
+      // Update progressor_ids for database consistency
+      await supabase
+        .from('progressor_ids')
+        .update({
+          is_claimed: true,
+          auth_user_id: signUpData.user.id,
+          assigned_email: signupEmail
+        })
+        .eq('id', signupProgressorId);
 
       toast.success('Account successfully created. Please log in.');
       setShowSignUp(false);
