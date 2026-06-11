@@ -35,6 +35,7 @@ export default function LandingPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   
   // Sign-Up states
   const [signupName, setSignupName] = useState('');
@@ -432,10 +433,14 @@ export default function LandingPage() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-20 pb-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            © Samvidh Psych Services
-          </p>
+        <footer className="mt-20 pb-8 text-center flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 text-sm text-muted-foreground">
+          <p>© 2026 Sound Voyage. All rights reserved.</p>
+          <button
+            onClick={() => setShowPrivacy(true)}
+            className="hover:text-foreground transition-colors underline decoration-dotted underline-offset-4 cursor-pointer"
+          >
+            Privacy Policy
+          </button>
         </footer>
       </div>
 
@@ -620,6 +625,77 @@ export default function LandingPage() {
         isOpen={isResetModalOpen}
         onClose={() => setIsResetModalOpen(false)}
       />
+
+      {/* Privacy Policy Modal */}
+      {showPrivacy && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6 animate-in fade-in">
+          <div className="bg-card rounded-[2rem] p-8 max-w-lg w-full shadow-2xl border border-border animate-in zoom-in duration-300 text-left">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Privacy Policy</h2>
+              <button
+                onClick={() => setShowPrivacy(false)}
+                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300"
+                aria-label="Close Privacy Policy"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-6 text-sm md:text-base text-foreground/90 overflow-y-auto max-h-[60vh] pr-2">
+              <div className="space-y-4">
+                <div className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold">1</span>
+                    Data Collection
+                  </h3>
+                  <p className="text-sm opacity-90 pl-8">
+                    Sound Voyage operates as a secure clinical utility. We do not use tracking cookies or external background data-harvesting scripts.
+                  </p>
+                </div>
+
+                <div className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold">2</span>
+                    Clinical Consent
+                  </h3>
+                  <p className="text-sm opacity-90 pl-8">
+                    All personal information and medical history required for therapy are collected exclusively within the physical clinic via written consent.
+                  </p>
+                </div>
+
+                <div className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold">3</span>
+                    Account Authentication
+                  </h3>
+                  <p className="text-sm opacity-90 pl-8">
+                    We securely store only your email address, an encrypted password hash, and the practitioner-assigned ID to authenticate your session.
+                  </p>
+                </div>
+
+                <div className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold">4</span>
+                    Third-Party Sharing
+                  </h3>
+                  <p className="text-sm opacity-90 pl-8">
+                    We do not sell, trade, or transfer any user data to external marketing agencies or unauthorized third parties.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-end">
+                <button
+                  onClick={() => setShowPrivacy(false)}
+                  className="px-8 py-3 rounded-full bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 font-semibold"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
