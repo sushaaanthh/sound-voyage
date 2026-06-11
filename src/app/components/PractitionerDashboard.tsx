@@ -79,14 +79,24 @@ export default function PractitionerDashboard() {
   useEffect(() => {
     const fetchProgressors = async () => {
       try {
+        // Get practitioner auth session
+        const { data: { user } } = await supabase.auth.getUser();
+        const currentPractitionerId = user?.id;
+
+        if (!currentPractitionerId) {
+          console.error('No logged-in practitioner found');
+          return;
+        }
+
         const { data, error } = await supabase
           .from('progressors')
           .select('*')
+          .eq('practitioner_id', currentPractitionerId)
           .order('name');
         
         if (error) {
           console.error('Error fetching progressors:', error.message);
-        } else if (data && data.length > 0) {
+        } else if (data) {
           setProgressors(data.map(p => ({
             id: p.id,
             name: p.name || 'Unnamed Progressor',
@@ -109,40 +119,47 @@ export default function PractitionerDashboard() {
   );
 
   const handleCreateProgressor = async () => {
-    const nextNum = progressors.length + 1;
-    const newId = `PRG${String(nextNum).padStart(3, '0')}`;
     const assignedEmail = newProgressorEmail;
 
     try {
       // Get practitioner auth session
       const { data: { user } } = await supabase.auth.getUser();
-      const practitionerId = user?.id || null;
+      const currentPractitionerId = user?.id || null;
 
-      // 1. Insert into progressor_ids table
-      const { error: idError } = await supabase
-        .from('progressor_ids')
-        .insert([
-          {
-            id: newId,
-            practitioner_id: practitionerId,
-            is_claimed: false,
-            assigned_email: assignedEmail || null
-          }
-        ]);
-
-      if (idError) {
-        console.error('Error inserting progressor ID:', idError.message);
-        toast.error('Failed to generate Progressor ID: ' + idError.message);
+      if (!currentPractitionerId) {
+        toast.error('No active session found. Please log in again.');
         return;
       }
 
-      // 2. Insert into progressors profile table with placeholder name
+      // Retrieve all progressor IDs to determine the next sequential ID number
+      const { data: allProgressors } = await supabase
+        .from('progressors')
+        .select('id');
+      
+      let nextNum = 1;
+      if (allProgressors && allProgressors.length > 0) {
+        const nums = allProgressors
+          .map(p => {
+            const match = p.id.match(/^E(\d+)$/);
+            return match ? parseInt(match[1], 10) : 0;
+          })
+          .filter(n => n > 0);
+        if (nums.length > 0) {
+          nextNum = Math.max(...nums) + 1;
+        } else {
+          nextNum = allProgressors.length + 1;
+        }
+      }
+      const newId = `E${String(nextNum).padStart(3, '0')}`;
+
+      // Insert directly into progressors table
       const { error: profileError } = await supabase
         .from('progressors')
         .insert([
           {
             id: newId,
             name: 'Pending Registration',
+            practitioner_id: currentPractitionerId,
             age: parseInt(newProgressorAge, 10) || 0,
             completed_levels: [],
             assigned_email: assignedEmail || null,
@@ -151,8 +168,8 @@ export default function PractitionerDashboard() {
         ]);
 
       if (profileError) {
-        console.error('Error creating progressor profile:', profileError.message);
-        toast.error('ID generated in progressor_ids, but profile creation failed: ' + profileError.message);
+        console.error('Error creating progressor:', profileError.message);
+        toast.error('Failed to create progressor: ' + profileError.message);
         return;
       }
 
@@ -212,7 +229,7 @@ export default function PractitionerDashboard() {
   const handleDeleteProgressor = async () => {
     if (!progressorToDelete) return;
     try {
-      // 1. Delete from progressors profile table
+      // Delete from progressors table
       const { error: profileError } = await supabase
         .from('progressors')
         .delete()
@@ -220,22 +237,15 @@ export default function PractitionerDashboard() {
 
       if (profileError) {
         console.error('Error deleting progressor profile:', profileError.message);
-      }
-
-      // 2. Delete from progressor_ids table
-      const { error: idError } = await supabase
-        .from('progressor_ids')
-        .delete()
-        .eq('id', progressorToDelete.id);
-
-      if (idError) {
-        console.error('Error deleting progressor ID:', idError.message);
+        toast.error('Failed to delete progressor: ' + profileError.message);
+        return;
       }
 
       setProgressors(prev => prev.filter(p => p.id !== progressorToDelete.id));
-      alert(`Progressor ${progressorToDelete.name} has been deleted successfully.`);
+      toast.success(`Progressor ${progressorToDelete.name} has been deleted successfully.`);
     } catch (err) {
       console.error('Failed to delete progressor:', err);
+      toast.error('An unexpected error occurred during progressor deletion.');
     } finally {
       setShowDeleteModal(false);
       setProgressorToDelete(null);
