@@ -4,6 +4,7 @@ import { Search, Plus, X, Trash2, History, ShieldAlert, TrendingUp, Home, Users,
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 import { supabase } from '../../lib/supabase';
+import { toast } from 'sonner';
 
 interface Progressor {
   id: string;
@@ -109,7 +110,7 @@ export default function PractitionerDashboard() {
 
   const handleCreateProgressor = async () => {
     const nextNum = progressors.length + 1;
-    const newId = `E${String(nextNum).padStart(3, '0')}`;
+    const newId = `PRG${String(nextNum).padStart(3, '0')}`;
     const assignedEmail = newProgressorEmail;
 
     try {
@@ -131,17 +132,17 @@ export default function PractitionerDashboard() {
 
       if (idError) {
         console.error('Error inserting progressor ID:', idError.message);
-        alert('Failed to generate Progressor ID: ' + idError.message);
+        toast.error('Failed to generate Progressor ID: ' + idError.message);
         return;
       }
 
-      // 2. Insert into progressors profile table
+      // 2. Insert into progressors profile table with placeholder name
       const { error: profileError } = await supabase
         .from('progressors')
         .insert([
           {
             id: newId,
-            name: newProgressorName,
+            name: 'Pending Registration',
             age: parseInt(newProgressorAge, 10) || 0,
             completed_levels: [],
             assigned_email: assignedEmail || null,
@@ -151,14 +152,14 @@ export default function PractitionerDashboard() {
 
       if (profileError) {
         console.error('Error creating progressor profile:', profileError.message);
-        alert('ID generated in progressor_ids, but profile creation failed: ' + profileError.message);
+        toast.error('ID generated in progressor_ids, but profile creation failed: ' + profileError.message);
         return;
       }
 
       // Update state list
       const newProgressor: Progressor = {
         id: newId,
-        name: newProgressorName,
+        name: 'Pending Registration',
         age: parseInt(newProgressorAge, 10) || 0,
         assignedEmail: assignedEmail || '',
         parentName: parentName || '',
@@ -166,10 +167,10 @@ export default function PractitionerDashboard() {
       };
 
       setProgressors(prev => [...prev, newProgressor]);
-      alert(`New Progressor Created!\nProgressor ID: ${newId}\nName: ${newProgressorName}\nAge: ${newProgressorAge}`);
+      toast.success(`Successfully generated Progressor ID: ${newId}`);
     } catch (err) {
       console.error('Failed to create progressor:', err);
-      alert('An unexpected error occurred during progressor creation.');
+      toast.error('An unexpected error occurred during progressor creation.');
     } finally {
       setShowCreateModal(false);
       setNewProgressorName('');
