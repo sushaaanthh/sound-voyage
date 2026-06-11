@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router';
 import { Home, Volume2, RotateCcw, Cat, Dog, Fish, Bird, CheckCircle, XCircle } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import PhonemePop from './games/PhonemePop';
+import PositionPilot from './games/PositionPilot';
 import gameData from '../../data/gameData.json';
 
 interface Card {
@@ -45,6 +46,10 @@ export default function GameScreen() {
         }}
       />
     );
+  }
+
+  if (gameId === 'position-pilot') {
+    return <PositionPilot />;
   }
 
   // Game-specific states
