@@ -74,28 +74,44 @@ export default function PractitionerDashboard() {
   const [sessions, setSessions] = useState<GameSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
   const navigate = useNavigate();
+  const [currentPractitionerId, setCurrentPractitionerId] = useState<string | null>(null);
 
   // Setup dynamic loading of progressors
   useEffect(() => {
-    const fetchProgressors = async () => {
+    const initializeDashboard = async () => {
       try {
-        // Get practitioner auth session
-        const { data: { user } } = await supabase.auth.getUser();
-        const currentPractitionerId = user?.id;
-
-        if (!currentPractitionerId) {
-          console.error('No logged-in practitioner found');
+        // Auth Check
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          toast.error('Authentication failed. Please log in again.');
+          navigate('/');
           return;
         }
 
-        const { data, error } = await supabase
+        // Profile Fetch
+        const { data: practData, error: profileError } = await supabase
+          .from('practitioners')
+          .select('id')
+          .eq('auth_user_id', user.id)
+          .single();
+
+        if (profileError || !practData) {
+          toast.error('Failed to load practitioner profile.');
+          return;
+        }
+
+        // State Lock
+        setCurrentPractitionerId(practData.id);
+
+        // Registry Fetch
+        const { data, error: registryError } = await supabase
           .from('progressors')
           .select('*')
-          .eq('practitioner_id', currentPractitionerId)
+          .eq('practitioner_id', practData.id)
           .order('name');
-        
-        if (error) {
-          console.error('Error fetching progressors:', error.message);
+
+        if (registryError) {
+          toast.error('Error fetching progressors: ' + registryError.message);
         } else if (data) {
           setProgressors(data.map(p => ({
             id: p.id,
@@ -107,11 +123,12 @@ export default function PractitionerDashboard() {
           })));
         }
       } catch (err) {
-        console.error('Failed to load progressors:', err);
+        console.error('Failed to initialize dashboard:', err);
+        toast.error('An unexpected error occurred during dashboard initialization.');
       }
     };
-    fetchProgressors();
-  }, []);
+    initializeDashboard();
+  }, [navigate]);
 
   const filteredProgressors = progressors.filter(e =>
     e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -122,12 +139,8 @@ export default function PractitionerDashboard() {
     const assignedEmail = newProgressorEmail;
 
     try {
-      // Get practitioner auth session
-      const { data: { user } } = await supabase.auth.getUser();
-      const currentPractitionerId = user?.id || null;
-
       if (!currentPractitionerId) {
-        toast.error('No active session found. Please log in again.');
+        toast.error("Practitioner session not found");
         return;
       }
 
@@ -135,7 +148,7 @@ export default function PractitionerDashboard() {
       const { data: allProgressors } = await supabase
         .from('progressors')
         .select('id');
-      
+
       let nextNum = 1;
       if (allProgressors && allProgressors.length > 0) {
         const nums = allProgressors
@@ -151,6 +164,7 @@ export default function PractitionerDashboard() {
         }
       }
       const newId = `E${String(nextNum).padStart(3, '0')}`;
+      const newName = newProgressorName || 'Pending Registration';
 
       // Insert directly into progressors table
       const { error: profileError } = await supabase
@@ -158,7 +172,7 @@ export default function PractitionerDashboard() {
         .insert([
           {
             id: newId,
-            name: 'Pending Registration',
+            name: newName,
             practitioner_id: currentPractitionerId,
             age: parseInt(newProgressorAge, 10) || 0,
             completed_levels: [],
@@ -176,7 +190,7 @@ export default function PractitionerDashboard() {
       // Update state list
       const newProgressor: Progressor = {
         id: newId,
-        name: 'Pending Registration',
+        name: newName,
         age: parseInt(newProgressorAge, 10) || 0,
         assignedEmail: assignedEmail || '',
         parentName: parentName || '',
@@ -268,11 +282,10 @@ export default function PractitionerDashboard() {
         <nav className="space-y-3">
           <button
             onClick={() => setActiveView('progressors')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${
-              activeView === 'progressors'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${activeView === 'progressors'
                 ? 'bg-primary text-primary-foreground shadow-lg font-bold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent'
-            }`}
+              }`}
           >
             <Users className="w-5 h-5" />
             Progressor Registry
@@ -280,11 +293,10 @@ export default function PractitionerDashboard() {
 
           <button
             onClick={() => setActiveView('analytics')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${
-              activeView === 'analytics'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${activeView === 'analytics'
                 ? 'bg-primary text-primary-foreground shadow-lg font-bold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent'
-            }`}
+              }`}
           >
             <BarChart3 className="w-5 h-5" />
             Analytics
@@ -292,11 +304,10 @@ export default function PractitionerDashboard() {
 
           <button
             onClick={() => setActiveView('tasks')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${
-              activeView === 'tasks'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${activeView === 'tasks'
                 ? 'bg-primary text-primary-foreground shadow-lg font-bold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent'
-            }`}
+              }`}
           >
             <TrendingUp className="w-5 h-5" />
             Task Assignments
@@ -551,7 +562,7 @@ export default function PractitionerDashboard() {
                   type="text"
                   value={parentName}
                   onChange={(e) => setParentName(e.target.value)}
-                  placeholder="Suresh S Sapare"
+                  placeholder="Parent's Full Name"
                   className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground"
                 />
               </div>
@@ -685,11 +696,11 @@ export default function PractitionerDashboard() {
                       {sessions.map((session) => (
                         <tr key={session.id} className="hover:bg-secondary/30 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
-                            {session.game_id === 'phoneme-pop' ? 'Phoneme Pop' : 
-                             session.game_id === 'position-pilot' ? 'Position Pilot' :
-                             session.game_id === 'sound-trail' ? 'Sound Trail' :
-                             session.game_id === 'sound-synk' ? 'Sound Synk' :
-                             session.game_id === 'sound-sorter' ? 'Sound Sorter' : session.game_id}
+                            {session.game_id === 'phoneme-pop' ? 'Phoneme Pop' :
+                              session.game_id === 'position-pilot' ? 'Position Pilot' :
+                                session.game_id === 'sound-trail' ? 'Sound Trail' :
+                                  session.game_id === 'sound-synk' ? 'Sound Synk' :
+                                    session.game_id === 'sound-sorter' ? 'Sound Sorter' : session.game_id}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
                             Level {session.level}
