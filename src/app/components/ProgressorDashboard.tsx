@@ -56,6 +56,7 @@ export default function ProgressorDashboard() {
   const location = useLocation();
 
   const { completedLevels, setProgressor } = useGameSession();
+  const safeCompletedLevels = Array.isArray(completedLevels) ? completedLevels : [];
 
   const [selectedGame, setSelectedGame] = useState<string | null>(() => {
     return location.state?.selectedGame || null;
@@ -108,7 +109,7 @@ export default function ProgressorDashboard() {
 
   const isLevelUnlocked = (levelNum: number) => {
     if (levelNum === 1) return true;
-    return completedLevels.includes(levelNum - 1);
+    return safeCompletedLevels.includes(levelNum - 1);
   };
 
   return (
@@ -231,7 +232,7 @@ export default function ProgressorDashboard() {
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
                   const isAssigned = assignedLevels.includes(level);
                   const isUnlocked = isLevelUnlocked(level);
-                  const isCompleted = completedLevels.includes(level);
+                  const isCompleted = safeCompletedLevels.includes(level);
 
                   return (
                     <button
