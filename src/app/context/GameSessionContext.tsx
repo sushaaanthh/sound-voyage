@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 interface GameSessionContextType {
   progressorId: string | null;
   name: string | null;
-  completedLevels: number[];
+  completedLevels: string[];
   setProgressor: (progressorId: string) => Promise<void>;
   saveGameResult: (
     gameId: string,
@@ -13,7 +13,7 @@ interface GameSessionContextType {
     accuracy: number,
     timeTaken: string
   ) => Promise<void>;
-  updateSession: (id: string, name: string, completedLevels: number[]) => void;
+  updateSession: (id: string, name: string, completedLevels: string[]) => void;
 }
 
 const GameSessionContext = createContext<GameSessionContextType | undefined>(undefined);
@@ -25,18 +25,24 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [name, setName] = useState<string | null>(() => {
     return sessionStorage.getItem('voyage_progressor_name');
   });
-  const [completedLevels, setCompletedLevels] = useState<number[]>(() => {
+  const [completedLevels, setCompletedLevels] = useState<string[]>(() => {
     const saved = sessionStorage.getItem('voyage_completed_levels');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const parsed = saved ? JSON.parse(saved) : [];
+      return (Array.isArray(parsed) ? parsed : []).map(l => String(l));
+    } catch {
+      return [];
+    }
   });
 
-  const updateSession = (id: string, newName: string, levels: number[]) => {
+  const updateSession = (id: string, newName: string, levels: any[]) => {
     setProgressorId(id);
     setName(newName);
-    setCompletedLevels(levels);
+    const stringLevels = (Array.isArray(levels) ? levels : []).map(l => String(l));
+    setCompletedLevels(stringLevels);
     sessionStorage.setItem('voyage_progressor_id', id);
     sessionStorage.setItem('voyage_progressor_name', newName);
-    sessionStorage.setItem('voyage_completed_levels', JSON.stringify(levels));
+    sessionStorage.setItem('voyage_completed_levels', JSON.stringify(stringLevels));
   };
 
   const setProgressor = async (id: string) => {
@@ -92,9 +98,10 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
       // 2. If score is passing (accuracy >= 60%), append to completedLevels and update progressors table
       if (accuracy >= 60) {
-        const updatedLevels = completedLevels.includes(level)
+        const compositeKey = `${gameId}-${level}`;
+        const updatedLevels = completedLevels.includes(compositeKey)
           ? completedLevels
-          : [...completedLevels, level].sort((a, b) => a - b);
+          : [...completedLevels, compositeKey];
 
         setCompletedLevels(updatedLevels);
         sessionStorage.setItem('voyage_completed_levels', JSON.stringify(updatedLevels));

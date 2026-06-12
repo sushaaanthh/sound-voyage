@@ -9,6 +9,13 @@ import ForgotPasswordModal from './auth/ForgotPasswordModal';
 
 type Role = 'progressor' | 'parent' | 'practitioner';
 
+const WAVEFORM_HEIGHTS = [
+  25, 45, 30, 55, 75, 45, 65, 95, 120, 85, 100, 130, 150, 110, 125, 140, 170, 190, 140, 95, 
+  115, 80, 85, 65, 55, 35, 45, 25, 35, 50, 65, 90, 115, 135, 115, 100, 85, 65, 55, 45,
+  35, 55, 80, 95, 115, 135, 155, 180, 145, 115, 95, 75, 55, 35, 45, 65, 85, 105, 85, 65,
+  45, 35, 25
+];
+
 const IMPACT_GUIDES = [
   {
     icon: Target,
@@ -34,6 +41,7 @@ export default function LandingPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   
@@ -238,36 +246,75 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-secondary/30 flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-secondary/30 flex flex-col items-center justify-start p-6 md:p-12 relative overflow-y-auto overflow-x-hidden">
       {/* Mesh gradient background effect */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.1),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,99,71,0.15),transparent_50%)]" />
+
+      {/* Waveform background backdrop */}
+      <div className="absolute inset-x-0 top-36 flex items-center justify-center opacity-[0.06] dark:opacity-[0.04] pointer-events-none select-none z-0 overflow-hidden">
+        <div className="flex items-center gap-1 md:gap-1.5 w-full max-w-6xl justify-between px-4 md:px-8">
+          {WAVEFORM_HEIGHTS.map((height, i) => (
+            <div
+              key={i}
+              className="w-1 bg-primary rounded-full transition-all duration-300"
+              style={{ height: `${height}px` }}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Theme toggle */}
       <div className="absolute top-8 right-8 z-50">
         <ThemeToggle />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto text-center">
-        {/* Hero Section */}
-        <div className="mb-16">
-          <h1 className="mb-6 tracking-tight" style={{ fontSize: '3.5rem', lineHeight: '1.1' }}>
+      <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center text-center pt-12 md:pt-16 pb-8">
+        {/* Centered Hero Section */}
+        <div className="mb-12 flex flex-col items-center">
+          <span className="text-primary tracking-[0.25em] font-bold text-xs md:text-sm uppercase mb-3 block">
+            Welcome To
+          </span>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground mb-4 uppercase">
             Sound Voyage
           </h1>
-          <p className="mb-12 opacity-80 max-w-2xl mx-auto" style={{ fontSize: '1.5rem' }}>
+          <p className="text-lg md:text-xl font-bold text-primary tracking-[0.08em] uppercase mb-4">
+            Cognitive Assessment App
+          </p>
+          <p className="text-xs md:text-sm font-semibold tracking-[0.15em] text-muted-foreground uppercase max-w-xl mx-auto mb-6">
             Strengthen the Bridge between Mind and Voice
           </p>
-          <button
-            onClick={() => loginRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-            className="px-12 py-5 rounded-[2rem] bg-primary text-primary-foreground shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300"
-            style={{ fontSize: '1.25rem' }}
-          >
-            Get Started
-          </button>
+          <p className="text-sm md:text-base text-foreground/80 max-w-xl mx-auto mb-10 leading-relaxed">
+            Evidence-based programs that help children build stronger language processing, clearer communication, and lifelong confidence.
+          </p>
+          
+          {/* Primary actions */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center z-10 relative">
+            <button
+              onClick={() => {
+                setSignupError('');
+                setShowSignUp(true);
+                setIsLoginModalOpen(true);
+              }}
+              className="px-10 py-4.5 rounded-[2rem] bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 text-base cursor-pointer"
+            >
+              Get Started
+            </button>
+            <button
+              onClick={() => {
+                setShowSignUp(false);
+                setIsLoginModalOpen(true);
+              }}
+              className="px-10 py-4.5 rounded-[2rem] bg-secondary hover:bg-secondary/80 text-foreground font-semibold rounded-full border border-border/50 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 text-base cursor-pointer"
+            >
+              Log in
+            </button>
+          </div>
         </div>
 
-        {/* Impact Guides */}
-        <div className="max-w-6xl mx-auto mb-16 px-4">
+
+        {/* Features List (Impact Guides Grid) */}
+        <div className="w-full mb-16 px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {IMPACT_GUIDES.map((guide, index) => {
               const Icon = guide.icon;
@@ -277,163 +324,20 @@ export default function LandingPage() {
                   className="bg-card rounded-3xl p-8 border border-border shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-in fade-in slide-in-from-bottom-4"
                   style={{ animationDelay: `${index * 150}ms` }}
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 mx-auto">
                     <Icon className="w-9 h-9 text-primary" />
                   </div>
-                  <h3 className="mb-4">{guide.title}</h3>
-                  <p className="text-foreground/80 leading-relaxed">{guide.description}</p>
+                  <h3 className="mb-4 text-xl font-bold tracking-tight text-center">{guide.title}</h3>
+                  <p className="text-foreground/80 leading-relaxed text-center text-sm md:text-base">{guide.description}</p>
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* Login Card */}
-        <div
-          ref={loginRef}
-          className="max-w-md mx-auto bg-card rounded-[2rem] shadow-2xl p-8 border border-border backdrop-blur-sm"
-        >
-          {/* Role Switcher */}
-          <div className="mb-8">
-            <div className="relative flex rounded-[2rem] bg-secondary p-1.5">
-              {/* Sliding background pill */}
-              <div
-                className="absolute top-1.5 bottom-1.5 bg-primary rounded-[1.5rem] shadow-lg transition-all duration-300 ease-in-out"
-                style={{
-                  width: 'calc(33.333% - 0.375rem)',
-                  left: selectedRole === 'progressor' ? '0.375rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% - 0.125rem)',
-                }}
-              />
-              {(['progressor', 'parent', 'practitioner'] as Role[]).map((role) => (
-                <button
-                  key={role}
-                  onClick={() => setSelectedRole(role)}
-                  className={`flex-1 px-4 py-3 rounded-[1.5rem] transition-all duration-300 capitalize relative z-10 ${
-                    selectedRole === role
-                      ? 'text-primary-foreground'
-                      : 'text-foreground/60 hover:text-foreground'
-                  }`}
-                >
-                  {role}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-6">
-            {selectedRole === 'practitioner' ? (
-              <div className="text-left">
-                <label htmlFor="practitionerId" className="block mb-2 text-foreground">
-                  Practitioner ID / Username
-                </label>
-                <input
-                  id="practitionerId"
-                  type="text"
-                  value={practitionerId}
-                  onChange={(e) => setPractitionerId(e.target.value)}
-                  placeholder="Enter your practitioner ID"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                />
-              </div>
-            ) : (
-              <div className="text-left">
-                <label htmlFor="progressorId" className="block mb-2 text-foreground">
-                  Progressor ID
-                </label>
-                <input
-                  id="progressorId"
-                  type="text"
-                  value={progressorId}
-                  onChange={(e) => setProgressorId(e.target.value)}
-                  placeholder="Enter your ID"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                />
-              </div>
-            )}
-
-            <div className="text-left">
-              <label htmlFor="password" className="block mb-2 text-foreground">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full px-6 py-4 pr-14 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-secondary rounded-lg transition-all"
-                  aria-label="Toggle password visibility"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5 text-muted-foreground" />
-                  ) : (
-                    <Eye className="w-5 h-5 text-muted-foreground" />
-                  )}
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsResetModalOpen(true)}
-                className="text-xs text-muted-foreground hover:text-[#FF6347] mt-2 inline-block transition-all"
-              >
-                Forgot Password?
-              </button>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full px-8 py-4 rounded-[2rem] bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-300"
-            >
-              Login
-            </button>
-
-            {/* Sign Up Link */}
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setSignupError('');
-                  setShowSignUp(true);
-                }}
-                className="text-primary hover:underline transition-all"
-              >
-                New User? Sign Up
-              </button>
-            </div>
-
-            {/* Quick Links */}
-            <div className="text-sm text-muted-foreground space-y-2 pt-4">
-              {selectedRole !== 'practitioner' && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole('practitioner')}
-                  className="block w-full text-center hover:text-primary transition-colors"
-                >
-                  Are you a Practitioner? Click here
-                </button>
-              )}
-              {selectedRole !== 'parent' && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole('parent')}
-                  className="block w-full text-center hover:text-primary transition-colors"
-                >
-                  Are you a Parent? Click here
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
 
         {/* Footer */}
-        <footer className="mt-20 pb-8 text-center flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 text-sm text-muted-foreground">
+        <footer className="mt-12 pb-8 text-center flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 text-sm text-muted-foreground border-t border-border/20 pt-8 w-full">
           <p>© 2026 Sound Voyage. All rights reserved.</p>
           <button
             onClick={() => setShowPrivacy(true)}
@@ -444,183 +348,335 @@ export default function LandingPage() {
         </footer>
       </div>
 
-      {/* Sign-Up Modal */}
-      {showSignUp && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6 animate-in fade-in">
-          <div className="bg-card rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-border animate-in zoom-in duration-300">
-            <div className="flex items-center justify-between mb-6">
-              <h2>Create Your Account</h2>
-              <button
-                onClick={() => setShowSignUp(false)}
-                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* Auth Modal (Login / Sign-up) */}
+      {isLoginModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-card rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-border animate-in zoom-in duration-300 relative max-h-[90vh] overflow-y-auto">
+            {/* Close button */}
+            <button
+              onClick={() => setIsLoginModalOpen(false)}
+              className="absolute top-6 right-6 p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer"
+              aria-label="Close auth modal"
+            >
+              <X className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+            </button>
 
-            <form onSubmit={handleSignUp} className="space-y-6">
-              {/* Role Selection */}
+            {showSignUp ? (
+              // Sign Up Form
               <div>
-                <label className="block mb-2 text-foreground">I am a...</label>
-                <div className="relative flex rounded-[2rem] bg-secondary p-1.5">
-                  <div
-                    className="absolute top-1.5 bottom-1.5 bg-primary rounded-[1.5rem] shadow-lg transition-all duration-300 ease-in-out"
-                    style={{
-                      width: 'calc(33.333% - 0.375rem)',
-                      left: selectedRole === 'progressor' ? '0.375rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% - 0.125rem)',
-                    }}
-                  />
-                  {(['progressor', 'parent', 'practitioner'] as Role[]).map((role) => (
-                    <button
-                      key={role}
-                      type="button"
-                      onClick={() => setSelectedRole(role)}
-                      className={`flex-1 px-4 py-3 rounded-[1.5rem] transition-all duration-300 capitalize relative z-10 ${
-                        selectedRole === role
-                          ? 'text-primary-foreground'
-                          : 'text-foreground/60 hover:text-foreground'
-                      }`}
-                    >
-                      {role}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                <h2 className="text-2xl font-bold mb-6 text-center">Create Your Account</h2>
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  {/* Role Selection */}
+                  <div>
+                    <label className="block mb-2 text-sm font-semibold text-foreground">I am a...</label>
+                    <div className="relative flex rounded-[2rem] bg-secondary p-1">
+                      <div
+                        className="absolute top-1 bottom-1 bg-primary rounded-[1.5rem] shadow-md transition-all duration-300 ease-in-out"
+                        style={{
+                          width: 'calc(33.333% - 0.25rem)',
+                          left: selectedRole === 'progressor' ? '0.25rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.08rem)' : 'calc(66.666% - 0.08rem)',
+                        }}
+                      />
+                      {(['progressor', 'parent', 'practitioner'] as Role[]).map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() => setSelectedRole(role)}
+                          className={`flex-1 py-2 text-sm rounded-[1.5rem] transition-all duration-300 capitalize relative z-10 cursor-pointer ${
+                            selectedRole === role
+                              ? 'text-primary-foreground font-semibold'
+                              : 'text-foreground/60 hover:text-foreground'
+                          }`}
+                        >
+                          {role}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* Name Field */}
-              <div>
-                <label htmlFor="signup-name" className="block mb-2 text-foreground">
-                  Full Name
-                </label>
-                <input
-                  id="signup-name"
-                  type="text"
-                  required
-                  value={signupName}
-                  onChange={(e) => setSignupName(e.target.value)}
-                  placeholder="Enter your full name"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                />
-              </div>
+                  {/* Name Field */}
+                  <div className="text-left">
+                    <label htmlFor="signup-name" className="block mb-1 text-sm font-medium text-foreground">
+                      Full Name
+                    </label>
+                    <input
+                      id="signup-name"
+                      type="text"
+                      required
+                      value={signupName}
+                      onChange={(e) => setSignupName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                    />
+                  </div>
 
-              {/* Email Field */}
-              <div>
-                <label htmlFor="signup-email" className="block mb-2 text-foreground">
-                  Email Address
-                </label>
-                <input
-                  id="signup-email"
-                  type="email"
-                  required
-                  value={signupEmail}
-                  onChange={(e) => setSignupEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                />
-              </div>
+                  {/* Email Field */}
+                  <div className="text-left">
+                    <label htmlFor="signup-email" className="block mb-1 text-sm font-medium text-foreground">
+                      Email Address
+                    </label>
+                    <input
+                      id="signup-email"
+                      type="email"
+                      required
+                      value={signupEmail}
+                      onChange={(e) => setSignupEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                    />
+                  </div>
 
-              {/* ID Field (conditional) */}
-              {selectedRole === 'progressor' ? (
-                <div>
-                  <label htmlFor="signup-progressor-id" className="block mb-2 text-foreground">
-                    Progressor ID
-                  </label>
-                  <input
-                    id="signup-progressor-id"
-                    type="text"
-                    required
-                    value={signupProgressorId}
-                    onChange={(e) => {
-                      setSignupProgressorId(e.target.value);
-                      if (signupError) setSignupError('');
-                    }}
-                    placeholder="Enter Progressor ID (e.g. E001)"
-                    className={`w-full px-6 py-4 rounded-[1.5rem] bg-input-background border ${
-                      signupError ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary'
-                    } text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all`}
-                  />
-                  {signupError && (
-                    <p className="text-red-500 text-xs mt-1 pl-2">{signupError}</p>
-                  )}
-                </div>
-              ) : selectedRole === 'practitioner' ? (
-                <div>
-                  <label htmlFor="signup-practitioner-id" className="block mb-2 text-foreground">
-                    Practitioner ID
-                  </label>
-                  <input
-                    id="signup-practitioner-id"
-                    type="text"
-                    required
-                    placeholder="Enter your Practitioner ID"
-                    className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                  />
-                </div>
-              ) : selectedRole === 'parent' ? (
-                <div>
-                  <label htmlFor="signup-child-id" className="block mb-2 text-foreground">
-                    Child's Progressor ID (if available)
-                  </label>
-                  <input
-                    id="signup-child-id"
-                    type="text"
-                    placeholder="Enter Progressor ID (optional)"
-                    className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                  />
-                </div>
-              ) : null}
+                  {/* ID Field (conditional) */}
+                  {selectedRole === 'progressor' ? (
+                    <div className="text-left">
+                      <label htmlFor="signup-progressor-id" className="block mb-1 text-sm font-medium text-foreground">
+                        Progressor ID
+                      </label>
+                      <input
+                        id="signup-progressor-id"
+                        type="text"
+                        required
+                        value={signupProgressorId}
+                        onChange={(e) => {
+                          setSignupProgressorId(e.target.value);
+                          if (signupError) setSignupError('');
+                        }}
+                        placeholder="Enter Progressor ID (e.g. E001)"
+                        className={`w-full px-5 py-3 rounded-[1.5rem] bg-input-background border ${
+                          signupError ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary'
+                        } text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all text-sm`}
+                      />
+                      {signupError && (
+                        <p className="text-red-500 text-xs mt-1 pl-2">{signupError}</p>
+                      )}
+                    </div>
+                  ) : selectedRole === 'practitioner' ? (
+                    <div className="text-left">
+                      <label htmlFor="signup-practitioner-id" className="block mb-1 text-sm font-medium text-foreground">
+                        Practitioner ID
+                      </label>
+                      <input
+                        id="signup-practitioner-id"
+                        type="text"
+                        required
+                        placeholder="Enter your Practitioner ID"
+                        className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                      />
+                    </div>
+                  ) : selectedRole === 'parent' ? (
+                    <div className="text-left">
+                      <label htmlFor="signup-child-id" className="block mb-1 text-sm font-medium text-foreground">
+                        Child's Progressor ID (if available)
+                      </label>
+                      <input
+                        id="signup-child-id"
+                        type="text"
+                        placeholder="Enter Progressor ID (optional)"
+                        className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                      />
+                    </div>
+                  ) : null}
 
-              {/* Password Field */}
-              <div>
-                <label htmlFor="signup-password" className="block mb-2 text-foreground">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="signup-password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    placeholder="Create a password"
-                    className="w-full px-6 py-4 pr-14 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                  />
+                  {/* Password Field */}
+                  <div className="text-left">
+                    <label htmlFor="signup-password" className="block mb-1 text-sm font-medium text-foreground">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="signup-password"
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                        placeholder="Create a password"
+                        className="w-full px-5 py-3 pr-12 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-secondary rounded-lg transition-all cursor-pointer"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Sign Up Button */}
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-secondary rounded-lg transition-all"
+                    type="submit"
+                    className="w-full mt-4 px-6 py-3.5 rounded-[2rem] bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 text-sm cursor-pointer"
                   >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5 text-muted-foreground" />
-                    ) : (
-                      <Eye className="w-5 h-5 text-muted-foreground" />
-                    )}
+                    Create Account
                   </button>
-                </div>
-              </div>
 
-              {/* Sign Up Button */}
-              <button
-                type="submit"
-                className="w-full px-8 py-4 rounded-[2rem] bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300"
-              >
-                Create Account
-              </button>
-
-              {/* Back to Login */}
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => setShowSignUp(false)}
-                  className="text-sm text-muted-foreground hover:text-primary transition-all"
-                >
-                  Already have an account? Login
-                </button>
+                  {/* Back to Login */}
+                  <div className="text-center pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSignupError('');
+                        setShowSignUp(false);
+                      }}
+                      className="text-xs text-muted-foreground hover:text-primary transition-all cursor-pointer bg-transparent border-0"
+                    >
+                      Already have an account? Login
+                    </button>
+                  </div>
+                </form>
               </div>
-            </form>
+            ) : (
+              // Login Form
+              <div>
+                <h2 className="text-2xl font-bold mb-6 text-center">Log In</h2>
+                <form onSubmit={handleLogin} className="space-y-5">
+                  {/* Role Switcher */}
+                  <div>
+                    <label className="block mb-2 text-sm font-semibold text-foreground">I am a...</label>
+                    <div className="relative flex rounded-[2rem] bg-secondary p-1">
+                      <div
+                        className="absolute top-1 bottom-1 bg-primary rounded-[1.5rem] shadow-md transition-all duration-300 ease-in-out"
+                        style={{
+                          width: 'calc(33.333% - 0.25rem)',
+                          left: selectedRole === 'progressor' ? '0.25rem' : selectedRole === 'parent' ? 'calc(33.333% + 0.08rem)' : 'calc(66.666% - 0.08rem)',
+                        }}
+                      />
+                      {(['progressor', 'parent', 'practitioner'] as Role[]).map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() => setSelectedRole(role)}
+                          className={`flex-1 py-2 text-sm rounded-[1.5rem] transition-all duration-300 capitalize relative z-10 cursor-pointer ${
+                            selectedRole === role
+                              ? 'text-primary-foreground font-semibold'
+                              : 'text-foreground/60 hover:text-foreground'
+                          }`}
+                        >
+                          {role}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Login Form Fields */}
+                  {selectedRole === 'practitioner' ? (
+                    <div className="text-left">
+                      <label htmlFor="practitionerId" className="block mb-1 text-sm font-medium text-foreground">
+                        Practitioner ID / Username
+                      </label>
+                      <input
+                        id="practitionerId"
+                        type="text"
+                        value={practitionerId}
+                        onChange={(e) => setPractitionerId(e.target.value)}
+                        placeholder="Enter your practitioner ID"
+                        className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-left">
+                      <label htmlFor="progressorId" className="block mb-1 text-sm font-medium text-foreground">
+                        Progressor ID
+                      </label>
+                      <input
+                        id="progressorId"
+                        type="text"
+                        value={progressorId}
+                        onChange={(e) => setProgressorId(e.target.value)}
+                        placeholder="Enter your ID"
+                        className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                      />
+                    </div>
+                  )}
+
+                  <div className="text-left">
+                    <label htmlFor="password" className="block mb-1 text-sm font-medium text-foreground">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        className="w-full px-5 py-3 pr-12 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-secondary rounded-lg transition-all cursor-pointer"
+                        aria-label="Toggle password visibility"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsResetModalOpen(true)}
+                      className="text-xs text-muted-foreground hover:text-primary mt-1.5 inline-block transition-all cursor-pointer bg-transparent border-0"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full mt-2 px-6 py-3.5 rounded-[2rem] bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-300 text-sm cursor-pointer"
+                  >
+                    Login
+                  </button>
+
+                  {/* Sign Up Link */}
+                  <div className="text-center pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSignupError('');
+                        setShowSignUp(true);
+                      }}
+                      className="text-xs text-primary hover:underline transition-all cursor-pointer bg-transparent border-0"
+                    >
+                      New User? Sign Up
+                    </button>
+                  </div>
+
+                  {/* Quick Links */}
+                  <div className="text-xs text-muted-foreground space-y-1.5 pt-3 border-t border-border/40">
+                    {selectedRole !== 'practitioner' && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRole('practitioner')}
+                        className="block w-full text-center hover:text-primary transition-colors cursor-pointer bg-transparent border-0"
+                      >
+                        Are you a Practitioner? Click here
+                      </button>
+                    )}
+                    {selectedRole !== 'parent' && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRole('parent')}
+                        className="block w-full text-center hover:text-primary transition-colors cursor-pointer bg-transparent border-0"
+                      >
+                        Are you a Parent? Click here
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         </div>
       )}
+
       <ForgotPasswordModal
         isOpen={isResetModalOpen}
         onClose={() => setIsResetModalOpen(false)}
@@ -634,7 +690,7 @@ export default function LandingPage() {
               <h2 className="text-2xl font-bold">Privacy Policy</h2>
               <button
                 onClick={() => setShowPrivacy(false)}
-                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300"
+                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer"
                 aria-label="Close Privacy Policy"
               >
                 <X className="w-5 h-5" />
@@ -687,7 +743,7 @@ export default function LandingPage() {
               <div className="pt-4 flex justify-end">
                 <button
                   onClick={() => setShowPrivacy(false)}
-                  className="px-8 py-3 rounded-full bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 font-semibold"
+                  className="px-8 py-3 rounded-full bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 font-semibold cursor-pointer"
                 >
                   Close
                 </button>

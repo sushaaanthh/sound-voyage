@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router';
 import { Home, Lock, Target, Map, Route, Shuffle, PackageSearch, LucideIcon, Bell } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
+import { toast } from 'sonner';
 
 interface Game {
   id: string;
@@ -65,11 +66,7 @@ export default function ProgressorDashboard() {
   const [assignedLevels] = useState([1, 2, 3]);
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "Dr. Akhila assigned: Phoneme Pop Level 4", read: false },
-    { id: 2, text: "Dr. Akhila assigned: Phoneme Pop Level 2", read: false },
-    { id: 3, text: "Dr. Akhila assigned: Sound Synk Level 1", read: true },
-  ]);
+  const [notifications, setNotifications] = useState<Array<{ id: number; text: string; read: boolean }>>([]);
 
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -103,13 +100,29 @@ export default function ProgressorDashboard() {
     }
   }, [location.state]);
 
-  const handleLevelClick = (gameId: string, level: number) => {
-    navigate(`/game/${gameId}/${level}`);
+  const isLevelUnlocked = (gameId: string, levelNum: number) => {
+    if (levelNum === 1) return true;
+    if (levelNum === 2) {
+      return safeCompletedLevels.includes(`${gameId}-1`);
+    }
+    // Level 3+
+    const isPreviousCompleted = safeCompletedLevels.includes(`${gameId}-${levelNum - 1}`);
+    const isAssigned = assignedLevels.includes(levelNum);
+    return isPreviousCompleted && isAssigned;
   };
 
-  const isLevelUnlocked = (levelNum: number) => {
-    if (levelNum === 1) return true;
-    return safeCompletedLevels.includes(levelNum - 1);
+  const handleLevelClick = (gameId: string, level: number) => {
+    const isUnlocked = isLevelUnlocked(gameId, level);
+    if (isUnlocked) {
+      navigate(`/game/${gameId}/${level}`);
+    } else {
+      if (level >= 3) {
+        const isAssigned = assignedLevels.includes(level);
+        if (!isAssigned) {
+          toast.error("A practitioner hasn't assigned you this yet.");
+        }
+      }
+    }
   };
 
   return (
@@ -146,18 +159,24 @@ export default function ProgressorDashboard() {
                     <h3 className="text-foreground font-bold">Practitioner Assignments</h3>
                   </div>
                   <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                    {notifications.map((notif) => (
-                      <div
-                        key={notif.id}
-                        className={`p-3 rounded-[1.25rem] text-sm transition-colors border ${
-                          notif.read
-                            ? 'bg-secondary/40 border-transparent text-muted-foreground'
-                            : 'bg-primary/10 border-primary/20 text-foreground font-medium'
-                        }`}
-                      >
-                        {notif.text}
+                    {notifications.length === 0 ? (
+                      <div className="text-center py-6 text-sm text-muted-foreground">
+                        No new notifications
                       </div>
-                    ))}
+                    ) : (
+                      notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`p-3 rounded-[1.25rem] text-sm transition-colors border ${
+                            notif.read
+                              ? 'bg-secondary/40 border-transparent text-muted-foreground'
+                              : 'bg-primary/10 border-primary/20 text-foreground font-medium'
+                          }`}
+                        >
+                          {notif.text}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}
@@ -231,20 +250,19 @@ export default function ProgressorDashboard() {
               <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
                   const isAssigned = assignedLevels.includes(level);
-                  const isUnlocked = isLevelUnlocked(level);
-                  const isCompleted = safeCompletedLevels.includes(level);
+                  const isUnlocked = isLevelUnlocked(selectedGame, level);
+                  const isCompleted = safeCompletedLevels.includes(`${selectedGame}-${level}`);
 
                   return (
                     <button
                       key={level}
-                      onClick={() => isUnlocked && handleLevelClick(selectedGame, level)}
-                      disabled={!isUnlocked}
+                      onClick={() => handleLevelClick(selectedGame, level)}
                       className={`aspect-square rounded-[1.5rem] transition-all duration-300 shadow-lg relative flex flex-col items-center justify-center p-2 border ${
                         isUnlocked
                           ? isCompleted
                             ? 'bg-primary/20 border-primary text-primary hover:scale-110'
                             : 'bg-primary text-primary-foreground hover:scale-110 hover:shadow-2xl active:scale-95 border-primary'
-                          : 'bg-secondary border-border text-muted-foreground cursor-not-allowed opacity-50'
+                          : 'bg-secondary border-border text-muted-foreground opacity-50 cursor-pointer'
                       } ${isAssigned && isUnlocked ? 'ring-4 ring-primary/50' : ''}`}
                     >
                       <div className="flex items-center justify-center gap-1.5">
