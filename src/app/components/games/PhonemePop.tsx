@@ -617,7 +617,6 @@ export default function PhonemePop({}: PhonemePopProps) {
                           <Icon className="w-12 h-12" />
                         </div>
                         <h3 className="font-bold text-center text-xl uppercase flex items-center gap-2 justify-center">
-                          {getOptionIcon(option.label)}
                           <span>{option.label}</span>
                         </h3>
                       </button>
@@ -681,7 +680,6 @@ export default function PhonemePop({}: PhonemePopProps) {
                         <Icon className="w-12 h-12" />
                       </div>
                       <h3 className="font-bold text-center text-xl uppercase flex items-center gap-2 justify-center">
-                        {getOptionIcon(option.label)}
                         <span>{option.label}</span>
                       </h3>
                     </button>
