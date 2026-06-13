@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
-import { Home, Lock, Target, Map, Route, Shuffle, PackageSearch, LucideIcon, Bell } from 'lucide-react';
+import { Home, Lock, Target, Map as MapIcon, Route, Shuffle, PackageSearch, LucideIcon, Bell } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
 import { toast } from 'sonner';
@@ -24,7 +24,7 @@ const GAMES: Game[] = [
   {
     id: 'position-pilot',
     name: 'Position Pilot',
-    icon: Map,
+    icon: MapIcon,
     description: 'Find where sounds appear in words',
     color: 'from-blue-400 to-indigo-500',
   },

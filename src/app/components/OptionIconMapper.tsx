@@ -56,8 +56,7 @@ import {
   Car,
   Frown,
   Octagon,
-  Music,
-  HelpCircle
+  Music
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
