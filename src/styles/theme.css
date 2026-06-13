@@ -129,6 +129,10 @@
     @apply bg-background text-foreground;
   }
 
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Zilla Slab', serif;
+  }
+
   /**
   * Default typography styles for HTML elements (h1-h4, p, label, button, input).
   * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
