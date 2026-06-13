@@ -49,6 +49,7 @@ export default function LandingPage() {
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupProgressorId, setSignupProgressorId] = useState('');
+  const [signupPractitionerId, setSignupPractitionerId] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupError, setSignupError] = useState('');
 
@@ -151,97 +152,156 @@ export default function LandingPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (selectedRole !== 'progressor') {
-      toast.error('Only Progressors can sign up directly.');
+    if (selectedRole === 'parent') {
+      toast.error('Only Progressors and Practitioners can sign up directly.');
       return;
     }
 
-    if (!signupProgressorId) {
-      const errMsg = 'Progressor ID is required.';
-      setSignupError(errMsg);
-      toast.error(errMsg);
-      return;
-    }
-
-    try {
-      // 1. Query the progressors table for the provided progressorId.
-      const { data: progressorData, error: progressorError } = await supabase
-        .from('progressors')
-        .select('*')
-        .eq('id', signupProgressorId)
-        .maybeSingle();
-
-      // 2. If it does not exist, throw an error: "Invalid ID. Please check with your Practitioner."
-      if (progressorError || !progressorData) {
-        const errMsg = 'Invalid ID. Please check with your Practitioner.';
+    if (selectedRole === 'progressor') {
+      if (!signupProgressorId) {
+        const errMsg = 'Progressor ID is required.';
         setSignupError(errMsg);
         toast.error(errMsg);
         return;
       }
 
-      // 3. If it exists but auth_user_id is NOT null, throw an error: "This ID is already registered."
-      if (progressorData.auth_user_id !== null) {
-        const errMsg = 'This ID is already registered.';
-        setSignupError(errMsg);
-        toast.error(errMsg);
-        return;
-      }
+      try {
+        // 1. Query the progressors table for the provided progressorId.
+        const { data: progressorData, error: progressorError } = await supabase
+          .from('progressors')
+          .select('*')
+          .eq('id', signupProgressorId)
+          .maybeSingle();
 
-      // 4. If valid, execute supabase.auth.signUp({ email, password }).
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: signupEmail,
-        password: signupPassword,
-        options: {
-          data: {
-            name: signupName,
-          }
+        // 2. If it does not exist, throw an error: "Invalid ID. Please check with your Practitioner."
+        if (progressorError || !progressorData) {
+          const errMsg = 'Invalid ID. Please check with your Practitioner.';
+          setSignupError(errMsg);
+          toast.error(errMsg);
+          return;
         }
-      });
 
-      if (signUpError || !signUpData.user) {
-        toast.error(signUpError?.message || 'Failed to create account.');
+        // 3. If it exists but auth_user_id is NOT null, throw an error: "This ID is already registered."
+        if (progressorData.auth_user_id !== null) {
+          const errMsg = 'This ID is already registered.';
+          setSignupError(errMsg);
+          toast.error(errMsg);
+          return;
+        }
+
+        // 4. If valid, execute supabase.auth.signUp({ email, password }).
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: signupEmail,
+          password: signupPassword,
+          options: {
+            data: {
+              name: signupName,
+            }
+          }
+        });
+
+        if (signUpError || !signUpData.user) {
+          toast.error(signUpError?.message || 'Failed to create account.');
+          return;
+        }
+
+        // 5. On success, execute an UPDATE on the progressors table, setting the auth_user_id to the newly created auth.user.id where id === progressorId.
+        // 6. Update the name column with the name provided in the sign-up form.
+        const { error: updateError } = await supabase
+          .from('progressors')
+          .update({
+            auth_user_id: signUpData.user.id,
+            name: signupName,
+            assigned_email: signupEmail,
+            is_claimed: true
+          })
+          .eq('id', signupProgressorId);
+
+        if (updateError) {
+          toast.error('Account created, but failed to link profile: ' + updateError.message);
+          return;
+        }
+
+        // Update progressor_ids for database consistency
+        await supabase
+          .from('progressor_ids')
+          .update({
+            is_claimed: true,
+            auth_user_id: signUpData.user.id,
+            assigned_email: signupEmail
+          })
+          .eq('id', signupProgressorId);
+
+        toast.success('Account successfully created. Please log in.');
+        setShowSignUp(false);
+        setSignupError('');
+        
+        // Clear fields
+        setSignupName('');
+        setSignupEmail('');
+        setSignupProgressorId('');
+        setSignupPassword('');
+      } catch (err) {
+        console.error('Sign-up error', err);
+        toast.error('An unexpected error occurred during registration.');
+      }
+    } else if (selectedRole === 'practitioner') {
+      if (!signupPractitionerId) {
+        const errMsg = 'Practitioner ID is required.';
+        setSignupError(errMsg);
+        toast.error(errMsg);
         return;
       }
 
-      // 5. On success, execute an UPDATE on the progressors table, setting the auth_user_id to the newly created auth.user.id where id === progressorId.
-      // 6. Update the name column with the name provided in the sign-up form.
-      const { error: updateError } = await supabase
-        .from('progressors')
-        .update({
-          auth_user_id: signUpData.user.id,
-          name: signupName,
-          assigned_email: signupEmail,
-          is_claimed: true
-        })
-        .eq('id', signupProgressorId);
+      try {
+        // 1. Execute supabase.auth.signUp({ email, password })
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: signupEmail,
+          password: signupPassword,
+          options: {
+            data: {
+              name: signupName,
+            }
+          }
+        });
 
-      if (updateError) {
-        toast.error('Account created, but failed to link profile: ' + updateError.message);
-        return;
+        if (signUpError || !signUpData.user) {
+          toast.error(signUpError?.message || 'Failed to create account.');
+          return;
+        }
+
+        // 2. Insert into the public.practitioners table
+        const { error: insertError } = await supabase
+          .from('practitioners')
+          .insert({
+            id: signupPractitionerId,
+            name: signupName,
+            email: signupEmail,
+            auth_user_id: signUpData.user.id
+          });
+
+        if (insertError) {
+          toast.error('Account created in auth, but practitioner profile creation failed: ' + insertError.message);
+          return;
+        }
+
+        toast.success('Practitioner account successfully created!');
+        setIsLoginModalOpen(false);
+        setShowSignUp(false);
+        setSignupError('');
+
+        // Clear fields
+        setSignupName('');
+        setSignupEmail('');
+        setSignupPractitionerId('');
+        setSignupPassword('');
+
+        // Route to PractitionerDashboard
+        navigate('/practitioner');
+      } catch (err) {
+        console.error('Practitioner sign-up error', err);
+        toast.error('An unexpected error occurred during practitioner registration.');
       }
-
-      // Update progressor_ids for database consistency
-      await supabase
-        .from('progressor_ids')
-        .update({
-          is_claimed: true,
-          auth_user_id: signUpData.user.id,
-          assigned_email: signupEmail
-        })
-        .eq('id', signupProgressorId);
-
-      toast.success('Account successfully created. Please log in.');
-      setShowSignUp(false);
-      setSignupError('');
-      
-      // Clear fields
-      setSignupName('');
-      setSignupEmail('');
-      setSignupProgressorId('');
-      setSignupPassword('');
-    } catch (err) {
-      console.error('Sign-up error', err);
-      toast.error('An unexpected error occurred during registration.');
     }
   };
 
@@ -453,9 +513,19 @@ export default function LandingPage() {
                         id="signup-practitioner-id"
                         type="text"
                         required
+                        value={signupPractitionerId}
+                        onChange={(e) => {
+                          setSignupPractitionerId(e.target.value);
+                          if (signupError) setSignupError('');
+                        }}
                         placeholder="Enter your Practitioner ID"
-                        className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                        className={`w-full px-5 py-3 rounded-[1.5rem] bg-input-background border ${
+                          signupError ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary'
+                        } text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all text-sm`}
                       />
+                      {signupError && (
+                        <p className="text-red-500 text-xs mt-1 pl-2">{signupError}</p>
+                      )}
                     </div>
                   ) : selectedRole === 'parent' ? (
                     <div className="text-left">
