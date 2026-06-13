@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Home, Check, X, Sparkles, Play } from 'lucide-react';
+import { Home, Check, X, Sparkles, Play, Volume2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
@@ -8,6 +8,7 @@ import { useGameSession } from '../../context/GameSessionContext';
 import { supabase } from '../../../lib/supabase';
 import { soundTrailData, SoundTrailLevel, SoundTrailChain } from '../../../data/soundTrailData';
 import { getOptionIcon } from '../OptionIconMapper';
+import { playAudio } from '../../../lib/audioUtils';
 
 export default function SoundTrail() {
   const navigate = useNavigate();
@@ -35,9 +36,6 @@ export default function SoundTrail() {
   const [isPlayingSequence, setIsPlayingSequence] = useState(false);
   const [highlightNodeIndex, setHighlightNodeIndex] = useState<number | null>(null);
   
-  // Audio state
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
   // Clinical tracking state
   const [missedWords, setMissedWords] = useState<string[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -46,21 +44,6 @@ export default function SoundTrail() {
   // Refs
   const startTimeRef = useRef<number>(Date.now());
   const synthContextRef = useRef<AudioContext | null>(null);
-
-  // Setup TTS voices
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-
-    const updateVoices = () => {
-      setVoices(window.speechSynthesis.getVoices());
-    };
-    updateVoices();
-    window.speechSynthesis.onvoiceschanged = updateVoices;
-
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
 
   // Timer tick
   useEffect(() => {
@@ -75,33 +58,11 @@ export default function SoundTrail() {
   // TTS Speech Synthesis Engine
   const speakWord = (word: string): Promise<void> => {
     return new Promise((resolve) => {
-      if (typeof window === 'undefined' || !window.speechSynthesis) {
-        resolve();
-        return;
-      }
-
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(word);
-      
-      const indianVoice = voices.find(
-        (v) =>
-          v.lang === 'en-IN' ||
-          v.lang.startsWith('en-IN') ||
-          v.lang.replace('_', '-').includes('en-IN')
-      );
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-      }
-
-      utterance.onend = () => {
-        resolve();
-      };
-
-      utterance.onerror = () => {
-        resolve();
-      };
-
-      window.speechSynthesis.speak(utterance);
+      playAudio(word, {
+        onStart: () => {},
+        onEnd: () => resolve(),
+        onError: () => resolve()
+      });
     });
   };
 
@@ -411,16 +372,25 @@ export default function SoundTrail() {
           <div className="w-full flex flex-col items-center">
             {/* Instruction Banner */}
             <div className="mb-6 text-center">
-              <h2 className="text-2xl md:text-3xl font-extrabold font-poppins mb-2 flex items-center justify-center gap-2">
-                <Sparkles className="w-6 h-6 text-emerald-500" />
-                Follow the Sound Trail!
-              </h2>
-              <p className="text-muted-foreground max-w-md">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <h2 className="text-2xl md:text-3xl font-extrabold font-poppins flex items-center gap-2">
+                  <Sparkles className="w-6 h-6 text-emerald-500" />
+                  Follow the Sound Trail!
+                </h2>
+                <button
+                  onClick={() => speakWord("Follow the Sound Trail! Listen to the sound change, and click the position block of the phoneme that changed!")}
+                  className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
+                  aria-label="Speak instruction"
+                >
+                  <Volume2 className="w-6 h-6 text-muted-foreground hover:text-primary" />
+                </button>
+              </div>
+              <p className="text-muted-foreground max-w-md mx-auto">
                 Listen to the sound change, and click the position block of the phoneme that changed!
               </p>
               {isWorkingMemoryMode && (
                 <span className="mt-2 inline-block px-3 py-1 text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full">
-                  🧠 Working Memory Mode Active
+                  Working Memory Mode Active
                 </span>
               )}
             </div>
@@ -575,8 +545,8 @@ export default function SoundTrail() {
             {/* Guidance status text */}
             <p className="text-sm text-muted-foreground font-sans mt-6">
               {isPlayingSequence
-                ? '👂 Listening to the changes...'
-                : `👉 Transition ${currentStepIndex + 1} of ${(currentChain?.words.length || 1) - 1} | Choose the correct position block.`}
+                ? 'Listening to the changes...'
+                : `Transition ${currentStepIndex + 1} of ${(currentChain?.words.length || 1) - 1} | Choose the correct position block.`}
             </p>
           </div>
         )}

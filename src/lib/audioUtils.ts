@@ -1,0 +1,139 @@
+const phonemeMap: Record<string, string> = {
+  // Slash format
+  '/k/': 'kuh',
+  '/ch/': 'chuh',
+  '/p/': 'puh',
+  '/s/': 'sss',
+  '/m/': 'mmm',
+  '/b/': 'buh',
+  '/d/': 'duh',
+  '/f/': 'fff',
+  '/g/': 'guh',
+  '/h/': 'huh',
+  '/j/': 'juh',
+  '/l/': 'lll',
+  '/n/': 'nnn',
+  '/r/': 'rrr',
+  '/t/': 'tuh',
+  '/v/': 'vvv',
+  '/w/': 'wuh',
+  '/y/': 'yuh',
+  '/z/': 'zzz',
+  '/sh/': 'shuh',
+  '/th/': 'thuh',
+  '/a/': 'ah',
+  '/e/': 'eh',
+  '/i/': 'ih',
+  '/o/': 'ah',
+  '/u/': 'uh',
+  
+  // Normal format
+  'k': 'kuh',
+  'ch': 'chuh',
+  'p': 'puh',
+  's': 'sss',
+  'm': 'mmm',
+  'b': 'buh',
+  'd': 'duh',
+  'f': 'fff',
+  'g': 'guh',
+  'h': 'huh',
+  'j': 'juh',
+  'l': 'lll',
+  'n': 'nnn',
+  'r': 'rrr',
+  't': 'tuh',
+  'v': 'vvv',
+  'w': 'wuh',
+  'y': 'yuh',
+  'z': 'zzz',
+  'sh': 'shuh',
+  'th': 'thuh',
+  'a': 'ah',
+  'e': 'eh',
+  'i': 'ih',
+  'o': 'ah',
+  'u': 'uh'
+};
+
+/**
+ * Translates phonetic cues and slash-wrapped phonemes into hacked spellings 
+ * to force standard TTS engines to make the correct sounds.
+ */
+export function translateText(text: string): string {
+  const trimmed = text.trim();
+  const normalized = trimmed.toLowerCase();
+  
+  // 1. Direct match check
+  if (phonemeMap[normalized]) {
+    return phonemeMap[normalized];
+  }
+  
+  // 2. Slash-wrapped core checks
+  if (normalized.startsWith('/') && normalized.endsWith('/')) {
+    const core = normalized.slice(1, -1);
+    if (phonemeMap[core]) {
+      return phonemeMap[core];
+    }
+  }
+
+  // 3. Replace slash-wrapped phonemes inside longer text/sentences
+  let translated = text;
+  translated = translated.replace(/\/([a-zA-Z]+)\//g, (match, p1) => {
+    const key = p1.toLowerCase();
+    if (phonemeMap[key]) {
+      return phonemeMap[key];
+    }
+    return match;
+  });
+
+  return translated;
+}
+
+/**
+ * Speaks the text aloud using SpeechSynthesis, canceling existing playbacks,
+ * translating phonemes, and targeting the en-IN voice.
+ */
+export function playAudio(
+  text: string,
+  options?: {
+    onStart?: () => void;
+    onEnd?: () => void;
+    onError?: (err: any) => void;
+  }
+): SpeechSynthesisUtterance | null {
+  if (typeof window === 'undefined' || !window.speechSynthesis) {
+    console.warn('Speech synthesis not supported in this browser.');
+    options?.onEnd?.();
+    return null;
+  }
+
+  // Cancel ongoing speech gracefully to handle rapid clicks
+  window.speechSynthesis.cancel();
+
+  // Apply phonetic lookup and translations
+  const spokenText = translateText(text);
+
+  const utterance = new SpeechSynthesisUtterance(spokenText);
+
+  // Retrieve voices and select Indian English
+  const voices = window.speechSynthesis.getVoices();
+  const indianVoice = voices.find(
+    (voice) =>
+      voice.lang === 'en-IN' ||
+      voice.lang.startsWith('en-IN') ||
+      voice.lang.replace('_', '-').includes('en-IN')
+  );
+
+  if (indianVoice) {
+    utterance.voice = indianVoice;
+  }
+
+  // Attach status callbacks
+  if (options?.onStart) utterance.onstart = options.onStart;
+  if (options?.onEnd) utterance.onend = options.onEnd;
+  if (options?.onError) utterance.onerror = options.onError;
+
+  window.speechSynthesis.speak(utterance);
+  return utterance;
+}

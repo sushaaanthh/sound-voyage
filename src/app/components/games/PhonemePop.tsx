@@ -8,6 +8,7 @@ import { ThemeToggle } from '../ThemeToggle';
 import { useGameSession } from '../../context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
 import { getOptionIcon } from '../OptionIconMapper';
+import { playAudio } from '../../../lib/audioUtils';
 
 interface PhonemePopProps {
   levelData?: any; // kept for compatibility if needed, but we pull dynamically
@@ -53,28 +54,11 @@ export default function PhonemePop({}: PhonemePopProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
 
   const [timeElapsed, setTimeElapsed] = useState(0);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
   // Timer Ref to track absolute elapsed time precisely
   const startTimeRef = useRef<number>(Date.now());
 
   // Input lock checking helper
   const isLocked = selectedAnswer !== null || isTransitioning || isPlaying;
-
-  // Setup voices dynamically
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
-      return;
-    }
-    const updateVoices = () => {
-      setVoices(window.speechSynthesis.getVoices());
-    };
-    updateVoices();
-    window.speechSynthesis.onvoiceschanged = updateVoices;
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
 
   // Setup/Reset game questions pool and capture start time
   useEffect(() => {
@@ -128,44 +112,20 @@ export default function PhonemePop({}: PhonemePopProps) {
 
   // Native Text-to-Speech engine supporting en-IN
   const playIndianAudio = (text: string, source: string = 'main') => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
-      console.warn('Speech synthesis not supported in this browser.');
-      return;
-    }
-
-    // Cancel ongoing speech gracefully to handle rapid consecutive button clicks
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-
-    // Find Indian English voice
-    const indianVoice = voices.find(
-      (voice) =>
-        voice.lang === 'en-IN' ||
-        voice.lang.startsWith('en-IN') ||
-        voice.lang.replace('_', '-').includes('en-IN')
-    );
-
-    if (indianVoice) {
-      utterance.voice = indianVoice;
-    }
-
-    utterance.onstart = () => {
-      setIsPlaying(true);
-      setPlayingWord(source);
-    };
-
-    utterance.onend = () => {
-      setIsPlaying(false);
-      setPlayingWord(null);
-    };
-
-    utterance.onerror = () => {
-      setIsPlaying(false);
-      setPlayingWord(null);
-    };
-
-    window.speechSynthesis.speak(utterance);
+    playAudio(text, {
+      onStart: () => {
+        setIsPlaying(true);
+        setPlayingWord(source);
+      },
+      onEnd: () => {
+        setIsPlaying(false);
+        setPlayingWord(null);
+      },
+      onError: () => {
+        setIsPlaying(false);
+        setPlayingWord(null);
+      }
+    });
   };
 
   // Cleanup speech synthesis on unmount
@@ -452,9 +412,18 @@ export default function PhonemePop({}: PhonemePopProps) {
             )}
 
             {/* Instruction Title */}
-            <h2 className="mb-4 text-3xl font-bold text-center max-w-2xl font-poppins">
-              {getInstructionTitle()}
-            </h2>
+            <div className="flex items-center justify-center gap-3 mb-4 max-w-2xl">
+              <h2 className="text-3xl font-bold text-center font-poppins">
+                {getInstructionTitle()}
+              </h2>
+              <button
+                onClick={() => playIndianAudio(getInstructionTitle(), 'question')}
+                className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
+                aria-label="Speak question"
+              >
+                <Volume2 className="w-6 h-6 text-muted-foreground hover:text-primary" />
+              </button>
+            </div>
 
             <p className="text-muted-foreground mb-12">
               Question {currentQuestionIndex + 1} of {totalQuestions}

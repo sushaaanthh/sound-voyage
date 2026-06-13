@@ -154,8 +154,12 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   cow: Smile,
 };
 
-export function getOptionIcon(text: string): React.ReactElement {
+export function getOptionIcon(text: string): React.ReactNode {
   const normalized = text.trim().toLowerCase();
+  
+  if (normalized === 'yes' || normalized === 'no') {
+    return null;
+  }
   
   // If it's a number (for Position plates in Sound Trail)
   if (/^\d+$/.test(normalized)) {

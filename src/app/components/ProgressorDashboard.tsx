@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router';
 import { Home, Lock, Target, Map as MapIcon, Route, Shuffle, PackageSearch, LucideIcon, Bell } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
+import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 
 interface Game {
@@ -56,7 +57,7 @@ export default function ProgressorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { completedLevels, assignedLevels, setProgressor } = useGameSession();
+  const { completedLevels, assignedLevels, setProgressor, updateSession } = useGameSession();
   const safeCompletedLevels = Array.isArray(completedLevels) ? completedLevels : [];
   const safeAssignedLevels = Array.isArray(assignedLevels) ? assignedLevels : [];
 
@@ -85,12 +86,62 @@ export default function ProgressorDashboard() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Set the active progressor in context
+  // Set the active progressor in context and fetch/subscribe to the DB
   useEffect(() => {
-    if (progressorId) {
-      setProgressor(progressorId);
-    }
-  }, [progressorId, setProgressor]);
+    if (!progressorId) return;
+
+    setProgressor(progressorId);
+
+    const fetchLatestData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('progressors')
+          .select('name, completed_levels, assigned_levels')
+          .eq('id', progressorId)
+          .maybeSingle();
+
+        if (data && !error) {
+          updateSession(
+            progressorId,
+            data.name || '',
+            data.completed_levels || [],
+            data.assigned_levels || []
+          );
+        }
+      } catch (err) {
+        console.error('Error fetching latest progressor data:', err);
+      }
+    };
+
+    fetchLatestData();
+
+    // Set up a real-time subscription to the progressor's database record
+    const subscription = supabase
+      .channel(`progressor-updates-${progressorId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'progressors',
+          filter: `id=eq.${progressorId}`,
+        },
+        (payload) => {
+          const newData = payload.new as { name?: string; completed_levels?: any[]; assigned_levels?: any[] };
+          updateSession(
+            progressorId,
+            newData.name || '',
+            newData.completed_levels || [],
+            newData.assigned_levels || []
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [progressorId]);
 
   // Pre-select game if returning from result screen
   useEffect(() => {
@@ -109,7 +160,7 @@ export default function ProgressorDashboard() {
           const gameId = levelKey.substring(0, lastDashIndex);
           const levelNum = levelKey.substring(lastDashIndex + 1);
           const gameName = GAMES.find(g => g.id === gameId)?.name || gameId;
-          const text = `Your practitioner assigned you a new task: ${gameName} - Level ${levelNum}`;
+          const text = `New assignment: ${gameName} - Level ${levelNum}`;
           
           return {
             id: idx,
@@ -128,16 +179,17 @@ export default function ProgressorDashboard() {
 
   const isLevelUnlocked = (gameId: string, levelNum: number) => {
     const currentLevelKey = `${gameId}-${levelNum}`;
-    // Explicit assignments bypass sequence requirements
-    if (safeAssignedLevels.includes(currentLevelKey)) return true;
+    
+    // Explicit assignments bypass sequence requirements immediately
+    if (safeAssignedLevels.includes(currentLevelKey)) {
+      return true;
+    }
 
     if (levelNum === 1) return true;
-    if (levelNum === 2) {
-      return safeCompletedLevels.includes(`${gameId}-1`);
-    }
-    // Level 3+
+
+    // For levels 2+, check if the previous level was completed
     const previousLevelKey = `${gameId}-${levelNum - 1}`;
-    return safeCompletedLevels.includes(previousLevelKey) && safeAssignedLevels.includes(currentLevelKey);
+    return safeCompletedLevels.includes(previousLevelKey);
   };
 
   const handleLevelClick = (gameId: string, level: number) => {

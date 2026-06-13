@@ -166,7 +166,7 @@ export default function GameScreen() {
   };
 
   const playSound = () => {
-    alert('🔊 Playing audio: "Listen for the /k/ sound"');
+    alert('Playing audio: "Listen for the /k/ sound"');
   };
 
   const formatTime = (seconds: number) => {

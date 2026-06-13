@@ -152,11 +152,7 @@ export default function LandingPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (selectedRole === 'parent') {
-      toast.error('Only Progressors and Practitioners can sign up directly.');
-      return;
-    }
-
+    // Validate role-specific IDs before signing up
     if (selectedRole === 'progressor') {
       if (!signupProgressorId) {
         const errMsg = 'Progressor ID is required.';
@@ -188,25 +184,68 @@ export default function LandingPage() {
           toast.error(errMsg);
           return;
         }
+      } catch (err) {
+        console.error('Validation error', err);
+        toast.error('An unexpected error occurred during validation.');
+        return;
+      }
+    } else if (selectedRole === 'practitioner') {
+      if (!signupPractitionerId) {
+        const errMsg = 'Practitioner ID is required.';
+        setSignupError(errMsg);
+        toast.error(errMsg);
+        return;
+      }
+    }
 
-        // 4. If valid, execute supabase.auth.signUp({ email, password }).
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: signupEmail,
-          password: signupPassword,
-          options: {
-            data: {
-              name: signupName,
-            }
+    try {
+      // Allow the standard supabase.auth.signUp() function to run for everyone.
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: signupEmail,
+        password: signupPassword,
+        options: {
+          data: {
+            name: signupName,
           }
-        });
+        }
+      });
 
-        if (signUpError || !signUpData.user) {
-          toast.error(signUpError?.message || 'Failed to create account.');
+      if (signUpError || !signUpData.user) {
+        toast.error(signUpError?.message || 'Failed to create account.');
+        return;
+      }
+
+      // Immediately after a successful Auth response, implement a clean if/else block based on the user's selected role state
+      if (selectedRole === 'practitioner') {
+        const { error: insertError } = await supabase
+          .from('practitioners')
+          .insert([{
+            id: signupPractitionerId,
+            name: signupName,
+            email: signupEmail,
+            auth_user_id: signUpData.user.id
+          }]);
+
+        if (insertError) {
+          toast.error('Account created in auth, but practitioner profile creation failed: ' + insertError.message);
           return;
         }
 
-        // 5. On success, execute an UPDATE on the progressors table, setting the auth_user_id to the newly created auth.user.id where id === progressorId.
-        // 6. Update the name column with the name provided in the sign-up form.
+        toast.success('Practitioner account successfully created!');
+        setIsLoginModalOpen(false);
+        setShowSignUp(false);
+        setSignupError('');
+
+        // Clear fields
+        setSignupName('');
+        setSignupEmail('');
+        setSignupPractitionerId('');
+        setSignupPassword('');
+
+        // Route to PractitionerDashboard
+        navigate('/practitioner');
+      } else if (selectedRole === 'progressor') {
+        // Keep the existing supabase.from('progressors') logic
         const { error: updateError } = await supabase
           .from('progressors')
           .update({
@@ -241,67 +280,20 @@ export default function LandingPage() {
         setSignupEmail('');
         setSignupProgressorId('');
         setSignupPassword('');
-      } catch (err) {
-        console.error('Sign-up error', err);
-        toast.error('An unexpected error occurred during registration.');
-      }
-    } else if (selectedRole === 'practitioner') {
-      if (!signupPractitionerId) {
-        const errMsg = 'Practitioner ID is required.';
-        setSignupError(errMsg);
-        toast.error(errMsg);
-        return;
-      }
-
-      try {
-        // 1. Execute supabase.auth.signUp({ email, password })
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: signupEmail,
-          password: signupPassword,
-          options: {
-            data: {
-              name: signupName,
-            }
-          }
-        });
-
-        if (signUpError || !signUpData.user) {
-          toast.error(signUpError?.message || 'Failed to create account.');
-          return;
-        }
-
-        // 2. Insert into the public.practitioners table
-        const { error: insertError } = await supabase
-          .from('practitioners')
-          .insert({
-            id: signupPractitionerId,
-            name: signupName,
-            email: signupEmail,
-            auth_user_id: signUpData.user.id
-          });
-
-        if (insertError) {
-          toast.error('Account created in auth, but practitioner profile creation failed: ' + insertError.message);
-          return;
-        }
-
-        toast.success('Practitioner account successfully created!');
-        setIsLoginModalOpen(false);
+      } else {
+        // Parent role (or others): standard signUp already run, success toast and state reset
+        toast.success('Account successfully created. Please log in.');
         setShowSignUp(false);
         setSignupError('');
 
         // Clear fields
         setSignupName('');
         setSignupEmail('');
-        setSignupPractitionerId('');
         setSignupPassword('');
-
-        // Route to PractitionerDashboard
-        navigate('/practitioner');
-      } catch (err) {
-        console.error('Practitioner sign-up error', err);
-        toast.error('An unexpected error occurred during practitioner registration.');
       }
+    } catch (err) {
+      console.error('Sign-up error', err);
+      toast.error('An unexpected error occurred during registration.');
     }
   };
 

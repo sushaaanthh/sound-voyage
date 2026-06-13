@@ -62,12 +62,12 @@ export default function ResultScreen() {
   useEffect(() => {
     let modalTimeout: any = null;
     if (level === 10 && accuracy >= 60) {
-      toast.success(`Grand Voyage Completed! 🎖️`, {
+      toast.success(`Grand Voyage Completed!`, {
         description: `You completed Level 10 of ${gameName} with flying colors!`,
         duration: 5000,
       });
       setTimeout(() => {
-        toast(`Master Navigator Badge Unlocked 🏆`, {
+        toast(`Master Navigator Badge Unlocked`, {
           description: `${gameName} has been fully conquered!`,
           duration: 6000,
         });
@@ -248,7 +248,7 @@ export default function ResultScreen() {
             </div>
 
             <h1 className="text-3xl font-extrabold text-foreground mb-2 tracking-tight">
-              Voyage Complete! 🏆
+              Voyage Complete!
             </h1>
             <p className="text-yellow-500 font-bold uppercase tracking-wider text-sm mb-4">
               {gameName} Champion

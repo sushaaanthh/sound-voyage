@@ -7,6 +7,7 @@ import { ThemeToggle } from '../ThemeToggle';
 import { useGameSession } from '../../context/GameSessionContext';
 import { positionPilotData, PositionPilotQuestion } from '../../../data/positionPilotData';
 import { getOptionIcon } from '../OptionIconMapper';
+import { playAudio } from '../../../lib/audioUtils';
 
 const CHOICES = [
   { label: 'BEGINNING', value: 'START' },
@@ -34,28 +35,11 @@ export default function PositionPilot() {
   const [selectedAnswer, setSelectedAnswer] = useState<'START' | 'MIDDLE' | 'END' | null>(null);
 
   const [timeElapsed, setTimeElapsed] = useState(0);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
   // Timer Ref to track absolute elapsed time precisely
   const startTimeRef = useRef<number>(Date.now());
 
   // Input lock checking helper
   const isLocked = selectedAnswer !== null || isTransitioning || isPlaying;
-
-  // Setup voices dynamically
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
-      return;
-    }
-    const updateVoices = () => {
-      setVoices(window.speechSynthesis.getVoices());
-    };
-    updateVoices();
-    window.speechSynthesis.onvoiceschanged = updateVoices;
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
 
   // Setup/Reset game questions pool and capture start time
   useEffect(() => {
@@ -112,41 +96,17 @@ export default function PositionPilot() {
 
   // Native Text-to-Speech engine supporting en-IN
   const playIndianAudio = (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
-      console.warn('Speech synthesis not supported in this browser.');
-      return;
-    }
-
-    // Cancel ongoing speech gracefully to handle rapid consecutive button clicks
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-
-    // Find Indian English voice
-    const indianVoice = voices.find(
-      (voice) =>
-        voice.lang === 'en-IN' ||
-        voice.lang.startsWith('en-IN') ||
-        voice.lang.replace('_', '-').includes('en-IN')
-    );
-
-    if (indianVoice) {
-      utterance.voice = indianVoice;
-    }
-
-    utterance.onstart = () => {
-      setIsPlaying(true);
-    };
-
-    utterance.onend = () => {
-      setIsPlaying(false);
-    };
-
-    utterance.onerror = () => {
-      setIsPlaying(false);
-    };
-
-    window.speechSynthesis.speak(utterance);
+    playAudio(text, {
+      onStart: () => {
+        setIsPlaying(true);
+      },
+      onEnd: () => {
+        setIsPlaying(false);
+      },
+      onError: () => {
+        setIsPlaying(false);
+      }
+    });
   };
 
   // Cleanup speech synthesis on unmount
@@ -292,9 +252,18 @@ export default function PositionPilot() {
             className="w-full flex flex-col items-center"
           >
             {/* Instruction Title */}
-            <h2 className="mb-2 text-2xl md:text-3xl font-bold text-center max-w-2xl font-poppins text-foreground leading-tight">
-              Where do you hear the /{currentQuestion.targetSound}/ sound?
-            </h2>
+            <div className="flex items-center justify-center gap-3 mb-2 max-w-2xl">
+              <h2 className="text-2xl md:text-3xl font-bold text-center font-poppins text-foreground leading-tight">
+                Where do you hear the /{currentQuestion.targetSound}/ sound?
+              </h2>
+              <button
+                onClick={() => playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound?`)}
+                className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
+                aria-label="Speak question"
+              >
+                <Volume2 className="w-6 h-6 text-muted-foreground hover:text-primary" />
+              </button>
+            </div>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-widest text-[#FF6347] uppercase mb-12 animate-pulse">
               {currentQuestion.word}
             </h1>

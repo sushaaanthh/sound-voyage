@@ -26,11 +26,11 @@ export const soundTrailData: SoundTrailLevel[] = [
       { x: 80, y: 50 }
     ],
     chains: [
-      { words: ["OF", "OT", "IT"], positions: [2, 1] },
-      { words: ["IT", "ID", "OD"], positions: [2, 1] },
-      { words: ["OD", "UD", "US"], positions: [1, 2] },
-      { words: ["US", "ES", "AS"], positions: [1, 1] },
-      { words: ["IN", "IM", "IR"], positions: [2, 2] }
+      { words: ["ON", "IN", "IT"], positions: [1, 2] },
+      { words: ["AT", "IT", "IN"], positions: [1, 2] },
+      { words: ["IN", "IS", "US"], positions: [2, 1] },
+      { words: ["UP", "US", "AS"], positions: [2, 1] },
+      { words: ["AM", "AN", "ON"], positions: [2, 1] }
     ]
   },
   {
@@ -46,11 +46,11 @@ export const soundTrailData: SoundTrailLevel[] = [
       { x: 85, y: 50 }
     ],
     chains: [
-      { words: ["CAN", "CAS", "MAS", "MIS"], positions: [3, 1, 2] },
-      { words: ["MIS", "MID", "FID", "RID"], positions: [3, 1, 1] },
-      { words: ["RID", "RED", "NED", "NEM"], positions: [2, 1, 3] },
-      { words: ["LOM", "LOK", "LAK", "LAD"], positions: [3, 2, 3] },
-      { words: ["GAD", "GOD", "GOF", "ROF"], positions: [2, 3, 1] }
+      { words: ["CAN", "CAT", "HAT", "HOT"], positions: [3, 1, 2] },
+      { words: ["POT", "HOT", "HAT", "MAT"], positions: [1, 2, 1] },
+      { words: ["PEN", "PAN", "MAN", "MAT"], positions: [2, 1, 3] },
+      { words: ["SIT", "SAT", "SAD", "MAD"], positions: [2, 3, 1] },
+      { words: ["PIG", "PEG", "LEG", "LET"], positions: [2, 1, 3] }
     ]
   },
   {
@@ -67,11 +67,11 @@ export const soundTrailData: SoundTrailLevel[] = [
       { x: 85, y: 30 }
     ],
     chains: [
-      { words: ["MOP", "MOPE", "MAP", "TAP", "TAG"], positions: [2, 2, 1, 3] },
-      { words: ["TAG", "RAG", "RIG", "GIG", "GOG"], positions: [1, 2, 1, 2] },
-      { words: ["GOG", "GOF", "COF", "COB", "CUB"], positions: [3, 1, 3, 2] },
-      { words: ["CUB", "HUB", "HAB", "SHAB", "SHAM"], positions: [1, 2, 1, 3] },
-      { words: ["SHAM", "SHAME", "TAME", "LAME", "LACE"], positions: [2, 1, 1, 3] }
+      { words: ["MAP", "MOP", "TOP", "TAP", "TAG"], positions: [2, 1, 2, 3] },
+      { words: ["TAG", "RAG", "RIG", "WIG", "WIN"], positions: [1, 2, 1, 3] },
+      { words: ["WIN", "FIN", "FIT", "FAT", "CAT"], positions: [1, 3, 2, 1] },
+      { words: ["CAT", "BAT", "BAG", "BUG", "BUS"], positions: [1, 3, 2, 3] },
+      { words: ["BUS", "BUG", "RUG", "RUN", "SUN"], positions: [3, 1, 3, 1] }
     ]
   },
   {
@@ -89,10 +89,10 @@ export const soundTrailData: SoundTrailLevel[] = [
       { x: 85, y: 70 }
     ],
     chains: [
-      { words: ["FIG", "SIG", "SIM", "SUM", "SUN", "BUN"], positions: [1, 3, 2, 3, 1] },
-      { words: ["BUN", "BUF", "RUF", "RAF", "RAD", "LAD"], positions: [3, 1, 2, 3, 1] },
-      { words: ["LAD", "NAD", "NUD", "NOD", "HOD", "HOF"], positions: [1, 2, 2, 1, 3] },
-      { words: ["HOF", "DOF", "DOM", "DEM", "REM", "RIM"], positions: [1, 3, 2, 1, 2] }
+      { words: ["FIG", "PIG", "PIN", "PEN", "TEN", "TAN"], positions: [1, 3, 2, 1, 2] },
+      { words: ["TAN", "MAN", "MAT", "HAT", "HOT", "POT"], positions: [1, 3, 1, 2, 1] },
+      { words: ["POT", "DOT", "DOG", "DIG", "WIG", "WIN"], positions: [1, 3, 2, 1, 3] },
+      { words: ["WIN", "FIN", "FAN", "MAN", "MAP", "MOP"], positions: [1, 2, 1, 3, 2] }
     ]
   },
   {
@@ -111,10 +111,10 @@ export const soundTrailData: SoundTrailLevel[] = [
       { x: 50, y: 50 }
     ],
     chains: [
-      { words: ["FLIT", "FLOT", "FROT", "TROT", "TREET", "TREEP", "CREEP"], positions: [3, 2, 1, 3, 4, 1] },
-      { words: ["CREEP", "CROP", "FROP", "BROP", "BLOP", "BLEEP", "BLAPE"], positions: [3, 1, 1, 2, 3, 3] },
-      { words: ["BLAPE", "CLAPE", "CLOPE", "CLOP", "CLOD", "PLOD", "PLUD"], positions: [1, 3, 3, 4, 1, 3] },
-      { words: ["CLOP", "CLOD", "PLOD", "PLUD", "PLUM", "PLUT", "PLUCK"], positions: [4, 1, 3, 4, 4, 4] }
+      { words: ["SLIP", "CLIP", "FLIP", "FLAP", "FLAT", "FLOAT", "FLEET"], positions: [1, 1, 3, 4, 3, 3] },
+      { words: ["SLIP", "SLIT", "SLOT", "SPOT", "SPIT", "SPIN", "SPAN"], positions: [4, 3, 2, 3, 4, 3] },
+      { words: ["TRIP", "TRAP", "TRAM", "DRAM", "DRAG", "BRAG", "BRAT"], positions: [3, 4, 1, 4, 1, 4] },
+      { words: ["CLAP", "CLIP", "SLIP", "SLIT", "SLOT", "PLOT", "PLOD"], positions: [3, 1, 4, 3, 1, 4] }
     ]
   },
   {
@@ -130,13 +130,13 @@ export const soundTrailData: SoundTrailLevel[] = [
       { x: 85, y: 50 }
     ],
     chains: [
-      { words: ["RONCH", "TONCH", "TANCH", "TAND"], positions: [1, 2, 4] },
-      { words: ["TAND", "TIND", "TINS", "TUNS"], positions: [2, 4, 2] },
-      { words: ["TUNS", "TUMS", "TEMS", "SEMS"], positions: [3, 2, 1] },
-      { words: ["SEMS", "SELS", "SALS", "SALP"], positions: [3, 2, 4] },
-      { words: ["SALP", "FALP", "FOLP", "DOLP"], positions: [1, 2, 1] },
-      { words: ["DOLP", "DOSP", "DISP", "DASP"], positions: [3, 2, 2] },
-      { words: ["DASP", "HASP", "HOSP", "HISP"], positions: [1, 2, 2] }
+      { words: ["BAND", "BEND", "BENT", "RENT"], positions: [2, 4, 1] },
+      { words: ["RENT", "TENT", "TINT", "TINS"], positions: [1, 2, 4] },
+      { words: ["TINS", "PINS", "PANS", "PANT"], positions: [1, 2, 4] },
+      { words: ["PANT", "PAST", "POST", "LOST"], positions: [3, 2, 1] },
+      { words: ["LOST", "LIST", "LINT", "LINK"], positions: [2, 3, 4] },
+      { words: ["LINK", "SINK", "SUNK", "BUNK"], positions: [1, 2, 1] },
+      { words: ["BUNK", "BANK", "TANK", "SANK"], positions: [2, 1, 1] }
     ]
   },
   {
@@ -153,11 +153,11 @@ export const soundTrailData: SoundTrailLevel[] = [
       { x: 85, y: 30 }
     ],
     chains: [
-      { words: ["CRAD", "CRADE", "FRADE", "FRID", "FLID"], positions: [3, 1, 3, 2] },
-      { words: ["FLID", "FLISH", "FLOSH", "FLOCH", "BLOCH"], positions: [4, 3, 4, 1] },
-      { words: ["BLOCH", "BLOCK", "BROCK", "TROCK", "TROM"], positions: [4, 2, 1, 4] },
-      { words: ["TROM", "TREEM", "PREEM", "PRIME", "CRIME"], positions: [3, 1, 3, 1] },
-      { words: ["CRIME", "CRIM", "SHRIM", "SHRIP", "SHRAP"], positions: [3, 1, 4, 3] }
+      { words: ["CLAD", "CLAN", "PLAN", "PLAT", "FLAT"], positions: [4, 1, 4, 1] },
+      { words: ["FLAT", "FLAP", "FLIP", "CLIP", "SLIP"], positions: [4, 3, 1, 1] },
+      { words: ["SLIP", "SLIT", "SLOT", "PLOT", "PLOD"], positions: [4, 3, 1, 4] },
+      { words: ["PLOD", "PLOP", "PROP", "DROP", "DRIP"], positions: [4, 2, 1, 3] },
+      { words: ["DRIP", "TRIP", "TRAP", "TRAM", "GRAM"], positions: [1, 3, 4, 1] }
     ]
   },
   {
@@ -175,10 +175,10 @@ export const soundTrailData: SoundTrailLevel[] = [
       { x: 85, y: 70 }
     ],
     chains: [
-      { words: ["CHOST", "CHIST", "FIST", "FOST", "FONT", "LONT"], positions: [2, 1, 2, 3, 1] },
-      { words: ["LONT", "LINT", "LIST", "LASTE", "GASTE", "MASTE"], positions: [2, 3, 2, 1, 1] },
-      { words: ["MASTE", "MUST", "CUST", "CULT", "BULT", "BOLT"], positions: [2, 1, 3, 1, 2] },
-      { words: ["BOLT", "MOLT", "MELT", "DELT", "DALT", "DAST"], positions: [1, 2, 1, 2, 3] }
+      { words: ["FIST", "FAST", "PAST", "POST", "LOST", "LAST"], positions: [2, 1, 2, 1, 2] },
+      { words: ["LAST", "LUST", "DUST", "DUSK", "DESK", "DISK"], positions: [2, 1, 4, 2, 2] },
+      { words: ["DISK", "RISK", "RINK", "SINK", "SUNK", "BUNK"], positions: [1, 3, 1, 2, 1] },
+      { words: ["CAMP", "RAMP", "RUMP", "BUMP", "LUMP", "LIMP"], positions: [1, 2, 1, 1, 2] }
     ]
   },
   {
@@ -196,10 +196,10 @@ export const soundTrailData: SoundTrailLevel[] = [
       { x: 15, y: 50 }
     ],
     chains: [
-      { words: ["DREEP", "FREEP", "FLEEP", "FLEEM", "FLAME", "BLAME"], positions: [1, 2, 4, 3, 1] },
-      { words: ["BLAME", "BLIME", "BLUM", "BLUG", "BLUF", "SLUF"], positions: [3, 3, 4, 4, 1] },
-      { words: ["SLUF", "SMUF", "SMIF", "SMICH", "SMECH", "SKECH"], positions: [2, 3, 4, 3, 2] },
-      { words: ["SKECH", "SKED", "SKEP", "SKAP", "SKAPE", "SKIP"], positions: [4, 4, 3, 3, 3] }
+      { words: ["DRIP", "DROP", "PROP", "PLOP", "PLOT", "SLOT"], positions: [3, 1, 2, 4, 1] },
+      { words: ["SLOT", "SLIT", "SLIP", "CLIP", "CLAP", "CLAN"], positions: [3, 4, 1, 3, 4] },
+      { words: ["CLAN", "PLAN", "PLAT", "FLAT", "FLAP", "FLIP"], positions: [1, 4, 1, 4, 3] },
+      { words: ["FLIP", "FLIT", "FLAT", "SLAT", "SLIT", "SPIT"], positions: [4, 3, 1, 3, 2] }
     ]
   },
   {
@@ -219,9 +219,9 @@ export const soundTrailData: SoundTrailLevel[] = [
       { x: 15, y: 60 }
     ],
     chains: [
-      { words: ["TRONCH", "TRANCH", "PRANCH", "PRAND", "PRANK", "PRINK", "TRINK", "TRIND"], positions: [3, 1, 5, 5, 3, 1, 5] },
-      { words: ["TRIND", "TRAND", "CRAND", "CLAND", "CLOND", "PLOND", "PLONK", "PLEENK"], positions: [3, 1, 2, 3, 1, 5, 3] },
-      { words: ["PLONK", "PLEENK", "PLEENCH", "PLENCH", "BLENCH", "BLEND", "BLOND", "PLOND"], positions: [3, 5, 3, 1, 5, 3, 1] }
+      { words: ["BLEND", "BLOND", "BLAND", "BRAND", "GRAND", "GRANT", "GRUNT", "FRONT"], positions: [3, 3, 2, 1, 5, 3, 1] },
+      { words: ["BLANK", "FLANK", "FRANK", "PRANK", "PLANK", "PLUNK", "PLINK", "CLINK"], positions: [1, 2, 1, 2, 3, 3, 1] },
+      { words: ["CLINK", "CLANK", "BLANK", "BLINK", "SLINK", "SLUNK", "FLUNK", "FLANK"], positions: [3, 1, 3, 1, 3, 1, 3] }
     ]
   }
 ];
