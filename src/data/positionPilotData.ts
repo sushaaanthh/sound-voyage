@@ -160,5 +160,200 @@ export const positionPilotData: PositionPilotLevel[] = [
       { targetSound: 'r', word: 'RING', position: 'START' },
       { targetSound: 'r', word: 'PERCH', position: 'MIDDLE' }
     ]
+  },
+  {
+    level: 6,
+    questions: [
+      // /ch/ target sound
+      { targetSound: 'ch', word: 'SKETCH', position: 'END' },
+      { targetSound: 'ch', word: 'PREACH', position: 'END' },
+      { targetSound: 'ch', word: 'TEACHER', position: 'MIDDLE' },
+      { targetSound: 'ch', word: 'ACHIEVE', position: 'MIDDLE' },
+      { targetSound: 'ch', word: 'BLEACH', position: 'END' },
+      { targetSound: 'ch', word: 'ENRICH', position: 'END' },
+      { targetSound: 'ch', word: 'ENCHANT', position: 'MIDDLE' },
+      { targetSound: 'ch', word: 'CHEQUE', position: 'START' },
+      { targetSound: 'ch', word: 'CHIME', position: 'START' },
+      { targetSound: 'ch', word: 'REACHED', position: 'MIDDLE' },
+      // /ee/ target sound
+      { targetSound: 'ee', word: 'FEET', position: 'MIDDLE' },
+      { targetSound: 'ee', word: 'DEEP', position: 'MIDDLE' },
+      { targetSound: 'ee', word: 'EAT', position: 'START' },
+      { targetSound: 'ee', word: 'SPEECH', position: 'MIDDLE' },
+      { targetSound: 'ee', word: 'READY', position: 'END' },
+      { targetSound: 'ee', word: 'EAST', position: 'START' },
+      { targetSound: 'ee', word: 'KEEP', position: 'MIDDLE' },
+      { targetSound: 'ee', word: 'SEA', position: 'END' },
+      { targetSound: 'ee', word: 'ME', position: 'END' },
+      { targetSound: 'ee', word: 'EAGER', position: 'START' },
+      // /a/ target sound
+      { targetSound: 'a', word: 'BRASH', position: 'MIDDLE' },
+      { targetSound: 'a', word: 'YOGA', position: 'END' },
+      { targetSound: 'a', word: 'AMBIT', position: 'START' },
+      { targetSound: 'a', word: 'CLAMP', position: 'MIDDLE' },
+      { targetSound: 'a', word: 'SHAMPOO', position: 'MIDDLE' },
+      { targetSound: 'a', word: 'ARROW', position: 'START' },
+      { targetSound: 'a', word: 'SMACK', position: 'MIDDLE' },
+      { targetSound: 'a', word: 'RAN', position: 'MIDDLE' },
+      { targetSound: 'a', word: 'ACTOR', position: 'START' },
+      { targetSound: 'a', word: 'DRAGON', position: 'MIDDLE' },
+      // /u/ target sound
+      { targetSound: 'u', word: 'SUN', position: 'MIDDLE' },
+      { targetSound: 'u', word: 'UNDER', position: 'START' },
+      { targetSound: 'u', word: 'TOFU', position: 'END' },
+      { targetSound: 'u', word: 'KUNGFU', position: 'END' },
+      { targetSound: 'u', word: 'UNTIL', position: 'START' },
+      { targetSound: 'u', word: 'CLUMP', position: 'MIDDLE' },
+      { targetSound: 'u', word: 'DRUM', position: 'MIDDLE' },
+      { targetSound: 'u', word: 'UNCLE', position: 'START' },
+      { targetSound: 'u', word: 'DUST', position: 'MIDDLE' },
+      { targetSound: 'u', word: 'SUM', position: 'MIDDLE' }
+    ]
+  },
+  {
+    level: 7,
+    questions: [
+      // /ch/ target sound
+      { targetSound: 'ch', word: 'WATCHES', position: 'MIDDLE' },
+      { targetSound: 'ch', word: 'CHAMBER', position: 'START' },
+      { targetSound: 'ch', word: 'WRENCH', position: 'END' },
+      { targetSound: 'ch', word: 'FINCHES', position: 'MIDDLE' },
+      { targetSound: 'ch', word: 'NACHOS', position: 'MIDDLE' },
+      { targetSound: 'ch', word: 'INCHES', position: 'MIDDLE' },
+      { targetSound: 'ch', word: 'KITCHEN', position: 'MIDDLE' },
+      { targetSound: 'ch', word: 'CHEESE', position: 'START' },
+      { targetSound: 'ch', word: 'CHAMPION', position: 'START' },
+      // /ee/ target sound
+      { targetSound: 'ee', word: 'FEE', position: 'END' },
+      { targetSound: 'ee', word: 'FEVER', position: 'MIDDLE' },
+      { targetSound: 'ee', word: 'SNEAKY', position: 'MIDDLE' },
+      { targetSound: 'ee', word: 'EMU', position: 'START' },
+      { targetSound: 'ee', word: 'MEET', position: 'MIDDLE' },
+      { targetSound: 'ee', word: 'KEY', position: 'END' },
+      { targetSound: 'ee', word: 'EACH', position: 'START' },
+      { targetSound: 'ee', word: 'HEAL', position: 'MIDDLE' },
+      { targetSound: 'ee', word: 'ELITE', position: 'MIDDLE' },
+      // /a/ target sound
+      { targetSound: 'a', word: 'PIZZA', position: 'END' },
+      { targetSound: 'a', word: 'AMPLE', position: 'START' },
+      { targetSound: 'a', word: 'SPANNER', position: 'MIDDLE' },
+      { targetSound: 'a', word: 'ASPECT', position: 'START' },
+      { targetSound: 'a', word: 'ANTLER', position: 'START' },
+      { targetSound: 'a', word: 'STAND', position: 'MIDDLE' },
+      { targetSound: 'a', word: 'PLAN', position: 'MIDDLE' },
+      { targetSound: 'a', word: 'BRAND', position: 'MIDDLE' },
+      { targetSound: 'a', word: 'TACKLE', position: 'MIDDLE' },
+      // /u/ target sound
+      { targetSound: 'u', word: 'SUMMER', position: 'MIDDLE' },
+      { targetSound: 'u', word: 'FLU', position: 'END' },
+      { targetSound: 'u', word: 'MUD', position: 'MIDDLE' },
+      { targetSound: 'u', word: 'USHER', position: 'START' },
+      { targetSound: 'u', word: 'RUDDER', position: 'MIDDLE' },
+      { targetSound: 'u', word: 'CREW', position: 'END' },
+      { targetSound: 'u', word: 'SUDDEN', position: 'MIDDLE' },
+      { targetSound: 'u', word: 'UMPIRE', position: 'START' },
+      { targetSound: 'u', word: 'SUSPECT', position: 'MIDDLE' }
+    ]
+  },
+  {
+    level: 8,
+    questions: [
+      // /ai/ target sound
+      { targetSound: 'ai', word: 'AIM', position: 'START' },
+      { targetSound: 'ai', word: 'SNAKE', position: 'MIDDLE' },
+      { targetSound: 'ai', word: 'AREA', position: 'START' },
+      { targetSound: 'ai', word: 'RAY', position: 'END' },
+      { targetSound: 'ai', word: 'TRAY', position: 'END' },
+      { targetSound: 'ai', word: 'AGING', position: 'START' },
+      { targetSound: 'ai', word: 'PLAIN', position: 'MIDDLE' },
+      // /i/ target sound
+      { targetSound: 'i', word: 'SPINS', position: 'MIDDLE' },
+      { targetSound: 'i', word: 'SINCE', position: 'MIDDLE' },
+      { targetSound: 'i', word: 'SLICK', position: 'MIDDLE' },
+      // /e/ target sound
+      { targetSound: 'e', word: 'EGG', position: 'START' },
+      { targetSound: 'e', word: 'ELBOW', position: 'START' },
+      { targetSound: 'e', word: 'EXTRA', position: 'START' },
+      { targetSound: 'e', word: 'ELEPHANT', position: 'START' },
+      { targetSound: 'e', word: 'ENTER', position: 'START' },
+      // /o/ target sound
+      { targetSound: 'o', word: 'ON', position: 'START' },
+      { targetSound: 'o', word: 'OFF', position: 'START' },
+      { targetSound: 'o', word: 'OVER', position: 'START' },
+      { targetSound: 'o', word: 'OPEN', position: 'START' },
+      { targetSound: 'o', word: 'OCTOPUS', position: 'START' },
+      // /n/ target sound
+      { targetSound: 'n', word: 'NET', position: 'START' },
+      { targetSound: 'n', word: 'NEST', position: 'START' },
+      { targetSound: 'n', word: 'NOSE', position: 'START' },
+      { targetSound: 'n', word: 'NUT', position: 'START' },
+      { targetSound: 'n', word: 'NIGHT', position: 'START' }
+    ]
+  },
+  {
+    level: 9,
+    questions: [
+      // /ai/ target sound
+      { targetSound: 'ai', word: 'FAIL', position: 'MIDDLE' },
+      { targetSound: 'ai', word: 'AID', position: 'START' },
+      { targetSound: 'ai', word: 'CLAY', position: 'END' },
+      { targetSound: 'ai', word: 'HAY', position: 'END' },
+      { targetSound: 'ai', word: 'SAKE', position: 'MIDDLE' },
+      { targetSound: 'ai', word: 'ANGEL', position: 'START' },
+      // /i/ target sound
+      { targetSound: 'i', word: 'CLIP', position: 'MIDDLE' },
+      { targetSound: 'i', word: 'CLIFF', position: 'MIDDLE' },
+      // /e/ target sound
+      { targetSound: 'e', word: 'ENGINE', position: 'START' },
+      { targetSound: 'e', word: 'NET', position: 'MIDDLE' },
+      { targetSound: 'e', word: 'BELL', position: 'MIDDLE' },
+      { targetSound: 'e', word: 'HELMET', position: 'MIDDLE' },
+      { targetSound: 'e', word: 'STRETCH', position: 'MIDDLE' },
+      // /o/ target sound
+      { targetSound: 'o', word: 'COLD', position: 'MIDDLE' },
+      { targetSound: 'o', word: 'BOAT', position: 'MIDDLE' },
+      { targetSound: 'o', word: 'SOAP', position: 'MIDDLE' },
+      { targetSound: 'o', word: 'STOP', position: 'MIDDLE' },
+      { targetSound: 'o', word: 'FROG', position: 'MIDDLE' },
+      // /n/ target sound
+      { targetSound: 'n', word: 'ANT', position: 'MIDDLE' },
+      { targetSound: 'n', word: 'PONY', position: 'MIDDLE' },
+      { targetSound: 'n', word: 'SUNNY', position: 'MIDDLE' },
+      { targetSound: 'n', word: 'CANDY', position: 'MIDDLE' },
+      { targetSound: 'n', word: 'WINTER', position: 'MIDDLE' }
+    ]
+  },
+  {
+    level: 10,
+    questions: [
+      // /ai/ target sound
+      { targetSound: 'ai', word: 'DAME', position: 'MIDDLE' },
+      { targetSound: 'ai', word: 'RAID', position: 'MIDDLE' },
+      { targetSound: 'ai', word: 'SAY', position: 'END' },
+      { targetSound: 'ai', word: 'ACRE', position: 'START' },
+      { targetSound: 'ai', word: 'MAY', position: 'MIDDLE' },
+      { targetSound: 'ai', word: 'ESCAPE', position: 'MIDDLE' },
+      // /i/ target sound
+      { targetSound: 'i', word: 'BUILT', position: 'MIDDLE' },
+      { targetSound: 'i', word: 'GRIN', position: 'MIDDLE' },
+      // /e/ target sound
+      { targetSound: 'e', word: 'DESK', position: 'MIDDLE' },
+      { targetSound: 'e', word: 'PEN', position: 'MIDDLE' },
+      { targetSound: 'e', word: 'CAFE', position: 'END' },
+      { targetSound: 'e', word: 'RESUME', position: 'END' },
+      { targetSound: 'e', word: 'CLICHE', position: 'END' },
+      // /o/ target sound
+      { targetSound: 'o', word: 'GO', position: 'END' },
+      { targetSound: 'o', word: 'NO', position: 'END' },
+      { targetSound: 'o', word: 'POTATO', position: 'END' },
+      { targetSound: 'o', word: 'HIPPO', position: 'END' },
+      { targetSound: 'o', word: 'HERO', position: 'END' },
+      // /n/ target sound
+      { targetSound: 'n', word: 'SUN', position: 'END' },
+      { targetSound: 'n', word: 'PEN', position: 'END' },
+      { targetSound: 'n', word: 'TEN', position: 'END' },
+      { targetSound: 'n', word: 'RUN', position: 'END' },
+      { targetSound: 'n', word: 'MOON', position: 'END' }
+    ]
   }
 ];

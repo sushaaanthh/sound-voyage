@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Target, Route, Shuffle, Eye, EyeOff, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
@@ -53,7 +53,6 @@ export default function LandingPage() {
   const [signupError, setSignupError] = useState('');
 
   const navigate = useNavigate();
-  const loginRef = useRef<HTMLDivElement>(null);
   const { updateSession } = useGameSession();
 
   // Clear signup error on role change
@@ -128,7 +127,8 @@ export default function LandingPage() {
         updateSession(
           progressorProfile.id,
           progressorProfile.name || '',
-          progressorProfile.completed_levels || []
+          progressorProfile.completed_levels || [],
+          progressorProfile.assigned_levels || []
         );
 
         if (selectedRole === 'parent') {
@@ -272,17 +272,11 @@ export default function LandingPage() {
       <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center text-center pt-12 md:pt-16 pb-8">
         {/* Centered Hero Section */}
         <div className="mb-12 flex flex-col items-center">
-          <span className="text-primary tracking-[0.25em] font-bold text-xs md:text-sm uppercase mb-3 block">
-            Welcome To
-          </span>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground mb-4 uppercase">
+          <h1 className="text-6xl md:text-8xl font-black tracking-tight text-foreground mb-4 uppercase">
             Sound Voyage
           </h1>
           <p className="text-lg md:text-xl font-bold text-primary tracking-[0.08em] uppercase mb-4">
             Cognitive Assessment App
-          </p>
-          <p className="text-xs md:text-sm font-semibold tracking-[0.15em] text-muted-foreground uppercase max-w-xl mx-auto mb-6">
-            Strengthen the Bridge between Mind and Voice
           </p>
           <p className="text-sm md:text-base text-foreground/80 max-w-xl mx-auto mb-10 leading-relaxed">
             Evidence-based programs that help children build stronger language processing, clearer communication, and lifelong confidence.

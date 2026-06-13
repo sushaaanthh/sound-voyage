@@ -56,14 +56,13 @@ export default function ProgressorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { completedLevels, setProgressor } = useGameSession();
+  const { completedLevels, assignedLevels, setProgressor } = useGameSession();
   const safeCompletedLevels = Array.isArray(completedLevels) ? completedLevels : [];
+  const safeAssignedLevels = Array.isArray(assignedLevels) ? assignedLevels : [];
 
   const [selectedGame, setSelectedGame] = useState<string | null>(() => {
     return location.state?.selectedGame || null;
   });
-
-  const [assignedLevels] = useState([1, 2, 3]);
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Array<{ id: number; text: string; read: boolean }>>([]);
@@ -106,9 +105,9 @@ export default function ProgressorDashboard() {
       return safeCompletedLevels.includes(`${gameId}-1`);
     }
     // Level 3+
-    const isPreviousCompleted = safeCompletedLevels.includes(`${gameId}-${levelNum - 1}`);
-    const isAssigned = assignedLevels.includes(levelNum);
-    return isPreviousCompleted && isAssigned;
+    const previousLevelKey = `${gameId}-${levelNum - 1}`;
+    const currentLevelKey = `${gameId}-${levelNum}`;
+    return safeCompletedLevels.includes(previousLevelKey) && safeAssignedLevels.includes(currentLevelKey);
   };
 
   const handleLevelClick = (gameId: string, level: number) => {
@@ -117,10 +116,7 @@ export default function ProgressorDashboard() {
       navigate(`/game/${gameId}/${level}`);
     } else {
       if (level >= 3) {
-        const isAssigned = assignedLevels.includes(level);
-        if (!isAssigned) {
-          toast.error("A practitioner hasn't assigned you this yet.");
-        }
+        toast.error("A practitioner hasn't assigned you this level yet.");
       }
     }
   };
@@ -249,7 +245,7 @@ export default function ProgressorDashboard() {
               <h3 className="mb-6 text-foreground">Select a Level</h3>
               <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
-                  const isAssigned = assignedLevels.includes(level);
+                  const isAssigned = safeAssignedLevels.includes(`${selectedGame}-${level}`);
                   const isUnlocked = isLevelUnlocked(selectedGame, level);
                   const isCompleted = safeCompletedLevels.includes(`${selectedGame}-${level}`);
 
