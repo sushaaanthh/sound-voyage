@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, Plus, X, Trash2, History, ShieldAlert, TrendingUp, Home, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon } from 'lucide-react';
+import { Search, Plus, X, Trash2, History, ShieldAlert, TrendingUp, Home, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon, Bell, Award, CheckCircle2, AlertCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 import { supabase } from '../../lib/supabase';
@@ -13,6 +13,8 @@ interface Progressor {
   lastSession: string;
   assignedEmail?: string;
   parentName?: string;
+  completedLevels: string[];
+  assignedLevels: string[];
 }
 
 interface GameSession {
@@ -23,6 +25,7 @@ interface GameSession {
   accuracy: number;
   time_taken: string;
   created_at: string;
+  progressor_id?: string;
 }
 
 interface Game {
@@ -40,20 +43,13 @@ const GAMES: Game[] = [
 ];
 
 const mockProgressors: Progressor[] = [
-  { id: 'E001', name: 'Sushanth Kumar', age: 8, lastSession: '2026-04-20' },
-  { id: 'E002', name: 'Priya Sharma', age: 10, lastSession: '2026-04-22' },
-  { id: 'E003', name: 'Rohan Patel', age: 7, lastSession: '2026-04-18' },
-];
-
-const mockAnalytics = [
-  { week: 'Week 1', phonemePop: 65, positionPilot: 70, soundTrail: 60, soundSynk: 55, soundSorter: 68 },
-  { week: 'Week 2', phonemePop: 72, positionPilot: 75, soundTrail: 68, soundSynk: 62, soundSorter: 74 },
-  { week: 'Week 3', phonemePop: 78, positionPilot: 82, soundTrail: 75, soundSynk: 70, soundSorter: 80 },
-  { week: 'Week 4', phonemePop: 85, positionPilot: 88, soundTrail: 82, soundSynk: 78, soundSorter: 86 },
+  { id: 'E001', name: 'Sushanth Kumar', age: 8, lastSession: '2026-04-20', completedLevels: [], assignedLevels: [] },
+  { id: 'E002', name: 'Priya Sharma', age: 10, lastSession: '2026-04-22', completedLevels: [], assignedLevels: [] },
+  { id: 'E003', name: 'Rohan Patel', age: 7, lastSession: '2026-04-18', completedLevels: [], assignedLevels: [] },
 ];
 
 export default function PractitionerDashboard() {
-  const [activeView, setActiveView] = useState<'progressors' | 'analytics' | 'tasks'>('progressors');
+  const [activeView, setActiveView] = useState<'progressors' | 'analytics' | 'tasks' | 'notifications'>('progressors');
   const [selectedProgressor, setSelectedProgressor] = useState<Progressor | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newProgressorName, setNewProgressorName] = useState('');
@@ -71,6 +67,7 @@ export default function PractitionerDashboard() {
   // View details modal state
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedDetailsProgressor, setSelectedDetailsProgressor] = useState<Progressor | null>(null);
+  const [detailsActiveTab, setDetailsActiveTab] = useState<'progression' | 'history'>('progression');
   const [sessions, setSessions] = useState<GameSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
   const navigate = useNavigate();
@@ -119,7 +116,9 @@ export default function PractitionerDashboard() {
             age: p.age || 0,
             assignedEmail: p.assigned_email || '',
             parentName: p.parent_name || '',
-            lastSession: p.last_session || 'No sessions yet'
+            lastSession: p.last_session || 'No sessions yet',
+            completedLevels: Array.isArray(p.completed_levels) ? p.completed_levels.map(String) : [],
+            assignedLevels: Array.isArray(p.assigned_levels) ? p.assigned_levels.map(String) : []
           })));
         }
       } catch (err) {
@@ -129,6 +128,97 @@ export default function PractitionerDashboard() {
     };
     initializeDashboard();
   }, [navigate]);
+
+  // Analytics State
+  const [analyticsSessions, setAnalyticsSessions] = useState<GameSession[]>([]);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  const [analyticsGameFilter, setAnalyticsGameFilter] = useState<string>('all');
+
+  // Task Assignment State
+  const [selectedLevelsToAssign, setSelectedLevelsToAssign] = useState<string[]>([]);
+  const [savingAssignments, setSavingAssignments] = useState(false);
+
+  // Notifications State
+  const [notificationsSessions, setNotificationsSessions] = useState<GameSession[]>([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+
+  // Helper function to convert MM:SS to seconds
+  const timeToSeconds = (timeStr: string): number => {
+    if (!timeStr) return 0;
+    const parts = timeStr.split(':');
+    if (parts.length === 2) {
+      const mins = parseInt(parts[0], 10) || 0;
+      const secs = parseInt(parts[1], 10) || 0;
+      return mins * 60 + secs;
+    }
+    return parseInt(timeStr, 10) || 0;
+  };
+
+  // Helper function to format seconds to MM:SS
+  const formatSeconds = (totalSecs: number): string => {
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  // Fetch telemetry whenever selectedProgressor is changed for Analytics
+  useEffect(() => {
+    if (selectedProgressor) {
+      const fetchAnalyticsData = async () => {
+        setLoadingAnalytics(true);
+        try {
+          const { data, error } = await supabase
+            .from('game_sessions')
+            .select('*')
+            .eq('progressor_id', selectedProgressor.id)
+            .order('created_at', { ascending: true });
+          if (error) {
+            console.error('Error fetching analytics sessions:', error.message);
+          } else {
+            setAnalyticsSessions(data || []);
+          }
+        } catch (err) {
+          console.error('Unexpected error fetching analytics sessions:', err);
+        } finally {
+          setLoadingAnalytics(false);
+        }
+      };
+      fetchAnalyticsData();
+      // Initialize selectedLevelsToAssign with progressor's current assignments
+      setSelectedLevelsToAssign(selectedProgressor.assignedLevels || []);
+    } else {
+      setAnalyticsSessions([]);
+      setSelectedLevelsToAssign([]);
+    }
+  }, [selectedProgressor]);
+
+  // Fetch recent notifications
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (activeView === 'notifications' && progressors.length > 0) {
+        setLoadingNotifications(true);
+        try {
+          const progressorIds = progressors.map(p => p.id);
+          const { data, error } = await supabase
+            .from('game_sessions')
+            .select('*')
+            .in('progressor_id', progressorIds)
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error('Error fetching notifications:', error.message);
+          } else {
+            setNotificationsSessions(data || []);
+          }
+        } catch (err) {
+          console.error('Unexpected error fetching notifications:', err);
+        } finally {
+          setLoadingNotifications(false);
+        }
+      }
+    };
+    fetchNotifications();
+  }, [activeView, progressors]);
 
   const filteredProgressors = progressors.filter(e =>
     e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -194,7 +284,9 @@ export default function PractitionerDashboard() {
         age: parseInt(newProgressorAge, 10) || 0,
         assignedEmail: assignedEmail || '',
         parentName: parentName || '',
-        lastSession: 'No sessions yet'
+        lastSession: 'No sessions yet',
+        completedLevels: [],
+        assignedLevels: []
       };
 
       setProgressors(prev => [...prev, newProgressor]);
@@ -266,6 +358,50 @@ export default function PractitionerDashboard() {
     }
   };
 
+  // Save task assignments to Supabase
+  const handleSaveAssignments = async () => {
+    if (!selectedProgressor) {
+      toast.error('No progressor selected.');
+      return;
+    }
+    setSavingAssignments(true);
+    try {
+      const { error } = await supabase
+        .from('progressors')
+        .update({ assigned_levels: selectedLevelsToAssign })
+        .eq('id', selectedProgressor.id);
+
+      if (error) {
+        console.error('Error saving assignments:', error.message);
+        toast.error('Failed to update task assignments: ' + error.message);
+      } else {
+        toast.success(`Successfully updated assignments for ${selectedProgressor.name}`);
+        
+        // Update in-memory state for progressors
+        setProgressors(prev => prev.map(p => {
+          if (p.id === selectedProgressor.id) {
+            return {
+              ...p,
+              assignedLevels: selectedLevelsToAssign
+            };
+          }
+          return p;
+        }));
+        
+        // Update currently selected progressor to keep them in sync
+        setSelectedProgressor(prev => prev ? {
+          ...prev,
+          assignedLevels: selectedLevelsToAssign
+        } : null);
+      }
+    } catch (err) {
+      console.error('Unexpected error saving assignments:', err);
+      toast.error('An unexpected error occurred while saving assignments.');
+    } finally {
+      setSavingAssignments(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
@@ -275,8 +411,7 @@ export default function PractitionerDashboard() {
         </div>
 
         <div className="mb-12">
-          <h2 className="mb-2 text-foreground" style={{ fontSize: '1.75rem' }}>Clinical Dashboard</h2>
-          <p className="text-sm text-muted-foreground">Practitioner Portal</p>
+          <h1 className="text-2xl font-extrabold text-foreground tracking-tight font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Practitioner Dashboard</h1>
         </div>
 
         <nav className="space-y-3">
@@ -311,6 +446,17 @@ export default function PractitionerDashboard() {
           >
             <TrendingUp className="w-5 h-5" />
             Task Assignments
+          </button>
+
+          <button
+            onClick={() => setActiveView('notifications')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${activeView === 'notifications'
+                ? 'bg-primary text-primary-foreground shadow-lg font-bold'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent'
+              }`}
+          >
+            <Bell className="w-5 h-5" />
+            Notifications
           </button>
         </nav>
 
@@ -399,97 +545,320 @@ export default function PractitionerDashboard() {
         {/* Analytics View */}
         {activeView === 'analytics' && (
           <div>
-            <h1 className="mb-8 text-foreground">Analytics Dashboard</h1>
-
-            {selectedProgressor ? (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-foreground">{selectedProgressor.name}</h2>
-                    <p className="text-muted-foreground">Progress Overview</p>
-                  </div>
-                  <button
-                    onClick={() => setSelectedProgressor(null)}
-                    className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 text-foreground border border-border"
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+              <h1 className="text-foreground">Analytics Dashboard</h1>
+              
+              {/* Selectors */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full sm:w-64">
+                  <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Select Progressor</label>
+                  <select
+                    value={selectedProgressor?.id || ''}
+                    onChange={(e) => {
+                      const prog = progressors.find(p => p.id === e.target.value);
+                      setSelectedProgressor(prog || null);
+                    }}
+                    className="w-full px-4 py-3 rounded-[1rem] bg-card border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary font-bold transition-all"
                   >
-                    Back to List
-                  </button>
+                    <option value="">-- Select Progressor --</option>
+                    {progressors.map(p => (
+                      <option key={p.id} value={p.id}>{p.name} ({p.id})</option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="bg-card p-8 rounded-[2rem] border border-border">
-                  <h3 className="mb-6 text-foreground">Progressor Progress Across All Games</h3>
-                  <ResponsiveContainer width="100%" height={400}>
-                    <LineChart data={mockAnalytics}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                      <XAxis dataKey="week" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="phonemePop" stroke="#FF6347" strokeWidth={3} name="Phoneme Pop" />
-                      <Line type="monotone" dataKey="positionPilot" stroke="#4169E1" strokeWidth={3} name="Position Pilot" />
-                      <Line type="monotone" dataKey="soundTrail" stroke="#32CD32" strokeWidth={3} name="Sound Trail" />
-                      <Line type="monotone" dataKey="soundSynk" stroke="#FFD700" strokeWidth={3} name="Sound Synk" />
-                      <Line type="monotone" dataKey="soundSorter" stroke="#9370DB" strokeWidth={3} name="Sound Sorter" />
-                    </LineChart>
-                  </ResponsiveContainer>
+                {selectedProgressor && (
+                  <div className="w-full sm:w-56">
+                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Filter by Game</label>
+                    <select
+                      value={analyticsGameFilter}
+                      onChange={(e) => setAnalyticsGameFilter(e.target.value)}
+                      className="w-full px-4 py-3 rounded-[1rem] bg-card border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary font-bold transition-all"
+                    >
+                      <option value="all">All Games</option>
+                      {GAMES.map(g => (
+                        <option key={g.id} value={g.id}>{g.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {!selectedProgressor ? (
+              <div className="text-center py-20 bg-card rounded-[2rem] border border-border p-8">
+                <BarChart3 className="w-20 h-20 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-foreground text-lg mb-2">Choose a Progressor</h3>
+                <p className="text-muted-foreground max-w-sm mx-auto mb-6">Select a progressor from the dropdown above to load their gameplay history and telemetry charts.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                  {progressors.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedProgressor(p)}
+                      className="p-4 rounded-xl bg-secondary/35 border border-border hover:bg-primary/10 hover:border-primary/50 transition-all font-semibold text-foreground text-sm"
+                    >
+                      {p.name}
+                    </button>
+                  ))}
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-20">
-                <BarChart3 className="w-20 h-20 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Select a progressor from the Progressor Registry to view analytics</p>
+            ) : loadingAnalytics ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-card rounded-[2rem] border border-border p-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+                <p className="text-muted-foreground">Fetching telemetry records...</p>
               </div>
-            )}
+            ) : (() => {
+              const filteredSessions = analyticsSessions.filter(s => 
+                analyticsGameFilter === 'all' ? true : s.game_id === analyticsGameFilter
+              );
+
+              if (filteredSessions.length === 0) {
+                return (
+                  <div className="text-center py-20 bg-card rounded-[2rem] border border-border p-8">
+                    <History className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-foreground text-lg mb-2">No Session Telemetry</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      No game sessions recorded for <strong>{selectedProgressor.name}</strong> under the selected game filter.
+                    </p>
+                  </div>
+                );
+              }
+
+              // Compute stats
+              const totalSessionsCount = filteredSessions.length;
+              const avgScore = (filteredSessions.reduce((acc, s) => acc + s.score, 0) / totalSessionsCount).toFixed(1);
+              const avgAccuracy = Math.round(filteredSessions.reduce((acc, s) => acc + s.accuracy, 0) / totalSessionsCount);
+              const totalSeconds = filteredSessions.reduce((acc, s) => acc + timeToSeconds(s.time_taken), 0);
+              const avgSeconds = Math.round(totalSeconds / totalSessionsCount);
+              const avgDuration = formatSeconds(avgSeconds);
+
+              // Prepare Chart Data
+              const chartData = filteredSessions.map((s, index) => ({
+                name: `Sess ${index + 1}`,
+                date: new Date(s.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                level: `Level ${s.level}`,
+                accuracy: s.accuracy,
+                score: s.score,
+                timeSeconds: timeToSeconds(s.time_taken),
+                timeString: s.time_taken,
+                gameName: GAMES.find(g => g.id === s.game_id)?.name || s.game_id,
+              }));
+
+              return (
+                <div className="space-y-6">
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-card p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                        <History className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-foreground">{totalSessionsCount}</p>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Total Sessions</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-card p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0 text-green-500">
+                        <CheckCircle2 className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-foreground">{avgAccuracy}%</p>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Avg Accuracy</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-card p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-500">
+                        <Award className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-foreground">{avgScore}</p>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Avg Score</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-card p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 text-amber-500">
+                        <Clock className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-foreground">{avgDuration}</p>
+                        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Avg Duration</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Trend Chart */}
+                  <div className="bg-card p-8 rounded-[2rem] border border-border">
+                    <h3 className="mb-6 text-foreground font-bold font-sans">
+                      Performance Telemetry Trend ({analyticsGameFilter === 'all' ? 'All Games' : GAMES.find(g => g.id === analyticsGameFilter)?.name})
+                    </h3>
+                    <div className="w-full h-[400px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                          <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                          <YAxis yAxisId="left" domain={[0, 100]} stroke="#888888" fontSize={12} label={{ value: 'Accuracy % / Score', angle: -90, position: 'insideLeft', fill: '#888888', style: { textAnchor: 'middle' }, offset: 5 }} />
+                          <YAxis yAxisId="right" orientation="right" stroke="#888888" fontSize={12} label={{ value: 'Time Taken (seconds)', angle: 90, position: 'insideRight', fill: '#888888', style: { textAnchor: 'middle' }, offset: 5 }} />
+                          <Tooltip
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                const data = payload[0].payload;
+                                return (
+                                  <div className="bg-card border border-border p-4 rounded-xl shadow-xl">
+                                    <p className="font-bold text-foreground">{data.date} • {data.gameName}</p>
+                                    <p className="text-xs text-muted-foreground mb-2">{data.level}</p>
+                                    <div className="space-y-1 text-xs font-semibold">
+                                      <p className="text-[#FF6347]">Accuracy: {data.accuracy}%</p>
+                                      <p className="text-[#4169E1]">Score: {data.score}</p>
+                                      <p className="text-[#32CD32]">Time Taken: {data.timeString}</p>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                          <Legend verticalAlign="top" height={36} />
+                          <Line yAxisId="left" type="monotone" dataKey="accuracy" stroke="#FF6347" strokeWidth={3} name="Accuracy %" activeDot={{ r: 8 }} />
+                          <Line yAxisId="left" type="monotone" dataKey="score" stroke="#4169E1" strokeWidth={3} name="Score Achieved" />
+                          <Line yAxisId="right" type="monotone" dataKey="timeSeconds" stroke="#32CD32" strokeWidth={3} name="Duration (secs)" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
         {/* Task Assignment View */}
         {activeView === 'tasks' && (
           <div>
-            <h1 className="mb-8 text-foreground">Task Assignments</h1>
-
-            {selectedProgressor ? (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-foreground">Assign Tasks to {selectedProgressor.name}</h2>
-                    <p className="text-muted-foreground">Select a game and level</p>
-                  </div>
-                  <button
-                    onClick={() => setSelectedProgressor(null)}
-                    className="px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 text-foreground border border-border"
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+              <h1 className="text-foreground">Task Assignments</h1>
+              
+              {/* Selectors */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full sm:w-64">
+                  <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Select Progressor</label>
+                  <select
+                    value={selectedProgressor?.id || ''}
+                    onChange={(e) => {
+                      const prog = progressors.find(p => p.id === e.target.value);
+                      setSelectedProgressor(prog || null);
+                    }}
+                    className="w-full px-4 py-3 rounded-[1rem] bg-card border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary font-bold transition-all"
                   >
-                    Back to List
-                  </button>
+                    <option value="">-- Select Progressor --</option>
+                    {progressors.map(p => (
+                      <option key={p.id} value={p.id}>{p.name} ({p.id})</option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                {selectedProgressor && (
+                  <div className="flex items-end">
+                    <button
+                      onClick={handleSaveAssignments}
+                      disabled={savingAssignments}
+                      className="w-full sm:w-auto px-6 py-3.5 rounded-[1.25rem] bg-primary text-primary-foreground font-bold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 disabled:scale-100 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                    >
+                      {savingAssignments ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent"></div>
+                          Saving...
+                        </>
+                      ) : 'Save Assignments'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {selectedProgressor ? (
+              <div className="space-y-6">
+                <div className="bg-card p-6 rounded-[1.5rem] border border-border">
+                  <h3 className="text-lg font-bold text-foreground mb-1">Assign levels for {selectedProgressor.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Click levels to toggle assignments. Levels 1 & 2 are open by default, levels 3-10 must be explicitly assigned to unlock.</p>
+                  
+                  {/* Summary of currently selected levels */}
+                  <div className="flex flex-wrap gap-2 mb-4 p-4 rounded-xl bg-secondary/20 border border-border">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider self-center mr-2">Assigned:</span>
+                    {selectedLevelsToAssign.length === 0 ? (
+                      <span className="text-sm text-muted-foreground italic">No levels assigned yet (locked to Levels 1 & 2)</span>
+                    ) : (
+                      selectedLevelsToAssign.map(key => {
+                        const parts = key.split('-');
+                        const gameId = parts.slice(0, -1).join('-');
+                        const level = parts[parts.length - 1];
+                        const gameName = GAMES.find(g => g.id === gameId)?.name || gameId;
+                        return (
+                          <span key={key} className="text-xs bg-primary/15 text-primary px-3 py-1 rounded-[1rem] font-bold border border-primary/25">
+                            {gameName} Lvl {level}
+                          </span>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {GAMES.map((game) => {
                     const Icon = game.icon;
+                    const gameAssignedCount = selectedLevelsToAssign.filter(l => l.startsWith(`${game.id}-`)).length;
+                    
                     return (
-                      <div key={game.id} className="bg-card rounded-[2rem] border border-border overflow-hidden">
+                      <div key={game.id} className="bg-card rounded-[2rem] border border-border overflow-hidden shadow-sm flex flex-col justify-between">
                         <button
                           onClick={() => setSelectedGame(selectedGame === game.id ? null : game.id)}
-                          className="w-full p-6 hover:bg-secondary/50 hover:scale-105 active:scale-95 transition-all text-foreground"
+                          className="w-full p-6 hover:bg-secondary/20 transition-all text-left flex items-center justify-between"
                         >
-                          <div className="w-16 h-16 rounded-2xl bg-[#FF6347]/10 flex items-center justify-center mb-3 mx-auto">
-                            <Icon className="w-10 h-10 text-[#FF6347]" />
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                              <Icon className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-bold text-foreground">{game.name}</h3>
+                              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">{gameAssignedCount} levels assigned</p>
+                            </div>
                           </div>
-                          <h3 className="text-lg text-foreground">{game.name}</h3>
+                          <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
+                            {selectedGame === game.id ? 'Collapse' : 'Expand'}
+                          </span>
                         </button>
 
                         {selectedGame === game.id && (
-                          <div className="p-6 pt-0">
-                            <p className="text-sm text-muted-foreground mb-4">Select Levels to Assign:</p>
+                          <div className="p-6 pt-0 border-t border-border/50 animate-in slide-in-from-top-2 duration-200">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 mt-4">Select Levels:</p>
                             <div className="grid grid-cols-5 gap-2">
-                              {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => (
-                                <button
-                                  key={level}
-                                  className="aspect-square rounded-[1rem] bg-[#FF6347] text-white hover:scale-110 active:scale-95 transition-all shadow-md font-bold"
-                                >
-                                  {level}
-                                </button>
-                              ))}
+                              {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
+                                const levelKey = `${game.id}-${level}`;
+                                const isAssigned = selectedLevelsToAssign.includes(levelKey);
+                                
+                                return (
+                                  <button
+                                    key={level}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isAssigned) {
+                                        setSelectedLevelsToAssign(prev => prev.filter(k => k !== levelKey));
+                                      } else {
+                                        setSelectedLevelsToAssign(prev => [...prev, levelKey]);
+                                      }
+                                    }}
+                                    className={`aspect-square rounded-[1rem] transition-all duration-200 shadow-md font-bold text-sm relative flex items-center justify-center border hover:scale-105 active:scale-95 ${
+                                      isAssigned
+                                        ? 'bg-primary border-primary text-primary-foreground shadow-primary/20 shadow-lg scale-105 font-extrabold'
+                                        : 'bg-secondary border-border text-foreground hover:bg-secondary-accent'
+                                    }`}
+                                  >
+                                    {level}
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -499,9 +868,133 @@ export default function PractitionerDashboard() {
                 </div>
               </div>
             ) : (
-              <div className="text-center py-20">
+              <div className="text-center py-20 bg-card rounded-[2rem] border border-border p-8 animate-in fade-in">
                 <TrendingUp className="w-20 h-20 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Select a progressor from the Progressor Registry to assign tasks</p>
+                <h3 className="text-foreground text-lg mb-2">Choose a Progressor</h3>
+                <p className="text-muted-foreground max-w-sm mx-auto mb-6">Select a progressor from the dropdown above to view or modify their level assignments.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                  {progressors.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedProgressor(p)}
+                      className="p-4 rounded-xl bg-secondary/35 border border-border hover:bg-primary/10 hover:border-primary/50 transition-all font-semibold text-foreground text-sm"
+                    >
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {/* Notifications View */}
+        {activeView === 'notifications' && (
+          <div>
+            <h1 className="mb-8 text-foreground">Activity Notifications</h1>
+
+            {loadingNotifications ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-card rounded-[2rem] border border-border p-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+                <p className="text-muted-foreground">Fetching recent activities...</p>
+              </div>
+            ) : notificationsSessions.length === 0 ? (
+              <div className="text-center py-20 bg-card rounded-[2rem] border border-border p-8">
+                <Bell className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-foreground text-lg mb-2">No Recent Activity</h3>
+                <p className="text-muted-foreground max-w-sm mx-auto">There are no recent gameplay sessions recorded for any of your assigned progressors.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {notificationsSessions.map((session) => {
+                  const progressor = progressors.find(p => p.id === session.progressor_id);
+                  const progressorName = progressor ? progressor.name : 'Unknown Progressor';
+                  const game = GAMES.find(g => g.id === session.game_id);
+                  const gameName = game ? game.name : session.game_id;
+                  const GameIcon = game ? game.icon : Bell;
+                  
+                  const levelKey = `${session.game_id}-${session.level}`;
+                  const isAssigned = progressor?.assignedLevels?.includes(levelKey) || false;
+                  const isCompleted = session.accuracy >= 60;
+                  
+                  // Format activity message
+                  const activityText = isCompleted
+                    ? `${progressorName} completed ${gameName} Level ${session.level}`
+                    : `${progressorName} attempted ${gameName} Level ${session.level}`;
+
+                  return (
+                    <div 
+                      key={session.id} 
+                      className={`bg-card p-6 rounded-[1.5rem] border transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                        isCompleted 
+                          ? isAssigned 
+                            ? 'border-green-500/30 shadow-[0_4px_12px_rgba(34,197,94,0.05)] bg-green-500/[0.01]' 
+                            : 'border-border'
+                          : 'border-border opacity-80'
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                          isCompleted
+                            ? isAssigned 
+                              ? 'bg-green-500/10 text-green-500' 
+                              : 'bg-primary/10 text-primary'
+                            : 'bg-amber-500/10 text-amber-500'
+                        }`}>
+                          {isCompleted ? <GameIcon className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+                        </div>
+                        
+                        <div>
+                          <p className="text-foreground font-bold font-sans text-base leading-snug">
+                            {activityText}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2 mt-2">
+                            <span className="text-xs text-muted-foreground font-mono">
+                              {new Date(session.created_at).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <span className="text-xs text-muted-foreground font-semibold">
+                              Score: {session.score}/10
+                            </span>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <span className="text-xs text-muted-foreground font-semibold">
+                              Accuracy: {session.accuracy}%
+                            </span>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <span className="text-xs text-muted-foreground font-semibold">
+                              Duration: {session.time_taken}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex sm:flex-col items-start sm:items-end justify-between sm:justify-center gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-border/50">
+                        {isCompleted ? (
+                          isAssigned ? (
+                            <span className="text-xs bg-green-500/10 text-green-500 border border-green-500/20 px-3 py-1 rounded-[1rem] font-bold font-sans">
+                              Assigned Task
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-[1rem] font-bold font-sans">
+                              Independent
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-xs bg-amber-500/10 text-amber-500 border border-amber-500/20 px-3 py-1 rounded-[1rem] font-bold font-sans">
+                            Practice Run
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground font-mono">
+                          ID: {session.progressor_id}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -637,10 +1130,10 @@ export default function PractitionerDashboard() {
       {showDetailsModal && selectedDetailsProgressor && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
           <div className="bg-card rounded-[2rem] p-8 max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in duration-300 border border-border overflow-hidden">
-            <div className="flex items-center justify-between mb-6 flex-shrink-0">
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
               <div>
                 <h2 className="text-2xl font-semibold text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
-                  Session History: {selectedDetailsProgressor.name}
+                  Details: {selectedDetailsProgressor.name}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
                   Progressor ID: {selectedDetailsProgressor.id}
@@ -651,6 +1144,7 @@ export default function PractitionerDashboard() {
                   setShowDetailsModal(false);
                   setSelectedDetailsProgressor(null);
                   setSessions([]);
+                  setDetailsActiveTab('progression');
                 }}
                 className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 text-foreground"
               >
@@ -658,72 +1152,164 @@ export default function PractitionerDashboard() {
               </button>
             </div>
 
-            {/* Scrollable table container with explicit padding boundaries */}
+            {/* Tab Navigation */}
+            <div className="flex gap-6 mb-6 border-b border-border pb-1 flex-shrink-0">
+              <button
+                onClick={() => setDetailsActiveTab('progression')}
+                className={`pb-2 px-1 text-sm font-bold transition-all relative ${
+                  detailsActiveTab === 'progression'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Game Progression
+              </button>
+              <button
+                onClick={() => setDetailsActiveTab('history')}
+                className={`pb-2 px-1 text-sm font-bold transition-all relative ${
+                  detailsActiveTab === 'history'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Session History
+              </button>
+            </div>
+
+            {/* Tab Contents */}
             <div className="flex-1 overflow-y-auto pr-2 min-h-0">
-              {loadingSessions ? (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FF6B4A] mb-4"></div>
-                  <p className="text-muted-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Loading session history...</p>
+              {detailsActiveTab === 'progression' && (
+                <div>
+                  {!selectedDetailsProgressor.completedLevels || selectedDetailsProgressor.completedLevels.length === 0 ? (
+                    <div className="text-center py-20 flex flex-col items-center justify-center">
+                      <Award className="w-16 h-16 mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground text-lg font-sans font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        No game data available for this progressor yet.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
+                      {GAMES.map((game) => {
+                        const Icon = game.icon;
+                        const completed = selectedDetailsProgressor.completedLevels || [];
+                        const gameCompletedCount = completed.filter(l => l.startsWith(`${game.id}-`)).length;
+
+                        return (
+                          <div key={game.id} className="bg-secondary/15 rounded-[1.5rem] p-6 border border-border">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                  <Icon className="w-6 h-6 text-primary" />
+                                </div>
+                                <h3 className="text-base font-bold text-foreground">{game.name}</h3>
+                              </div>
+                              <span className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-[1rem] font-bold">
+                                {gameCompletedCount}/10 Level{gameCompletedCount !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-5 gap-2">
+                              {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
+                                const levelKey = `${game.id}-${level}`;
+                                const isDone = completed.includes(levelKey);
+                                const isAssigned = (selectedDetailsProgressor.assignedLevels || []).includes(levelKey);
+
+                                return (
+                                  <div
+                                    key={level}
+                                    className={`aspect-square rounded-[0.75rem] flex flex-col items-center justify-center font-bold text-xs transition-all relative ${
+                                      isDone
+                                        ? 'bg-primary text-primary-foreground shadow-sm scale-105'
+                                        : isAssigned
+                                          ? 'bg-secondary border-2 border-primary/50 text-foreground'
+                                          : 'bg-secondary text-muted-foreground border border-border opacity-40'
+                                    }`}
+                                    title={isDone ? `Level ${level} Completed` : isAssigned ? `Level ${level} Assigned & Uncompleted` : `Level ${level} Locked/Not Done`}
+                                  >
+                                    <span>{level}</span>
+                                    {isAssigned && !isDone && (
+                                      <span className="w-1.5 h-1.5 bg-primary rounded-full absolute bottom-1" />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              ) : sessions.length === 0 ? (
-                <div className="text-center py-20">
-                  <History className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>No session records found for this progressor.</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto border border-border rounded-xl">
-                  <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-secondary/50">
-                      <tr>
-                        <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
-                          Game ID
-                        </th>
-                        <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
-                          Game Level
-                        </th>
-                        <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
-                          Score achieved
-                        </th>
-                        <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
-                          Accuracy percentage
-                        </th>
-                        <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
-                          Session Time
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border bg-card">
-                      {sessions.map((session) => (
-                        <tr key={session.id} className="hover:bg-secondary/30 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
-                            {session.game_id === 'phoneme-pop' ? 'Phoneme Pop' :
-                              session.game_id === 'position-pilot' ? 'Position Pilot' :
-                                session.game_id === 'sound-trail' ? 'Sound Trail' :
-                                  session.game_id === 'sound-synk' ? 'Sound Synk' :
-                                    session.game_id === 'sound-sorter' ? 'Sound Sorter' : session.game_id}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-                            Level {session.level}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-                            {session.score}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-                            {session.accuracy}%
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-                            {new Date(session.created_at).toLocaleString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              )}
+
+              {detailsActiveTab === 'history' && (
+                <div>
+                  {loadingSessions ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FF6B4A] mb-4"></div>
+                      <p className="text-muted-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Loading session history...</p>
+                    </div>
+                  ) : sessions.length === 0 ? (
+                    <div className="text-center py-20">
+                      <History className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground font-sans font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>No session records found for this progressor.</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto border border-border rounded-xl pb-4">
+                      <table className="min-w-full divide-y divide-border">
+                        <thead className="bg-secondary/50">
+                          <tr>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              Game ID
+                            </th>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              Game Level
+                            </th>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              Score achieved
+                            </th>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              Accuracy percentage
+                            </th>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              Session Time
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border bg-card">
+                          {sessions.map((session) => (
+                            <tr key={session.id} className="hover:bg-secondary/30 transition-colors">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                {session.game_id === 'phoneme-pop' ? 'Phoneme Pop' :
+                                  session.game_id === 'position-pilot' ? 'Position Pilot' :
+                                    session.game_id === 'sound-trail' ? 'Sound Trail' :
+                                      session.game_id === 'sound-synk' ? 'Sound Synk' :
+                                        session.game_id === 'sound-sorter' ? 'Sound Sorter' : session.game_id}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                                Level {session.level}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                                {session.score}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                                {session.accuracy}%
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                                {new Date(session.created_at).toLocaleString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
