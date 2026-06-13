@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import { useGameSession } from '../../context/GameSessionContext';
 import { positionPilotData, PositionPilotQuestion } from '../../../data/positionPilotData';
+import { getOptionIcon } from '../OptionIconMapper';
 
 const CHOICES = [
   { label: 'BEGINNING', value: 'START' },
@@ -347,9 +348,10 @@ export default function PositionPilot() {
                     key={choice.value}
                     onClick={() => handleChoiceSelect(choice.value)}
                     disabled={isLocked}
-                    className={`py-8 rounded-[2rem] border-2 text-base md:text-xl font-extrabold transition-all duration-300 flex items-center justify-center shadow-md disabled:cursor-not-allowed ${buttonStyle}`}
+                    className={`py-8 rounded-[2rem] border-2 text-base md:text-xl font-extrabold transition-all duration-300 flex items-center justify-center gap-3 shadow-md disabled:cursor-not-allowed ${buttonStyle}`}
                   >
-                    {choice.label}
+                    {getOptionIcon(choice.label)}
+                    <span>{choice.label}</span>
                   </button>
                 );
               })}

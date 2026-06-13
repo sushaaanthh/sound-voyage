@@ -65,7 +65,7 @@ export default function ProgressorDashboard() {
   });
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<Array<{ id: number; text: string; read: boolean }>>([]);
+  const [notifications, setNotifications] = useState<Array<{ id: number; key: string; text: string; read: boolean; gameId: string; levelNum: number }>>([]);
 
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -99,14 +99,44 @@ export default function ProgressorDashboard() {
     }
   }, [location.state]);
 
+  // Derive notifications from assigned levels
+  useEffect(() => {
+    if (safeAssignedLevels.length > 0) {
+      setNotifications(prev => {
+        const prevMap = new Map(prev.map(n => [n.key, n.read]));
+        return safeAssignedLevels.map((levelKey, idx) => {
+          const lastDashIndex = levelKey.lastIndexOf('-');
+          const gameId = levelKey.substring(0, lastDashIndex);
+          const levelNum = levelKey.substring(lastDashIndex + 1);
+          const gameName = GAMES.find(g => g.id === gameId)?.name || gameId;
+          const text = `Your practitioner assigned you a new task: ${gameName} - Level ${levelNum}`;
+          
+          return {
+            id: idx,
+            key: levelKey,
+            text,
+            read: prevMap.has(levelKey) ? !!prevMap.get(levelKey) : false,
+            gameId,
+            levelNum: parseInt(levelNum, 10)
+          };
+        });
+      });
+    } else {
+      setNotifications([]);
+    }
+  }, [safeAssignedLevels]);
+
   const isLevelUnlocked = (gameId: string, levelNum: number) => {
+    const currentLevelKey = `${gameId}-${levelNum}`;
+    // Explicit assignments bypass sequence requirements
+    if (safeAssignedLevels.includes(currentLevelKey)) return true;
+
     if (levelNum === 1) return true;
     if (levelNum === 2) {
       return safeCompletedLevels.includes(`${gameId}-1`);
     }
     // Level 3+
     const previousLevelKey = `${gameId}-${levelNum - 1}`;
-    const currentLevelKey = `${gameId}-${levelNum}`;
     return safeCompletedLevels.includes(previousLevelKey) && safeAssignedLevels.includes(currentLevelKey);
   };
 
@@ -119,6 +149,12 @@ export default function ProgressorDashboard() {
         toast.error("A practitioner hasn't assigned you this level yet.");
       }
     }
+  };
+
+  const handleNotificationClick = (notif: { gameId: string; levelNum: number; key: string }) => {
+    setNotifications(prev => prev.map(n => n.key === notif.key ? { ...n, read: true } : n));
+    setShowNotifications(false);
+    navigate(`/game/${notif.gameId}/${notif.levelNum}`);
   };
 
   return (
@@ -161,16 +197,17 @@ export default function ProgressorDashboard() {
                       </div>
                     ) : (
                       notifications.map((notif) => (
-                        <div
+                        <button
                           key={notif.id}
-                          className={`p-3 rounded-[1.25rem] text-sm transition-colors border ${
+                          onClick={() => handleNotificationClick(notif)}
+                          className={`w-full text-left p-3 rounded-[1.25rem] text-sm transition-all border block hover:scale-[1.02] active:scale-95 cursor-pointer ${
                             notif.read
-                              ? 'bg-secondary/40 border-transparent text-muted-foreground'
-                              : 'bg-primary/10 border-primary/20 text-foreground font-medium'
+                              ? 'bg-secondary/40 border-transparent text-muted-foreground hover:bg-secondary/60'
+                              : 'bg-primary/10 border-primary/20 text-foreground font-medium hover:bg-primary/15'
                           }`}
                         >
                           {notif.text}
-                        </div>
+                        </button>
                       ))
                     )}
                   </div>

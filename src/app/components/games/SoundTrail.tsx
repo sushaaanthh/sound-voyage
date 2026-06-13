@@ -7,6 +7,7 @@ import { ThemeToggle } from '../ThemeToggle';
 import { useGameSession } from '../../context/GameSessionContext';
 import { supabase } from '../../../lib/supabase';
 import { soundTrailData, SoundTrailLevel, SoundTrailChain } from '../../../data/soundTrailData';
+import { getOptionIcon } from '../OptionIconMapper';
 
 export default function SoundTrail() {
   const navigate = useNavigate();
@@ -559,10 +560,13 @@ export default function SoundTrail() {
                     key={`pos-btn-${pos}`}
                     onClick={() => handlePositionClick(pos)}
                     disabled={isPlayingSequence || isTransitioning}
-                    className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-card border-3 border-border hover:border-emerald-500 hover:bg-emerald-500/5 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed text-2xl font-black flex flex-col items-center justify-center transition-all text-foreground cursor-pointer shadow-md"
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-card border-3 border-border hover:border-emerald-500 hover:bg-emerald-500/5 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed text-2xl font-black flex flex-col items-center justify-center transition-all text-foreground cursor-pointer shadow-md gap-1"
                   >
                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Pos</span>
-                    {pos}
+                    <span className="flex items-center gap-1.5 justify-center">
+                      {getOptionIcon(String(pos))}
+                      <span>{pos}</span>
+                    </span>
                   </button>
                 ))}
               </div>

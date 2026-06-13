@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import { useGameSession } from '../../context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
+import { getOptionIcon } from '../OptionIconMapper';
 
 interface PhonemePopProps {
   levelData?: any; // kept for compatibility if needed, but we pull dynamically
@@ -518,7 +519,10 @@ export default function PhonemePop({}: PhonemePopProps) {
                             : 'border-border bg-card opacity-50 text-foreground'
                     }`}
                   >
-                    YES
+                    <span className="flex items-center gap-2">
+                      {getOptionIcon('yes')}
+                      <span>YES</span>
+                    </span>
                   </button>
                   <button
                     onClick={() => handleBinaryAnswer('no')}
@@ -535,7 +539,10 @@ export default function PhonemePop({}: PhonemePopProps) {
                             : 'border-border bg-card opacity-50 text-foreground'
                     }`}
                   >
-                    NO
+                    <span className="flex items-center gap-2">
+                      {getOptionIcon('no')}
+                      <span>NO</span>
+                    </span>
                   </button>
                 </div>
               </div>
@@ -565,7 +572,10 @@ export default function PhonemePop({}: PhonemePopProps) {
                             : 'border-border bg-card opacity-50 text-foreground'
                     }`}
                   >
-                    YES
+                    <span className="flex items-center gap-2">
+                      {getOptionIcon('yes')}
+                      <span>YES</span>
+                    </span>
                   </button>
                   <button
                     onClick={() => handleBinaryAnswer('no')}
@@ -582,7 +592,10 @@ export default function PhonemePop({}: PhonemePopProps) {
                             : 'border-border bg-card opacity-50 text-foreground'
                     }`}
                   >
-                    NO
+                    <span className="flex items-center gap-2">
+                      {getOptionIcon('no')}
+                      <span>NO</span>
+                    </span>
                   </button>
                 </div>
               </div>
@@ -634,7 +647,10 @@ export default function PhonemePop({}: PhonemePopProps) {
                         }`}>
                           <Icon className="w-12 h-12" />
                         </div>
-                        <h3 className="font-bold text-center text-xl uppercase">{option.label}</h3>
+                        <h3 className="font-bold text-center text-xl uppercase flex items-center gap-2 justify-center">
+                          {getOptionIcon(option.label)}
+                          <span>{option.label}</span>
+                        </h3>
                       </button>
                     );
                   })}
@@ -695,7 +711,10 @@ export default function PhonemePop({}: PhonemePopProps) {
                         }`}>
                         <Icon className="w-12 h-12" />
                       </div>
-                      <h3 className="font-bold text-center text-xl uppercase">{option.label}</h3>
+                      <h3 className="font-bold text-center text-xl uppercase flex items-center gap-2 justify-center">
+                        {getOptionIcon(option.label)}
+                        <span>{option.label}</span>
+                      </h3>
                     </button>
                   );
                 })}
