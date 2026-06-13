@@ -4,6 +4,7 @@ import { Home, Volume2, RotateCcw, Cat, Dog, Fish, Bird, CheckCircle, XCircle } 
 import { ThemeToggle } from './ThemeToggle';
 import PhonemePop from './games/PhonemePop';
 import PositionPilot from './games/PositionPilot';
+import SoundTrail from './games/SoundTrail';
 import gameData from '../../data/gameData.json';
 
 interface Card {
@@ -50,6 +51,10 @@ export default function GameScreen() {
 
   if (gameId === 'position-pilot') {
     return <PositionPilot />;
+  }
+
+  if (gameId === 'sound-trail') {
+    return <SoundTrail />;
   }
 
   // Game-specific states
@@ -301,59 +306,6 @@ export default function GameScreen() {
           </div>
         )}
 
-        {/* Sound Trail */}
-        {gameId === 'sound-trail' && (
-          <div className="text-center">
-            <button
-              onClick={playSound}
-              className="mb-12 w-32 h-32 rounded-full bg-primary text-primary-foreground shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 mx-auto flex items-center justify-center"
-            >
-              <Volume2 className="w-12 h-12" />
-            </button>
-
-            <h2 className="mb-4">Which phoneme changed position?</h2>
-            <p className="text-muted-foreground mb-12">
-              Question {currentQuestion} of {totalQuestions}
-            </p>
-
-            <div className="flex justify-center gap-12 mb-12">
-              <div className="p-8 rounded-[2rem] bg-card border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Original</p>
-                <h1>CAT</h1>
-              </div>
-              <div className="flex items-center">
-                <div className="text-4xl">→</div>
-              </div>
-              <div className="p-8 rounded-[2rem] bg-card border border-border">
-                <p className="text-sm text-muted-foreground mb-2">Changed</p>
-                <h1>ACT</h1>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
-              {[
-                { id: 1, sound: '/c/', correct: true },
-                { id: 2, sound: '/a/', correct: false },
-                { id: 3, sound: '/t/', correct: false },
-              ].map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleAnswer(option.id, option.correct)}
-                  disabled={selectedAnswer !== null}
-                  className={`p-8 rounded-[2rem] border-2 transition-all duration-300 ${
-                    selectedAnswer === option.id
-                      ? option.correct
-                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                        : 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                      : 'border-border bg-card hover:shadow-xl hover:scale-105 active:scale-95'
-                  } ${selectedAnswer !== null ? 'cursor-not-allowed' : ''}`}
-                >
-                  <h2>{option.sound}</h2>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Sound Synk */}
         {gameId === 'sound-synk' && (
