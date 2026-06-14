@@ -1,17 +1,17 @@
 const phonemeMap: Record<string, string> = {
   // Slash format
-  '/k/': ', kuh, ',
-  '/ch/': ', chuh, ',
+  '/k/': ' , kuh , ',
+  '/ch/': ' , chuh , ',
   '/p/': ', puh, ',
-  '/s/': ', sss, ',
-  '/m/': ', mmm, ',
+  '/s/': ' , sss , ',
+  '/m/': ' , mmm , ',
   '/b/': ', buh, ',
   '/d/': ', duh, ',
   '/f/': ', fff, ',
   '/g/': ', guh, ',
   '/h/': ', huh, ',
   '/j/': ', juh, ',
-  '/l/': ', lll, ',
+  '/l/': ' , ull , ',
   '/n/': ', nnn, ',
   '/r/': ', rrr, ',
   '/t/': ', tuh, ',
@@ -19,27 +19,28 @@ const phonemeMap: Record<string, string> = {
   '/w/': ', wuh, ',
   '/y/': ', yuh, ',
   '/z/': ', zzz, ',
-  '/sh/': ', shuh, ',
-  '/th/': ', thuh, ',
+  '/sh/': ' , shh , ',
+  '/th/': ' , thuh , ',
   '/a/': ', ah, ',
   '/e/': ', eh, ',
   '/i/': ', ih, ',
   '/o/': ', ah, ',
   '/u/': ', uh, ',
+  '/c/': ' , kuh , ',
   
   // Normal format
-  'k': ', kuh, ',
-  'ch': ', chuh, ',
+  'k': ' , kuh , ',
+  'ch': ' , chuh , ',
   'p': ', puh, ',
-  's': ', sss, ',
-  'm': ', mmm, ',
+  's': ' , sss , ',
+  'm': ' , mmm , ',
   'b': ', buh, ',
   'd': ', duh, ',
   'f': ', fff, ',
   'g': ', guh, ',
   'h': ', huh, ',
   'j': ', juh, ',
-  'l': ', lll, ',
+  'l': ' , ull , ',
   'n': ', nnn, ',
   'r': ', rrr, ',
   't': ', tuh, ',
@@ -47,13 +48,19 @@ const phonemeMap: Record<string, string> = {
   'w': ', wuh, ',
   'y': ', yuh, ',
   'z': ', zzz, ',
-  'sh': ', shuh, ',
-  'th': ', thuh, ',
+  'sh': ' , shh , ',
+  'th': ' , thuh , ',
   'a': ', ah, ',
   'e': ', eh, ',
   'i': ', ih, ',
   'o': ', ah, ',
-  'u': ', uh, '
+  'u': ', uh, ',
+  'c': ' , kuh , ',
+
+  // Space-wrapped and special phonetic notations
+  ' l ': ' , ull , ',
+  ' k ': ' , kuh , ',
+  'll': ' , ull , '
 };
 
 /**
@@ -77,15 +84,31 @@ export function translateText(text: string): string {
     }
   }
 
-  // 3. Replace slash-wrapped phonemes inside longer text/sentences
+  // 3. Replace all phonetic keys in the sentence dynamically
   let translated = text;
-  translated = translated.replace(/\/([a-zA-Z]+)\//g, (match, p1) => {
-    const key = p1.toLowerCase();
-    if (phonemeMap[key]) {
-      return phonemeMap[key];
+  // Sort keys by length descending to replace longer/more specific patterns first
+  const keys = Object.keys(phonemeMap).sort((a, b) => b.length - a.length);
+
+  for (const key of keys) {
+    const value = phonemeMap[key];
+    let regex: RegExp;
+
+    if (key.startsWith('/') && key.endsWith('/')) {
+      // Escape for regex and match globally (case-insensitive)
+      const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      regex = new RegExp(escaped, 'gi');
+    } else if (key.startsWith(' ') && key.endsWith(' ')) {
+      // Space-wrapped keys: match exactly with spaces
+      const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      regex = new RegExp(escaped, 'gi');
+    } else {
+      // Word boundary for other keys to prevent matching inside words
+      const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      regex = new RegExp(`\\b${escaped}\\b`, 'gi');
     }
-    return match;
-  });
+
+    translated = translated.replace(regex, value);
+  }
 
   return translated;
 }
