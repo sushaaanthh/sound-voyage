@@ -1,59 +1,59 @@
 const phonemeMap: Record<string, string> = {
   // Slash format
-  '/k/': 'kuh',
-  '/ch/': 'chuh',
-  '/p/': 'puh',
-  '/s/': 'sss',
-  '/m/': 'mmm',
-  '/b/': 'buh',
-  '/d/': 'duh',
-  '/f/': 'fff',
-  '/g/': 'guh',
-  '/h/': 'huh',
-  '/j/': 'juh',
-  '/l/': 'lll',
-  '/n/': 'nnn',
-  '/r/': 'rrr',
-  '/t/': 'tuh',
-  '/v/': 'vvv',
-  '/w/': 'wuh',
-  '/y/': 'yuh',
-  '/z/': 'zzz',
-  '/sh/': 'shuh',
-  '/th/': 'thuh',
-  '/a/': 'ah',
-  '/e/': 'eh',
-  '/i/': 'ih',
-  '/o/': 'ah',
-  '/u/': 'uh',
+  '/k/': ', kuh, ',
+  '/ch/': ', chuh, ',
+  '/p/': ', puh, ',
+  '/s/': ', sss, ',
+  '/m/': ', mmm, ',
+  '/b/': ', buh, ',
+  '/d/': ', duh, ',
+  '/f/': ', fff, ',
+  '/g/': ', guh, ',
+  '/h/': ', huh, ',
+  '/j/': ', juh, ',
+  '/l/': ', lll, ',
+  '/n/': ', nnn, ',
+  '/r/': ', rrr, ',
+  '/t/': ', tuh, ',
+  '/v/': ', vvv, ',
+  '/w/': ', wuh, ',
+  '/y/': ', yuh, ',
+  '/z/': ', zzz, ',
+  '/sh/': ', shuh, ',
+  '/th/': ', thuh, ',
+  '/a/': ', ah, ',
+  '/e/': ', eh, ',
+  '/i/': ', ih, ',
+  '/o/': ', ah, ',
+  '/u/': ', uh, ',
   
   // Normal format
-  'k': 'kuh',
-  'ch': 'chuh',
-  'p': 'puh',
-  's': 'sss',
-  'm': 'mmm',
-  'b': 'buh',
-  'd': 'duh',
-  'f': 'fff',
-  'g': 'guh',
-  'h': 'huh',
-  'j': 'juh',
-  'l': 'lll',
-  'n': 'nnn',
-  'r': 'rrr',
-  't': 'tuh',
-  'v': 'vvv',
-  'w': 'wuh',
-  'y': 'yuh',
-  'z': 'zzz',
-  'sh': 'shuh',
-  'th': 'thuh',
-  'a': 'ah',
-  'e': 'eh',
-  'i': 'ih',
-  'o': 'ah',
-  'u': 'uh'
+  'k': ', kuh, ',
+  'ch': ', chuh, ',
+  'p': ', puh, ',
+  's': ', sss, ',
+  'm': ', mmm, ',
+  'b': ', buh, ',
+  'd': ', duh, ',
+  'f': ', fff, ',
+  'g': ', guh, ',
+  'h': ', huh, ',
+  'j': ', juh, ',
+  'l': ', lll, ',
+  'n': ', nnn, ',
+  'r': ', rrr, ',
+  't': ', tuh, ',
+  'v': ', vvv, ',
+  'w': ', wuh, ',
+  'y': ', yuh, ',
+  'z': ', zzz, ',
+  'sh': ', shuh, ',
+  'th': ', thuh, ',
+  'a': ', ah, ',
+  'e': ', eh, ',
+  'i': ', ih, ',
+  'o': ', ah, ',
+  'u': ', uh, '
 };
 
 /**
@@ -64,16 +64,16 @@ export function translateText(text: string): string {
   const trimmed = text.trim();
   const normalized = trimmed.toLowerCase();
   
-  // 1. Direct match check
+  // 1. Direct match check (trim outer commas/spaces for isolated option words)
   if (phonemeMap[normalized]) {
-    return phonemeMap[normalized];
+    return phonemeMap[normalized].replace(/^[\s,]+|[\s,]+$/g, '');
   }
   
-  // 2. Slash-wrapped core checks
+  // 2. Slash-wrapped core checks (trim outer commas/spaces for isolated option words)
   if (normalized.startsWith('/') && normalized.endsWith('/')) {
     const core = normalized.slice(1, -1);
     if (phonemeMap[core]) {
-      return phonemeMap[core];
+      return phonemeMap[core].replace(/^[\s,]+|[\s,]+$/g, '');
     }
   }
 
@@ -115,6 +115,7 @@ export function playAudio(
   const spokenText = translateText(text);
 
   const utterance = new SpeechSynthesisUtterance(spokenText);
+  utterance.rate = 0.9;
 
   // Retrieve voices and select Indian English
   const voices = window.speechSynthesis.getVoices();
