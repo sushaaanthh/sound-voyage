@@ -13,9 +13,11 @@ export default function ResultScreen() {
 
   const state = location.state || {};
   const score = typeof state.score === 'number' ? state.score : 0;
-  const totalQuestions = typeof state.totalQuestions === 'number'
-    ? state.totalQuestions
-    : (typeof state.total === 'number' ? state.total : 10);
+  const totalQuestions = Math.round(
+    typeof state.totalQuestions === 'number'
+      ? state.totalQuestions
+      : (typeof state.total === 'number' ? state.total : 10)
+  );
 
   const timeTaken = typeof state.timeTaken === 'string' ? state.timeTaken : '00:00';
   const gameId = typeof state.gameId === 'string' ? state.gameId : 'phoneme-pop';
@@ -55,7 +57,7 @@ export default function ResultScreen() {
 
   // Save game result to Supabase exactly once on mount
   useEffect(() => {
-    saveGameResult(gameId, level, score, accuracy, timeTaken);
+    saveGameResult(gameId, level, score, accuracy, timeTaken, totalQuestions);
   }, []);
 
   // Show celebratory toasts on mount if completed Level 10

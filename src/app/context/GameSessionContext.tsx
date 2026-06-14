@@ -12,7 +12,8 @@ interface GameSessionContextType {
     level: number,
     score: number,
     accuracy: number,
-    timeTaken: string
+    timeTaken: string,
+    totalQuestions: number
   ) => Promise<void>;
   updateSession: (id: string, name: string, completedLevels: string[], assignedLevels: string[]) => void;
 }
@@ -87,7 +88,8 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     level: number,
     score: number,
     accuracy: number,
-    timeTaken: string
+    timeTaken: string,
+    totalQuestions: number
   ) => {
     const activeId = progressorId || 'demo';
     
@@ -103,6 +105,7 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
             score: score,
             accuracy: accuracy,
             time_taken: timeTaken,
+            total_questions: totalQuestions,
           },
         ]);
 
