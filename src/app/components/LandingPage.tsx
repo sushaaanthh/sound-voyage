@@ -325,28 +325,23 @@ export default function LandingPage() {
           return;
         }
 
-        // If optional child progressor ID is provided, link it
+        // If optional child progressor ID is provided, try to link it automatically
         if (signupChildId.trim()) {
           const childId = signupChildId.trim();
-          const { data: childData, error: childError } = await supabase
-            .from('progressors')
-            .select('id')
-            .eq('id', childId)
-            .maybeSingle();
-
-          if (childError || !childData) {
-            toast.warning('Account created, but child Progressor ID not found.');
-          } else {
+          try {
             const { error: linkError } = await supabase
               .from('progressors')
               .update({ parent_id: signUpData.user.id })
               .eq('id', childId);
 
             if (linkError) {
-              toast.warning('Account created, but failed to link child Progressor: ' + linkError.message);
+              console.error('Failed to auto-link child Progressor on parent signup:', linkError.message);
+              toast.warning('Account created, but child auto-linking failed. You can link manually from the dashboard.');
             } else {
               toast.success('Child account successfully linked!');
             }
+          } catch (err) {
+            console.error('Failed to auto-link child Progressor on parent signup:', err);
           }
         }
 

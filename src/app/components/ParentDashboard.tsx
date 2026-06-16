@@ -170,16 +170,17 @@ export default function ParentDashboard() {
       }
 
       // Query if progressor exists
-      const { data: progressor, error: fetchError } = await supabase
+      const { data: progressorsFound, error: fetchError } = await supabase
         .from('progressors')
         .select('id, parent_id, name')
-        .eq('id', childIdInput)
-        .maybeSingle();
+        .eq('id', childIdInput);
 
-      if (fetchError || !progressor) {
-        toast.error("Progressor ID not found in the progressors table.");
+      if (fetchError || !progressorsFound || progressorsFound.length === 0) {
+        toast.error("Invalid Progressor ID. Please check the spelling and try again.");
         return;
       }
+
+      const progressor = progressorsFound[0];
 
       if (progressor.parent_id === user.id) {
         toast.info("This child is already linked to your account.");
