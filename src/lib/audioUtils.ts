@@ -27,6 +27,15 @@ const phonemeMap: Record<string, string> = {
   '/o/': ', ah, ',
   '/u/': ', uh, ',
   '/c/': ' , kuh , ',
+  '/ee/': ' , ee , ',
+  '/oo/': ' , oo , ',
+  '/ue/': ' , yoo , ',
+  '/ae/': ' , ay , ',
+  '/ie/': ' , eye , ',
+  '/ah/': ' , ah , ',
+  '/ow/': ' , ow , ',
+  '/ai/': ' , ay , ',
+  '/oe/': ' , oh , ',
   
   // Normal format
   'k': ' , kuh , ',
@@ -56,6 +65,15 @@ const phonemeMap: Record<string, string> = {
   'o': ', ah, ',
   'u': ', uh, ',
   'c': ' , kuh , ',
+  'ee': ' , ee , ',
+  'oo': ' , oo , ',
+  'ue': ' , yoo , ',
+  'ae': ' , ay , ',
+  'ie': ' , eye , ',
+  'ah': ' , ah , ',
+  'ow': ' , ow , ',
+  'ai': ' , ay , ',
+  'oe': ' , oh , ',
 
   // Space-wrapped and special phonetic notations
   ' l ': ' , ull , ',

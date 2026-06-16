@@ -6,6 +6,7 @@ import PhonemePop from './games/PhonemePop';
 import PositionPilot from './games/PositionPilot';
 import SoundTrail from './games/SoundTrail';
 import SoundSync from './games/SoundSync';
+import SoundSorter from './games/SoundSorter';
 import gameData from '../../data/gameData.json';
 
 interface Card {
@@ -60,6 +61,10 @@ export default function GameScreen() {
 
   if (gameId === 'sound-synk' || gameId === 'sound-sync') {
     return <SoundSync />;
+  }
+
+  if (gameId === 'sound-sorter') {
+    return <SoundSorter />;
   }
 
   // Game-specific states
