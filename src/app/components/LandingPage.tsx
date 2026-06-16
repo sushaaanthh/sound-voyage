@@ -37,7 +37,6 @@ const IMPACT_GUIDES = [
 export default function LandingPage() {
   const [selectedRole, setSelectedRole] = useState<Role>('progressor');
   const [progressorId, setProgressorId] = useState('');
-  const [practitionerId, setPractitionerId] = useState('');
   const [loginEmail, setLoginEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -117,32 +116,17 @@ export default function LandingPage() {
           navigate('/parent');
         }
       } else {
-        // Progressor role: Maintain the existing working logic for children
-        let emailToAuth = '';
-
-        if (progressorId.includes('@')) {
-          emailToAuth = progressorId;
-        } else {
-          const { data: progressorData, error: progressorError } = await supabase
-            .from('progressors')
-            .select('assigned_email')
-            .eq('id', progressorId)
-            .maybeSingle();
-
-          if (progressorError || !progressorData) {
-            toast.error('Progressor ID not found. Please verify with your practitioner.');
-            return;
-          }
-          emailToAuth = progressorData.assigned_email || '';
-        }
-
-        if (!emailToAuth) {
-          toast.error('Please enter a valid email or ID.');
+        // Progressor role: Reconstruct the proxy email from progressorId
+        if (!progressorId) {
+          toast.error('Progressor ID is required.');
           return;
         }
 
+        const cleanId = progressorId.trim().replace(/\s+/g, '').toLowerCase();
+        const proxyEmail = `${cleanId}@student.soundvoyage.local`;
+
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-          email: emailToAuth,
+          email: proxyEmail,
           password: password,
         });
 
@@ -151,7 +135,7 @@ export default function LandingPage() {
           return;
         }
 
-        // Verify progressor profile
+        // Verify progressor profile exists in the database
         const { data: progressorProfile } = await supabase
           .from('progressors')
           .select('*')
@@ -230,9 +214,15 @@ export default function LandingPage() {
     }
 
     try {
+      let emailToRegister = signupEmail;
+      if (selectedRole === 'progressor') {
+        const cleanId = signupProgressorId.trim().replace(/\s+/g, '').toLowerCase();
+        emailToRegister = `${cleanId}@student.soundvoyage.local`;
+      }
+
       // Allow the standard supabase.auth.signUp() function to run for everyone.
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: signupEmail,
+        email: emailToRegister,
         password: signupPassword,
         options: {
           data: {

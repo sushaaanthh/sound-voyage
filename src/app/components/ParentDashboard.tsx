@@ -57,7 +57,6 @@ export default function ParentDashboard() {
   const navigate = useNavigate();
 
   // Authentication & Profile States
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [children, setChildren] = useState<Progressor[]>([]);
   const [selectedChild, setSelectedChild] = useState<Progressor | null>(null);
   const [sessions, setSessions] = useState<GameSession[]>([]);
@@ -78,7 +77,6 @@ export default function ParentDashboard() {
           navigate('/');
           return;
         }
-        setCurrentUser(user);
         await fetchChildren(user.id);
       } catch (err) {
         console.error('Failed to initialize parent portal:', err);
