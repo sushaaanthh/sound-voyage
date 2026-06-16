@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { Home, Clock, TrendingUp, MessageSquare, Star, Link as LinkIcon, Award, CheckCircle2, Target, Calendar, ArrowRight, User } from 'lucide-react';
+import { Home, Clock, TrendingUp, MessageSquare, Star, Link as LinkIcon, Award, Target, Calendar, User } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 import { supabase } from '../../lib/supabase';
@@ -51,11 +51,6 @@ const timeToSeconds = (timeStr: string): number => {
   return parseInt(timeStr, 10) || 0;
 };
 
-const formatSeconds = (totalSecs: number): string => {
-  const mins = Math.floor(totalSecs / 60);
-  const secs = totalSecs % 60;
-  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-};
 
 export default function ParentDashboard() {
   const { progressorId } = useParams();
