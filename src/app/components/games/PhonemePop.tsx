@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router';
-import { Home, Volume2, HelpCircle, Check, X } from 'lucide-react';
+import { Home, Volume2, HelpCircle, Check, X, Music } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
@@ -396,20 +396,7 @@ export default function PhonemePop({}: PhonemePopProps) {
             transition={{ duration: 0.2 }}
             className="w-full flex flex-col items-center"
           >
-            {/* Play Sound Button (For non-dual level or if instruction cue is needed) */}
-            {mechanic !== 'binary-dual' && (
-              <button
-                onClick={playSound}
-                disabled={isTransitioning || isPlaying}
-                className={`mb-12 w-32 h-32 rounded-full text-primary-foreground shadow-2xl transition-all duration-300 flex items-center justify-center ${
-                  isPlaying && playingWord === 'main'
-                    ? 'bg-primary/80 scale-105 animate-pulse'
-                    : 'bg-primary hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
-                }`}
-              >
-                <Volume2 className="w-12 h-12 animate-in zoom-in" />
-              </button>
-            )}
+
 
             {/* Instruction Title */}
             <div className="flex items-center justify-center gap-3 mb-4 max-w-2xl">
@@ -435,40 +422,32 @@ export default function PhonemePop({}: PhonemePopProps) {
                 {/* Dual Sound Cards */}
                 <div className="flex flex-col sm:flex-row gap-6 w-full mb-12 justify-center items-stretch">
                   {/* Card 1 */}
-                  <div className="flex-1 p-8 rounded-2xl bg-card border border-border flex flex-col items-center justify-between shadow-md text-center transition-all hover:border-primary/30 min-h-[220px]">
-                    <button
-                      onClick={() => playIndianAudio(currentQuestion.word1 || '', 'word1')}
-                      disabled={isTransitioning || isPlaying}
-                      className={`mb-6 w-24 h-24 rounded-full text-primary-foreground shadow-lg transition-all duration-300 flex items-center justify-center ${
-                        playingWord === 'word1'
-                          ? 'bg-primary/80 scale-105 animate-pulse'
-                          : 'bg-primary hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
-                      }`}
-                    >
-                      <Volume2 className="w-10 h-10 animate-in zoom-in" />
-                    </button>
-                    <h1 className="text-3xl font-extrabold tracking-wide uppercase text-foreground">
+                  <button
+                    onClick={() => playIndianAudio(currentQuestion.word1 || '', 'word1')}
+                    disabled={isTransitioning || isPlaying}
+                    className={`flex-1 px-10 py-8 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[140px]`}
+                  >
+                    <h1 className="text-3xl font-extrabold tracking-wide uppercase text-foreground font-poppins">
                       {currentQuestion.word1}
                     </h1>
-                  </div>
+                    <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300">
+                      <Music className="w-5 h-5 animate-in zoom-in" />
+                    </div>
+                  </button>
 
                   {/* Card 2 */}
-                  <div className="flex-1 p-8 rounded-2xl bg-card border border-border flex flex-col items-center justify-between shadow-md text-center transition-all hover:border-primary/30 min-h-[220px]">
-                    <button
-                      onClick={() => playIndianAudio(currentQuestion.word2 || '', 'word2')}
-                      disabled={isTransitioning || isPlaying}
-                      className={`mb-6 w-24 h-24 rounded-full text-primary-foreground shadow-lg transition-all duration-300 flex items-center justify-center ${
-                        playingWord === 'word2'
-                          ? 'bg-primary/80 scale-105 animate-pulse'
-                          : 'bg-primary hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
-                      }`}
-                    >
-                      <Volume2 className="w-10 h-10 animate-in zoom-in" />
-                    </button>
-                    <h1 className="text-3xl font-extrabold tracking-wide uppercase text-foreground">
+                  <button
+                    onClick={() => playIndianAudio(currentQuestion.word2 || '', 'word2')}
+                    disabled={isTransitioning || isPlaying}
+                    className={`flex-1 px-10 py-8 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[140px]`}
+                  >
+                    <h1 className="text-3xl font-extrabold tracking-wide uppercase text-foreground font-poppins">
                       {currentQuestion.word2}
                     </h1>
-                  </div>
+                    <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300">
+                      <Music className="w-5 h-5 animate-in zoom-in" />
+                    </div>
+                  </button>
                 </div>
 
                 {/* YES / NO buttons */}
@@ -518,10 +497,22 @@ export default function PhonemePop({}: PhonemePopProps) {
             ) : mechanic === 'binary-single' ? (
               <div className="flex flex-col items-center w-full max-w-md">
                 {currentQuestion.word && (
-                  <div className="mb-8 p-6 rounded-2xl bg-card border border-border text-center shadow-md min-w-[200px]">
-                    <h1 className="text-4xl font-extrabold tracking-wide uppercase text-foreground">
-                      {currentQuestion.word}
-                    </h1>
+                  <div className="flex flex-col items-center mb-8 w-full">
+                    <button
+                      onClick={playSound}
+                      disabled={isTransitioning || isPlaying}
+                      className={`px-12 py-6 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      <h1 className="text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-poppins">
+                        {currentQuestion.word}
+                      </h1>
+                      <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300">
+                        <Music className="w-5 h-5" />
+                      </div>
+                    </button>
+                    <p className="text-muted-foreground mt-4 text-sm font-sans tracking-wide">
+                      Listen carefully and choose your answer.
+                    </p>
                   </div>
                 )}
 

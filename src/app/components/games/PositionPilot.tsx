@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router';
-import { Home, Volume2, Check, X } from 'lucide-react';
+import { Home, Volume2, Check, X, Music } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
@@ -264,29 +264,23 @@ export default function PositionPilot() {
                 <Volume2 className="w-6 h-6 text-muted-foreground hover:text-primary" />
               </button>
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-widest text-[#FF6347] uppercase mb-12 animate-pulse">
-              {currentQuestion.word}
-            </h1>
-
-            {/* Play Sound card/button */}
-            <button
-              onClick={playSound}
-              disabled={isTransitioning || isPlaying}
-              className={`w-full max-w-md aspect-video md:aspect-[2/1] rounded-[2rem] border-2 bg-card transition-all duration-300 flex flex-col items-center justify-center gap-4 cursor-pointer relative overflow-hidden group shadow-lg ${
-                isPlaying
-                  ? 'border-[#FF6347] bg-[#FF6347]/5 shadow-[0_0_20px_rgba(255,99,71,0.2)]'
-                  : 'border-border hover:border-[#FF6347]/50 hover:shadow-xl hover:scale-102 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed'
-              }`}
-            >
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 ${
-                isPlaying ? 'bg-[#FF6347] text-white animate-pulse' : 'bg-secondary text-[#FF6347] group-hover:scale-110'
-              }`}>
-                <Volume2 className="w-10 h-10 animate-in zoom-in" />
-              </div>
-              <span className="text-xl font-bold tracking-wider uppercase text-foreground">
-                {isPlaying ? 'Speaking...' : 'Play Sound'}
-              </span>
-            </button>
+            <div className="flex flex-col items-center mb-10 w-full">
+              <button
+                onClick={playSound}
+                disabled={isTransitioning || isPlaying}
+                className={`px-12 py-6 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <h1 className="text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-poppins">
+                  {currentQuestion.word}
+                </h1>
+                <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300">
+                  <Music className="w-5 h-5" />
+                </div>
+              </button>
+              <p className="text-muted-foreground mt-4 text-sm font-sans tracking-wide text-center">
+                Listen carefully and choose your answer.
+              </p>
+            </div>
 
             <p className="text-muted-foreground mt-6 text-sm">
               Question {currentQuestionIndex + 1} of {totalQuestions}
