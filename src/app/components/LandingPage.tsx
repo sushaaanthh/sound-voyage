@@ -38,6 +38,7 @@ export default function LandingPage() {
   const [selectedRole, setSelectedRole] = useState<Role>('progressor');
   const [progressorId, setProgressorId] = useState('');
   const [practitionerId, setPractitionerId] = useState('');
+  const [loginEmail, setLoginEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
@@ -66,12 +67,59 @@ export default function LandingPage() {
     e.preventDefault();
 
     try {
-      let emailToAuth = '';
+      if (selectedRole === 'parent' || selectedRole === 'practitioner') {
+        if (!loginEmail) {
+          toast.error('Email Address is required.');
+          return;
+        }
 
-      if (selectedRole === 'practitioner') {
-        emailToAuth = practitionerId;
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email: loginEmail,
+          password: password,
+        });
+
+        if (authError || !authData.user) {
+          toast.error(authError?.message || 'Login failed. Please check your credentials.');
+          return;
+        }
+
+        if (selectedRole === 'practitioner') {
+          // Verify practitioner role by querying practitioners table
+          const { data: practitionerData } = await supabase
+            .from('practitioners')
+            .select('*')
+            .eq('auth_user_id', authData.user.id)
+            .maybeSingle();
+
+          if (!practitionerData) {
+            toast.error('Access denied: Practitioner profile not found.');
+            await supabase.auth.signOut();
+            return;
+          }
+
+          toast.success('Successfully logged in as Practitioner');
+          navigate('/practitioner');
+        } else {
+          // Verify parent role by querying parents table
+          const { data: parentData } = await supabase
+            .from('parents')
+            .select('*')
+            .eq('id', authData.user.id)
+            .maybeSingle();
+
+          if (!parentData) {
+            toast.error('Access denied: Parent profile not found.');
+            await supabase.auth.signOut();
+            return;
+          }
+
+          toast.success('Successfully logged in as Parent');
+          navigate('/parent');
+        }
       } else {
-        // Progressor or Parent
+        // Progressor role: Maintain the existing working logic for children
+        let emailToAuth = '';
+
         if (progressorId.includes('@')) {
           emailToAuth = progressorId;
         } else {
@@ -87,58 +135,35 @@ export default function LandingPage() {
           }
           emailToAuth = progressorData.assigned_email || '';
         }
-      }
 
-      if (!emailToAuth) {
-        toast.error('Please enter a valid email or ID.');
-        return;
-      }
+        if (!emailToAuth) {
+          toast.error('Please enter a valid email or ID.');
+          return;
+        }
 
-      // Execute supabase.auth.signInWithPassword({ email, password }).
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: emailToAuth,
-        password: password,
-      });
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email: emailToAuth,
+          password: password,
+        });
 
-      if (authError || !authData.user) {
-        toast.error(authError?.message || 'Login failed. Please check your credentials.');
-        return;
-      }
+        if (authError || !authData.user) {
+          toast.error(authError?.message || 'Login failed. Please check your credentials.');
+          return;
+        }
 
-      // 1. Query practitioners table for a matching auth_user_id. If found, route to /practitioner.
-      const { data: practitionerData } = await supabase
-        .from('practitioners')
-        .select('*')
-        .eq('auth_user_id', authData.user.id)
-        .maybeSingle();
+        // Verify progressor profile
+        const { data: progressorProfile } = await supabase
+          .from('progressors')
+          .select('*')
+          .eq('auth_user_id', authData.user.id)
+          .maybeSingle();
 
-      if (practitionerData) {
-        toast.success('Successfully logged in as Practitioner');
-        navigate('/practitioner');
-        return;
-      }
+        if (!progressorProfile) {
+          toast.error('User profile not found in database.');
+          await supabase.auth.signOut();
+          return;
+        }
 
-      // Check parents table
-      const { data: parentData } = await supabase
-        .from('parents')
-        .select('*')
-        .eq('id', authData.user.id)
-        .maybeSingle();
-
-      if (parentData) {
-        toast.success('Successfully logged in as Parent');
-        navigate('/parent');
-        return;
-      }
-
-      // 2. Query progressors table for a matching auth_user_id. If found, route to /progressor/:id.
-      const { data: progressorProfile } = await supabase
-        .from('progressors')
-        .select('*')
-        .eq('auth_user_id', authData.user.id)
-        .maybeSingle();
-
-      if (progressorProfile) {
         updateSession(
           progressorProfile.id,
           progressorProfile.name || '',
@@ -146,17 +171,9 @@ export default function LandingPage() {
           progressorProfile.assigned_levels || []
         );
 
-        if (selectedRole === 'parent') {
-          toast.success('Successfully logged in as Parent');
-          navigate(`/parent/${progressorProfile.id}`);
-        } else {
-          toast.success('Successfully logged in as Progressor');
-          navigate(`/progressor/${progressorProfile.id}`);
-        }
-        return;
+        toast.success('Successfully logged in as Progressor');
+        navigate(`/progressor/${progressorProfile.id}`);
       }
-
-      toast.error('User profile not found in database.');
     } catch (err) {
       console.error('Login error', err);
       toast.error('An unexpected error occurred during login.');
@@ -225,7 +242,17 @@ export default function LandingPage() {
       });
 
       if (signUpError || !signUpData.user) {
-        toast.error(signUpError?.message || 'Failed to create account.');
+        let msg = signUpError?.message || 'Failed to create account.';
+        if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('in use') || msg.toLowerCase().includes('exists')) {
+          msg = 'This email is already in use. Please log in or use a different email.';
+        }
+        toast.error(msg);
+        return;
+      }
+
+      // Check if user identity was created (handles duplicate signup with email confirmation configuration)
+      if (signUpData.user.identities?.length === 0) {
+        toast.error('This email is already in use. Please log in or use a different email.');
         return;
       }
 
@@ -685,21 +712,7 @@ export default function LandingPage() {
                   </div>
 
                   {/* Login Form Fields */}
-                  {selectedRole === 'practitioner' ? (
-                    <div className="text-left">
-                      <label htmlFor="practitionerId" className="block mb-1 text-sm font-medium text-foreground">
-                        Practitioner ID / Username
-                      </label>
-                      <input
-                        id="practitionerId"
-                        type="text"
-                        value={practitionerId}
-                        onChange={(e) => setPractitionerId(e.target.value)}
-                        placeholder="Enter your practitioner ID"
-                        className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
-                      />
-                    </div>
-                  ) : (
+                  {selectedRole === 'progressor' ? (
                     <div className="text-left">
                       <label htmlFor="progressorId" className="block mb-1 text-sm font-medium text-foreground">
                         Progressor ID
@@ -710,6 +723,20 @@ export default function LandingPage() {
                         value={progressorId}
                         onChange={(e) => setProgressorId(e.target.value)}
                         placeholder="Enter your ID"
+                        className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-left">
+                      <label htmlFor="loginEmail" className="block mb-1 text-sm font-medium text-foreground">
+                        Email Address
+                      </label>
+                      <input
+                        id="loginEmail"
+                        type="email"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                        placeholder="Enter your email"
                         className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
                       />
                     </div>

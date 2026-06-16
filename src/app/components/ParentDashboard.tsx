@@ -160,24 +160,30 @@ export default function ParentDashboard() {
   // Handle child linking
   const handleLinkChild = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!linkProgressorId.trim() || !currentUser) return;
+    const childIdInput = linkProgressorId.trim();
+    if (!childIdInput) return;
+
     setLinking(true);
     try {
-      const pid = linkProgressorId.trim();
-      
-      // Query if progressor exists
-      const { data: progressor, error: fetchError } = await supabase
-        .from('progressors')
-        .select('*')
-        .eq('id', pid)
-        .maybeSingle();
-
-      if (fetchError || !progressor) {
-        toast.error("Progressor ID not found. Please verify the ID with your practitioner.");
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        toast.error("You must be logged in to link a child account.");
         return;
       }
 
-      if (progressor.parent_id === currentUser.id) {
+      // Query if progressor exists
+      const { data: progressor, error: fetchError } = await supabase
+        .from('progressors')
+        .select('id, parent_id, name')
+        .eq('id', childIdInput)
+        .maybeSingle();
+
+      if (fetchError || !progressor) {
+        toast.error("Progressor ID not found in the progressors table.");
+        return;
+      }
+
+      if (progressor.parent_id === user.id) {
         toast.info("This child is already linked to your account.");
         return;
       }
@@ -185,16 +191,16 @@ export default function ParentDashboard() {
       // Update progressor row to link parent_id
       const { error: updateError } = await supabase
         .from('progressors')
-        .update({ parent_id: currentUser.id })
-        .eq('id', pid);
+        .update({ parent_id: user.id })
+        .eq('id', childIdInput);
 
       if (updateError) {
         toast.error("Failed to link child account: " + updateError.message);
       } else {
-        toast.success(`Successfully linked ${progressor.name || pid}!`);
+        toast.success(`Successfully linked ${progressor.name || childIdInput}!`);
         setLinkProgressorId('');
         // Refresh children list
-        await fetchChildren(currentUser.id);
+        await fetchChildren(user.id);
       }
     } catch (err) {
       console.error('Link child exception:', err);
