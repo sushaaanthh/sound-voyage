@@ -41,7 +41,6 @@ export default function PhonemePop({}: PhonemePopProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playingWord, setPlayingWord] = useState<string | null>(null);
   
   // Transition lock and clinical tracking states
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -110,20 +109,16 @@ export default function PhonemePop({}: PhonemePopProps) {
     return () => clearInterval(timer);
   }, []);
 
-  // Native Text-to-Speech engine supporting en-IN
-  const playIndianAudio = (text: string, source: string = 'main') => {
+  const playIndianAudio = (text: string, _source: string = 'main') => {
     playAudio(text, {
       onStart: () => {
         setIsPlaying(true);
-        setPlayingWord(source);
       },
       onEnd: () => {
         setIsPlaying(false);
-        setPlayingWord(null);
       },
       onError: () => {
         setIsPlaying(false);
-        setPlayingWord(null);
       }
     });
   };

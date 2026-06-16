@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Home, Check, X, Sparkles, Play, Volume2 } from 'lucide-react';
+import { Home, Check, X, Play, Volume2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import { useGameSession } from '../../context/GameSessionContext';
 import { supabase } from '../../../lib/supabase';
 import { soundTrailData, SoundTrailLevel, SoundTrailChain } from '../../../data/soundTrailData';
-import { getOptionIcon } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
 
 export default function SoundTrail() {
@@ -356,7 +355,7 @@ export default function SoundTrail() {
       {/* Progress Bar */}
       <div className="bg-muted h-2 w-full">
         <div
-          className="h-full bg-emerald-500 transition-all duration-300"
+          className="h-full bg-[#FF6347] transition-all duration-300"
           style={{ width: `${(currentRound / totalRounds) * 100}%` }}
         />
       </div>
@@ -365,7 +364,7 @@ export default function SoundTrail() {
       <div className="flex-1 max-w-5xl w-full mx-auto px-8 py-8 flex flex-col items-center justify-center">
         {nodes.length === 0 ? (
           <div className="flex flex-col items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF6347] mb-4"></div>
             <p className="text-muted-foreground">Generating trail...</p>
           </div>
         ) : (
@@ -374,7 +373,6 @@ export default function SoundTrail() {
             <div className="mb-6 text-center">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <h2 className="text-2xl md:text-3xl font-extrabold font-poppins flex items-center gap-2">
-                  <Sparkles className="w-6 h-6 text-emerald-500" />
                   Follow the Sound Trail!
                 </h2>
                 <button
@@ -388,11 +386,6 @@ export default function SoundTrail() {
               <p className="text-muted-foreground max-w-md mx-auto">
                 Listen to the sound change, and click the position block of the phoneme that changed!
               </p>
-              {isWorkingMemoryMode && (
-                <span className="mt-2 inline-block px-3 py-1 text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full">
-                  Working Memory Mode Active
-                </span>
-              )}
             </div>
 
             {/* Playback Control Bar */}
@@ -403,7 +396,7 @@ export default function SoundTrail() {
                 className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-lg transition-all duration-300 ${
                   isPlayingSequence || isTransitioning
                     ? 'bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-50'
-                    : 'bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-105 active:scale-95'
+                    : 'bg-[#FF6347] hover:bg-[#FF6347]/90 text-white hover:scale-105 active:scale-95'
                 }`}
               >
                 <Play className="w-5 h-5 fill-current" />
@@ -411,7 +404,7 @@ export default function SoundTrail() {
               </button>
 
               <div className="px-4 py-2 bg-secondary border border-border rounded-full text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${isPlayingSequence ? 'bg-amber-500 animate-pulse' : 'bg-green-500'}`} />
+                <span className={`w-2 h-2 rounded-full ${isPlayingSequence ? 'bg-amber-500 animate-pulse' : 'bg-[#FF6347]'}`} />
                 {isPlayingSequence ? 'Playing Transition...' : 'Waiting for Click'}
               </div>
             </div>
@@ -419,7 +412,7 @@ export default function SoundTrail() {
             {/* Visual Canvas Board */}
             <div className="w-full max-w-3xl aspect-[1.8/1] bg-card border border-border rounded-[2.5rem] shadow-2xl relative overflow-hidden backdrop-blur-md">
               {/* Background gradient grid glow */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.08),transparent_60%)] pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.08),transparent_60%)] pointer-events-none" />
               
               {/* SVG Line Connections */}
               <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -434,7 +427,7 @@ export default function SoundTrail() {
                       y1={node.y}
                       x2={nextNode.x}
                       y2={nextNode.y}
-                      stroke="rgba(16, 185, 129, 0.12)"
+                      stroke="rgba(255, 99, 71, 0.12)"
                       strokeWidth={4.5}
                       strokeLinecap="round"
                       strokeDasharray="6,6"
@@ -455,10 +448,10 @@ export default function SoundTrail() {
                       y1={startNode.y}
                       x2={endNode.x}
                       y2={endNode.y}
-                      stroke="#10B981"
+                      stroke="#FF6347"
                       strokeWidth={5}
                       strokeLinecap="round"
-                      className="drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+                      className="drop-shadow-[0_0_8px_rgba(255,99,71,0.8)]"
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
                       transition={{ duration: 0.3 }}
@@ -477,13 +470,13 @@ export default function SoundTrail() {
                 let glowStyles = '';
 
                 if (isHighlighted) {
-                  borderStyles = 'border-emerald-500 bg-emerald-500 text-white font-extrabold scale-110 opacity-100 z-20';
-                  glowStyles = 'shadow-[0_0_25px_#10B981]';
+                  borderStyles = 'border-[#FF6347] bg-[#FF6347] text-white font-extrabold scale-110 opacity-100 z-20';
+                  glowStyles = 'shadow-[0_0_25px_#FF6347]';
                 } else if (isCurrent) {
-                  borderStyles = 'border-dashed border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold opacity-100 z-10';
-                  glowStyles = 'shadow-[0_0_10px_rgba(16,185,129,0.2)] animate-pulse';
+                  borderStyles = 'border-dashed border-[#FF6347] bg-[#FF6347]/10 text-[#FF6347] dark:text-[#FF6347] font-extrabold opacity-100 z-10';
+                  glowStyles = 'shadow-[0_0_10px_rgba(255,99,71,0.2)] animate-pulse';
                 } else if (isReached) {
-                  borderStyles = 'border-emerald-500 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold opacity-100';
+                  borderStyles = 'border-[#FF6347] bg-[#FF6347]/20 text-[#FF6347] dark:text-[#FF6347] font-bold opacity-100';
                 }
 
                 // If working memory mode is active, hide words that are not the active node or not yet reached
@@ -512,7 +505,7 @@ export default function SoundTrail() {
                     
                     {/* Pulse Rings for Active highlights */}
                     {isHighlighted && (
-                      <span className="absolute inset-0 rounded-full border border-emerald-500 animate-ping opacity-75" />
+                      <span className="absolute inset-0 rounded-full border border-[#FF6347] animate-ping opacity-75" />
                     )}
                   </motion.div>
                 );
@@ -530,11 +523,10 @@ export default function SoundTrail() {
                     key={`pos-btn-${pos}`}
                     onClick={() => handlePositionClick(pos)}
                     disabled={isPlayingSequence || isTransitioning}
-                    className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-card border-3 border-border hover:border-emerald-500 hover:bg-emerald-500/5 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed text-2xl font-black flex flex-col items-center justify-center transition-all text-foreground cursor-pointer shadow-md gap-1"
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-card border-3 border-border hover:border-[#FF6347] hover:bg-[#FF6347]/5 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed text-2xl font-black flex flex-col items-center justify-center transition-all text-foreground cursor-pointer shadow-md gap-1"
                   >
                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Pos</span>
                     <span className="flex items-center gap-1.5 justify-center">
-                      {getOptionIcon(String(pos))}
                       <span>{pos}</span>
                     </span>
                   </button>

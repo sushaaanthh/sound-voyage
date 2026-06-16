@@ -5,6 +5,7 @@ import { ThemeToggle } from './ThemeToggle';
 import PhonemePop from './games/PhonemePop';
 import PositionPilot from './games/PositionPilot';
 import SoundTrail from './games/SoundTrail';
+import SoundSync from './games/SoundSync';
 import gameData from '../../data/gameData.json';
 
 interface Card {
@@ -55,6 +56,10 @@ export default function GameScreen() {
 
   if (gameId === 'sound-trail') {
     return <SoundTrail />;
+  }
+
+  if (gameId === 'sound-synk' || gameId === 'sound-sync') {
+    return <SoundSync />;
   }
 
   // Game-specific states
