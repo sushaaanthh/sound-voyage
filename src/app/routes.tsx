@@ -20,6 +20,10 @@ export const router = createBrowserRouter([
     Component: ProgressorDashboard,
   },
   {
+    path: "/parent",
+    Component: ParentDashboard,
+  },
+  {
     path: "/parent/:progressorId",
     Component: ParentDashboard,
   },

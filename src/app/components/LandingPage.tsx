@@ -51,6 +51,7 @@ export default function LandingPage() {
   const [signupProgressorId, setSignupProgressorId] = useState('');
   const [signupPractitionerId, setSignupPractitionerId] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+  const [signupChildId, setSignupChildId] = useState('');
   const [signupError, setSignupError] = useState('');
 
   const navigate = useNavigate();
@@ -114,6 +115,19 @@ export default function LandingPage() {
       if (practitionerData) {
         toast.success('Successfully logged in as Practitioner');
         navigate('/practitioner');
+        return;
+      }
+
+      // Check parents table
+      const { data: parentData } = await supabase
+        .from('parents')
+        .select('*')
+        .eq('id', authData.user.id)
+        .maybeSingle();
+
+      if (parentData) {
+        toast.success('Successfully logged in as Parent');
+        navigate('/parent');
         return;
       }
 
@@ -280,6 +294,56 @@ export default function LandingPage() {
         setSignupEmail('');
         setSignupProgressorId('');
         setSignupPassword('');
+      } else if (selectedRole === 'parent') {
+        const { error: insertError } = await supabase
+          .from('parents')
+          .insert([{
+            id: signUpData.user.id,
+            name: signupName,
+            email: signupEmail
+          }]);
+
+        if (insertError) {
+          toast.error('Account created in auth, but parent profile creation failed: ' + insertError.message);
+          return;
+        }
+
+        // If optional child progressor ID is provided, link it
+        if (signupChildId.trim()) {
+          const childId = signupChildId.trim();
+          const { data: childData, error: childError } = await supabase
+            .from('progressors')
+            .select('id')
+            .eq('id', childId)
+            .maybeSingle();
+
+          if (childError || !childData) {
+            toast.warning('Account created, but child Progressor ID not found.');
+          } else {
+            const { error: linkError } = await supabase
+              .from('progressors')
+              .update({ parent_id: signUpData.user.id })
+              .eq('id', childId);
+
+            if (linkError) {
+              toast.warning('Account created, but failed to link child Progressor: ' + linkError.message);
+            } else {
+              toast.success('Child account successfully linked!');
+            }
+          }
+        }
+
+        toast.success('Parent account successfully created!');
+        setShowSignUp(false);
+        setSignupError('');
+
+        // Clear fields
+        setSignupName('');
+        setSignupEmail('');
+        setSignupPassword('');
+        setSignupChildId('');
+
+        navigate('/parent');
       } else {
         // Parent role (or others): standard signUp already run, success toast and state reset
         toast.success('Account successfully created. Please log in.');
@@ -527,6 +591,8 @@ export default function LandingPage() {
                       <input
                         id="signup-child-id"
                         type="text"
+                        value={signupChildId}
+                        onChange={(e) => setSignupChildId(e.target.value)}
                         placeholder="Enter Progressor ID (optional)"
                         className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
                       />
