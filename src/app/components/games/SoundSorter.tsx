@@ -460,7 +460,7 @@ export default function SoundSorter() {
 
     if (isCorrect) {
       setScore(nextScore);
-      toast.success('Awesome! Correct sequence.', {
+      toast.success(`Awesome! The word is "${currentQ.word.toUpperCase()}"`, {
         icon: <Check className="w-5 h-5 text-green-500" />,
         className: 'bg-card border border-green-500 text-foreground rounded-[1.5rem] p-4 font-bold shadow-lg flex items-center gap-3',
         duration: 1200,
