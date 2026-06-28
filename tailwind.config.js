@@ -4,6 +4,8 @@ export default {
     extend: {
       fontFamily: {
         mozilla: ['"Mozilla Headline"', 'sans-serif'],
+        sans: ['"Google Sans"', 'sans-serif'],
+        'google-sans': ['"Google Sans"', 'sans-serif'],
       },
     },
   },

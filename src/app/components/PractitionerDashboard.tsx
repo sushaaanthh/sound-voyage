@@ -411,7 +411,7 @@ export default function PractitionerDashboard() {
         </div>
 
         <div className="mb-12">
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Practitioner Dashboard</h1>
+          <h1 className="text-2xl font-extrabold text-foreground tracking-tight font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>Practitioner Dashboard</h1>
         </div>
 
         <nav className="space-y-3">
@@ -519,7 +519,7 @@ export default function PractitionerDashboard() {
                           handleOpenDetails(progressor);
                         }}
                         className="px-4 py-2 rounded-[1rem] bg-primary/10 text-primary hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 font-bold font-sans"
-                        style={{ fontFamily: "'Inter', sans-serif" }}
+                        style={{ fontFamily: "'Google Sans', sans-serif" }}
                       >
                         View Details
                       </button>
@@ -980,7 +980,7 @@ export default function PractitionerDashboard() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
           <div className="bg-card rounded-[2rem] p-8 max-w-md w-full max-h-[95vh] overflow-y-auto shadow-2xl animate-in zoom-in duration-300 border border-border">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-foreground font-sans font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>Create New Progressor</h2>
+              <h2 className="text-foreground font-sans font-semibold" style={{ fontFamily: "'Google Sans', sans-serif" }}>Create New Progressor</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 text-foreground"
@@ -991,7 +991,7 @@ export default function PractitionerDashboard() {
 
             <div className="space-y-6">
               <div>
-                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Progressor Name</label>
+                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>Progressor Name</label>
                 <input
                   type="text"
                   value={newProgressorName}
@@ -1002,7 +1002,7 @@ export default function PractitionerDashboard() {
               </div>
 
               <div>
-                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Age</label>
+                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>Age</label>
                 <input
                   type="number"
                   value={newProgressorAge}
@@ -1013,7 +1013,7 @@ export default function PractitionerDashboard() {
               </div>
 
               <div>
-                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Assigned Email</label>
+                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>Assigned Email</label>
                 <input
                   type="email"
                   value={newProgressorEmail}
@@ -1024,7 +1024,7 @@ export default function PractitionerDashboard() {
               </div>
 
               <div>
-                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Parent's Full Name</label>
+                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>Parent's Full Name</label>
                 <input
                   type="text"
                   value={parentName}
@@ -1037,7 +1037,7 @@ export default function PractitionerDashboard() {
               <button
                 onClick={handleCreateProgressor}
                 className="w-full px-8 py-4 rounded-[2rem] bg-[#FF6B4A] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 font-bold font-sans"
-                style={{ fontFamily: "'Inter', sans-serif" }}
+                style={{ fontFamily: "'Google Sans', sans-serif" }}
               >
                 Generate Progressor ID
               </button>
@@ -1051,7 +1051,7 @@ export default function PractitionerDashboard() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
           <div className="bg-card rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300 border border-border">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-foreground font-sans font-semibold text-xl" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <h2 className="text-foreground font-sans font-semibold text-xl" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                 Confirm Deletion
               </h2>
               <button
@@ -1068,7 +1068,7 @@ export default function PractitionerDashboard() {
             <div className="space-y-6">
               <div className="text-center py-2">
                 <ShieldAlert className="w-16 h-16 mx-auto mb-4 text-[#FF6B4A]" />
-                <p className="text-foreground font-sans leading-relaxed text-base" style={{ fontFamily: "'Inter', sans-serif" }}>
+                <p className="text-foreground font-sans leading-relaxed text-base" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                   Are you sure you want to delete this Progressor ID? This action cannot be undone.
                 </p>
                 <p className="text-sm text-muted-foreground font-mono mt-2" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
@@ -1080,7 +1080,7 @@ export default function PractitionerDashboard() {
                 <button
                   onClick={handleDeleteProgressor}
                   className="flex-1 px-6 py-3.5 rounded-[1.5rem] bg-[#FF6B4A] text-white hover:scale-105 active:scale-95 transition-all duration-300 font-bold font-sans"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
+                  style={{ fontFamily: "'Google Sans', sans-serif" }}
                 >
                   Yes, Delete
                 </button>
@@ -1090,7 +1090,7 @@ export default function PractitionerDashboard() {
                     setProgressorToDelete(null);
                   }}
                   className="flex-1 px-6 py-3.5 rounded-[1.5rem] bg-secondary hover:bg-muted text-foreground border border-border hover:scale-105 active:scale-95 transition-all duration-300 font-sans"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
+                  style={{ fontFamily: "'Google Sans', sans-serif" }}
                 >
                   Cancel
                 </button>
@@ -1106,7 +1106,7 @@ export default function PractitionerDashboard() {
           <div className="bg-card rounded-[2rem] p-8 max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in duration-300 border border-border overflow-hidden">
             <div className="flex items-center justify-between mb-4 flex-shrink-0">
               <div>
-                <h2 className="text-2xl font-semibold text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                <h2 className="text-2xl font-semibold text-foreground font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                   Details: {selectedDetailsProgressor.name}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
@@ -1157,7 +1157,7 @@ export default function PractitionerDashboard() {
                   {!selectedDetailsProgressor.completedLevels || selectedDetailsProgressor.completedLevels.length === 0 ? (
                     <div className="text-center py-20 flex flex-col items-center justify-center">
                       <Award className="w-16 h-16 mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground text-lg font-sans font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <p className="text-muted-foreground text-lg font-sans font-medium" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                         No game data available for this progressor yet.
                       </p>
                     </div>
@@ -1221,31 +1221,31 @@ export default function PractitionerDashboard() {
                   {loadingSessions ? (
                     <div className="flex flex-col items-center justify-center py-20">
                       <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FF6B4A] mb-4"></div>
-                      <p className="text-muted-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>Loading session history...</p>
+                      <p className="text-muted-foreground font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>Loading session history...</p>
                     </div>
                   ) : sessions.length === 0 ? (
                     <div className="text-center py-20">
                       <History className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground font-sans font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>No session records found for this progressor.</p>
+                      <p className="text-muted-foreground font-sans font-medium" style={{ fontFamily: "'Google Sans', sans-serif" }}>No session records found for this progressor.</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto border border-border rounded-xl pb-4">
                       <table className="min-w-full divide-y divide-border">
                         <thead className="bg-secondary/50">
                           <tr>
-                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                               Game ID
                             </th>
-                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                               Game Level
                             </th>
-                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                               Score achieved
                             </th>
-                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                               Accuracy percentage
                             </th>
-                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-foreground uppercase tracking-wider font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                               Session Time
                             </th>
                           </tr>
@@ -1253,7 +1253,7 @@ export default function PractitionerDashboard() {
                         <tbody className="divide-y divide-border bg-card">
                           {sessions.map((session) => (
                             <tr key={session.id} className="hover:bg-secondary/30 transition-colors">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground font-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                                 {session.game_id === 'phoneme-pop' ? 'Phoneme Pop' :
                                   session.game_id === 'position-pilot' ? 'Position Pilot' :
                                     session.game_id === 'sound-trail' ? 'Sound Trail' :
