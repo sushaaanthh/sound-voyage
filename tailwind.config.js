@@ -3,7 +3,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        mozilla: ['"Zilla Slab"', 'serif'],
+        mozilla: ['"Mozilla Headline"', 'sans-serif'],
       },
     },
   },
