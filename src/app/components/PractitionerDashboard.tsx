@@ -587,20 +587,7 @@ export default function PractitionerDashboard() {
 
             {!selectedProgressor ? (
               <div className="text-center py-20 bg-card rounded-[2rem] border border-border p-8">
-                <BarChart3 className="w-20 h-20 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-foreground text-lg mb-2">Choose a Progressor</h3>
-                <p className="text-muted-foreground max-w-sm mx-auto mb-6">Select a progressor from the dropdown above to load their gameplay history and telemetry charts.</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-                  {progressors.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => setSelectedProgressor(p)}
-                      className="p-4 rounded-xl bg-secondary/35 border border-border hover:bg-primary/10 hover:border-primary/50 transition-all font-semibold text-foreground text-sm"
-                    >
-                      {p.name}
-                    </button>
-                  ))}
-                </div>
+                <p className="text-muted-foreground">Select a progressor from the dropdown to load analytics</p>
               </div>
             ) : loadingAnalytics ? (
               <div className="flex flex-col items-center justify-center py-20 bg-card rounded-[2rem] border border-border p-8">
