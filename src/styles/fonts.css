@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Mozilla+Headline:wght@200..700&display=swap');
-@import url('https://fonts.cdnfonts.com/css/google-sans');
+@import url('https://cdn.jsdelivr.net/gh/mortezaom/google-sans-cdn@master/fonts.css');
 
 :root {
   --font-headline: 'Mozilla Headline', sans-serif;
-  --font-body: 'Google Sans', sans-serif;
+  --font-body: 'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
 }
 
 body {
