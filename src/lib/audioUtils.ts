@@ -1,20 +1,20 @@
 const phonemeMap: Record<string, string> = {
   // Slash format
-  '/k/': ' , kuh , ',
+  '/k/': ' , k-uh , ',
   '/ch/': ' , chuh , ',
-  '/p/': ', puh, ',
+  '/p/': ' , p-uh , ',
   '/s/': ' , sss , ',
   '/m/': ' , mmm , ',
-  '/b/': ', buh, ',
-  '/d/': ', duh, ',
+  '/b/': ' , b-uh , ',
+  '/d/': ' , d-uh , ',
   '/f/': ', fff, ',
-  '/g/': ', guh, ',
+  '/g/': ' , g-uh , ',
   '/h/': ', huh, ',
   '/j/': ', juh, ',
   '/l/': ' , ull , ',
   '/n/': ', nnn, ',
   '/r/': ', rrr, ',
-  '/t/': ', tuh, ',
+  '/t/': ' , t-uh , ',
   '/v/': ', vvv, ',
   '/w/': ', wuh, ',
   '/y/': ', yuh, ',
@@ -26,7 +26,7 @@ const phonemeMap: Record<string, string> = {
   '/i/': ', ih, ',
   '/o/': ', ah, ',
   '/u/': ', uh, ',
-  '/c/': ' , kuh , ',
+  '/c/': ' , k-uh , ',
   '/ee/': ' , ee , ',
   '/oo/': ' , oo , ',
   '/ue/': ' , yoo , ',
@@ -38,21 +38,21 @@ const phonemeMap: Record<string, string> = {
   '/oe/': ' , oh , ',
   
   // Normal format
-  'k': ' , kuh , ',
+  'k': ' , k-uh , ',
   'ch': ' , chuh , ',
-  'p': ', puh, ',
+  'p': ' , p-uh , ',
   's': ' , sss , ',
   'm': ' , mmm , ',
-  'b': ', buh, ',
-  'd': ', duh, ',
+  'b': ' , b-uh , ',
+  'd': ' , d-uh , ',
   'f': ', fff, ',
-  'g': ', guh, ',
+  'g': ' , g-uh , ',
   'h': ', huh, ',
   'j': ', juh, ',
   'l': ' , ull , ',
   'n': ', nnn, ',
   'r': ', rrr, ',
-  't': ', tuh, ',
+  't': ' , t-uh , ',
   'v': ', vvv, ',
   'w': ', wuh, ',
   'y': ', yuh, ',
@@ -64,7 +64,7 @@ const phonemeMap: Record<string, string> = {
   'i': ', ih, ',
   'o': ', ah, ',
   'u': ', uh, ',
-  'c': ' , kuh , ',
+  'c': ' , k-uh , ',
   'ee': ' , ee , ',
   'oo': ' , oo , ',
   'ue': ' , yoo , ',
@@ -77,7 +77,7 @@ const phonemeMap: Record<string, string> = {
 
   // Space-wrapped and special phonetic notations
   ' l ': ' , ull , ',
-  ' k ': ' , kuh , ',
+  ' k ': ' , k-uh , ',
   'll': ' , ull , '
 };
 
@@ -157,6 +157,8 @@ export function playAudio(
 
   const utterance = new SpeechSynthesisUtterance(spokenText);
   utterance.rate = 0.9;
+  utterance.volume = 1.0;
+  utterance.pitch = 1.1;
 
   // Retrieve voices and select Indian English
   const voices = window.speechSynthesis.getVoices();
