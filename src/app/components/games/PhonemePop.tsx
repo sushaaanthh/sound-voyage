@@ -8,7 +8,7 @@ import { ThemeToggle } from '../ThemeToggle';
 import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
-import { getOptionIcon } from '../OptionIconMapper';
+import { getOptionIcon, getOptionIconComponent } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
 
 interface PhonemePopProps {
@@ -310,10 +310,15 @@ export default function PhonemePop({}: PhonemePopProps) {
     }, 1500);
   };
 
-  const getIcon = (iconName?: string) => {
-    if (!iconName) return HelpCircle;
-    const IconComponent = (Icons as any)[iconName];
-    return IconComponent || HelpCircle;
+  const getIcon = (iconName?: string, optionLabel?: string) => {
+    if (iconName && iconName !== 'HelpCircle') {
+      const IconComponent = (Icons as any)[iconName];
+      if (IconComponent) return IconComponent;
+    }
+    if (optionLabel) {
+      return getOptionIconComponent(optionLabel);
+    }
+    return HelpCircle;
   };
 
   const isCorrectBinary = (ans: 'yes' | 'no') => {
@@ -560,7 +565,7 @@ export default function PhonemePop({}: PhonemePopProps) {
               <div className="flex flex-col items-center w-full max-w-4xl">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full mb-8">
                   {currentQuestion.options?.map((option, idx) => {
-                    const Icon = getIcon(option.icon);
+                    const Icon = getIcon(option.icon, option.label);
                     const isSelected = selectedAnswers.includes(idx);
                     
                     let cardStyles = 'border-border bg-card hover:shadow-xl hover:scale-105 active:scale-95 text-foreground';
@@ -627,7 +632,7 @@ export default function PhonemePop({}: PhonemePopProps) {
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-4xl">
                 {currentQuestion.options?.map((option, idx) => {
-                  const Icon = getIcon(option.icon);
+                  const Icon = getIcon(option.icon, option.label);
                   const isSelected = selectedAnswer === idx;
 
                   let cardStyles = 'border-border bg-card hover:shadow-xl hover:scale-105 active:scale-95 text-foreground';
