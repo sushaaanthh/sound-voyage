@@ -30,12 +30,12 @@ export default function QuitGameModal({ isOpen, onClose, onConfirm }: QuitGameMo
         </button>
 
         <div className="flex flex-col items-center text-center mt-4 mb-8">
-          {/* Warning Icon with Amber Glow */}
-          <div className="w-20 h-20 rounded-3xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-6 ring-8 ring-amber-500/5 animate-pulse">
+          {/* Warning Icon with Standard Primary Glow */}
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mb-6 ring-8 ring-primary/5 animate-pulse">
             <AlertTriangle className="w-10 h-10" />
           </div>
           
-          <h2 className="text-2xl font-extrabold tracking-tight text-foreground bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text">
+          <h2 className="text-2xl font-extrabold tracking-tight text-foreground">
             Voyage Interrupted!
           </h2>
           
@@ -54,7 +54,7 @@ export default function QuitGameModal({ isOpen, onClose, onConfirm }: QuitGameMo
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-6 py-4 rounded-[1.5rem] bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-600 hover:to-amber-600 text-white shadow-lg shadow-red-500/20 font-bold hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+            className="flex-1 px-6 py-4 rounded-[1.5rem] bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/20 font-bold hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
           >
             Yes, Quit
           </button>
