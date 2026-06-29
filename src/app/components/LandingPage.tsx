@@ -5,7 +5,6 @@ import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
-import ForgotPasswordModal from './auth/ForgotPasswordModal';
 
 type Role = 'progressor' | 'parent' | 'practitioner';
 
@@ -42,7 +41,9 @@ export default function LandingPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isResetLoading, setIsResetLoading] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   
   // Sign-Up states
@@ -441,6 +442,35 @@ export default function LandingPage() {
     }
   };
 
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail.trim()) {
+      toast.error('Email Address is required.');
+      return;
+    }
+
+    setIsResetLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: `${window.location.origin}/update-password`,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('If an account exists, a reset link has been sent to your email.');
+        setResetEmail('');
+        setShowResetPassword(false);
+        setIsLoginModalOpen(false);
+      }
+    } catch (err) {
+      console.error('Password reset error:', err);
+      toast.error('An unexpected error occurred during password reset.');
+    } finally {
+      setIsResetLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-secondary/30 flex flex-col items-center justify-start p-6 md:p-12 relative overflow-y-auto overflow-x-hidden">
       {/* Mesh gradient background effect */}
@@ -484,6 +514,7 @@ export default function LandingPage() {
               onClick={() => {
                 setSignupError('');
                 setShowSignUp(true);
+                setShowResetPassword(false);
                 setIsLoginModalOpen(true);
               }}
               className="px-10 py-4.5 rounded-[2rem] bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 text-base cursor-pointer"
@@ -493,6 +524,7 @@ export default function LandingPage() {
             <button
               onClick={() => {
                 setShowSignUp(false);
+                setShowResetPassword(false);
                 setIsLoginModalOpen(true);
               }}
               className="px-10 py-4.5 rounded-[2rem] bg-secondary hover:bg-secondary/80 text-foreground font-semibold rounded-full border border-border/50 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 text-base cursor-pointer"
@@ -551,7 +583,48 @@ export default function LandingPage() {
               <X className="w-5 h-5 text-muted-foreground hover:text-foreground" />
             </button>
 
-            {showSignUp ? (
+            {showResetPassword ? (
+              <div>
+                <h2 className="text-2xl font-bold mb-6 text-center">Reset Password</h2>
+                <form onSubmit={handleResetPasswordSubmit} className="space-y-5">
+                  <div className="text-left">
+                    <label htmlFor="resetEmail" className="block mb-1 text-sm font-medium text-foreground">
+                      Email Address
+                    </label>
+                    <input
+                      id="resetEmail"
+                      type="email"
+                      required
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                      disabled={isResetLoading}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isResetLoading}
+                    className="w-full mt-2 px-6 py-3.5 rounded-[2rem] bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-300 text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isResetLoading ? 'Sending...' : 'Send Reset Link'}
+                  </button>
+
+                  <div className="text-center pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowResetPassword(false);
+                      }}
+                      className="text-xs text-muted-foreground hover:text-primary transition-all cursor-pointer bg-transparent border-0"
+                    >
+                      Back to Login
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : showSignUp ? (
               // Sign Up Form
               <div>
                 <h2 className="text-2xl font-bold mb-6 text-center">Create Your Account</h2>
@@ -823,7 +896,9 @@ export default function LandingPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setIsResetModalOpen(true)}
+                      onClick={() => {
+                        setShowResetPassword(true);
+                      }}
                       className="text-xs text-muted-foreground hover:text-primary mt-1.5 inline-block transition-all cursor-pointer bg-transparent border-0"
                     >
                       Forgot Password?
@@ -879,10 +954,7 @@ export default function LandingPage() {
         </div>
       )}
 
-      <ForgotPasswordModal
-        isOpen={isResetModalOpen}
-        onClose={() => setIsResetModalOpen(false)}
-      />
+
 
       {/* Privacy Policy Modal */}
       {showPrivacy && (

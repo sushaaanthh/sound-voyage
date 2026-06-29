@@ -5,6 +5,7 @@ import ProgressorDashboard from "./components/ProgressorDashboard";
 import ParentDashboard from "./components/ParentDashboard";
 import GameScreen from "./components/GameScreen";
 import ResultScreen from "./components/ResultScreen";
+import UpdatePassword from "./components/UpdatePassword";
 import NotFound from "./components/NotFound";
 
 export const router = createBrowserRouter([
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
   {
     path: "/result",
     Component: ResultScreen,
+  },
+  {
+    path: "/update-password",
+    Component: UpdatePassword,
   },
   {
     path: "*",
