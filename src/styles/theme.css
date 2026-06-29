@@ -122,6 +122,8 @@
   --font-serif: "Mozilla Headline", serif;
   --font-mozilla: "Mozilla Headline", sans-serif;
   --font-google-sans: "Google Sans", "Helvetica Neue", "Helvetica", Arial, sans-serif;
+  --font-poppins: var(--font-poppins);
+  --font-zilla: var(--font-zilla);
 }
 
 @layer base {
