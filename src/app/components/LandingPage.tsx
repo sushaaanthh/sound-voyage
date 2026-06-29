@@ -45,6 +45,7 @@ export default function LandingPage() {
   const [resetEmail, setResetEmail] = useState('');
   const [isResetLoading, setIsResetLoading] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   
   // Sign-Up states
   const [signupName, setSignupName] = useState('');
@@ -57,6 +58,59 @@ export default function LandingPage() {
 
   const navigate = useNavigate();
   const { updateSession } = useGameSession();
+
+  // Check for active session on mount
+  useEffect(() => {
+    let active = true;
+
+    async function checkSession() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          if (active) setIsCheckingSession(false);
+          return;
+        }
+
+        // Execute parallel check to determine role
+        const [practitionerRes, parentRes, progressorRes] = await Promise.all([
+          supabase.from('practitioners').select('id').eq('auth_user_id', session.user.id).maybeSingle(),
+          supabase.from('parents').select('id').eq('id', session.user.id).maybeSingle(),
+          supabase.from('progressors').select('*').eq('auth_user_id', session.user.id).maybeSingle()
+        ]);
+
+        if (!active) return;
+
+        if (practitionerRes.data) {
+          navigate('/practitioner');
+        } else if (parentRes.data) {
+          navigate('/parent');
+        } else if (progressorRes.data) {
+          const profile = progressorRes.data;
+          updateSession(
+            profile.id,
+            profile.name || '',
+            profile.completed_levels || [],
+            profile.assigned_levels || []
+          );
+          navigate(`/progressor/${profile.id}`);
+        } else {
+          // Active session exists but has no matching database profile. Sign out to reset state.
+          await supabase.auth.signOut();
+          setIsCheckingSession(false);
+        }
+      } catch (err) {
+        console.error('Error checking active session:', err);
+        if (active) setIsCheckingSession(false);
+      }
+    }
+
+    checkSession();
+
+    return () => {
+      active = false;
+    };
+  }, [navigate, updateSession]);
 
   // Clear signup error on role change
   useEffect(() => {
@@ -470,6 +524,20 @@ export default function LandingPage() {
       setIsResetLoading(false);
     }
   };
+
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-secondary/30 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {/* Mesh gradient background effect */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.1),transparent_50%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,99,71,0.15),transparent_50%)] pointer-events-none" />
+        <div className="flex flex-col items-center gap-4 z-10 text-center">
+          <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          <p className="text-sm font-semibold text-muted-foreground animate-pulse">Loading Voyage...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-secondary/30 flex flex-col items-center justify-start p-6 md:p-12 relative overflow-y-auto overflow-x-hidden">
