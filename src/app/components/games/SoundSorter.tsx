@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
-import { getOptionIcon } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
 import { supabase } from '../../../lib/supabase';
 
@@ -660,7 +659,7 @@ export default function SoundSorter() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => speak(currentQ.word)}
-              className="mb-8 p-6 md:p-8 rounded-[2rem] bg-[#FF6347]/10 border-2 border-dashed border-[#FF6347]/30 text-foreground flex items-center justify-center gap-4 cursor-pointer hover:border-[#FF6347]/50 shadow-sm"
+              className="mb-8 p-6 md:p-8 rounded-[2rem] bg-[#FF6347]/10 border-2 border-[#FF6347]/30 text-foreground flex items-center justify-center gap-4 cursor-pointer hover:border-[#FF6347]/50 shadow-sm"
               title="Click to play target word"
             >
               <div className="w-14 h-14 rounded-full bg-[#FF6347] flex items-center justify-center text-white shadow-md">
@@ -682,7 +681,7 @@ export default function SoundSorter() {
                 <motion.div
                   key={`slot-${idx}`}
                   layout
-                  className={`w-24 h-24 md:w-28 md:h-28 rounded-[1.5rem] border-2 border-dashed flex flex-col items-center justify-center transition-all ${
+                  className={`w-24 h-24 md:w-28 md:h-28 rounded-[1.5rem] border-2 flex flex-col items-center justify-center transition-all ${
                     part
                       ? 'border-[#FF6347]/40 bg-[#FF6347]/5 shadow-sm'
                       : 'border-border bg-card'
@@ -695,10 +694,6 @@ export default function SoundSorter() {
                       onClick={() => handlePlacedClick(idx)}
                       className="w-full h-full flex flex-col items-center justify-center p-2 relative text-foreground font-poppins"
                     >
-                      {/* Dynamic Option Icon */}
-                      <div className="text-[#FF6347] mb-1">
-                        {getOptionIcon(part)}
-                      </div>
                       <span className="font-bold text-lg md:text-xl uppercase select-none leading-none">
                         {part}
                       </span>
@@ -722,8 +717,6 @@ export default function SoundSorter() {
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 {availableParts.map(part => {
-                  const Icon = getOptionIcon(part.text);
-                  
                   return (
                     <motion.button
                       key={`part-${part.id}`}
@@ -749,13 +742,6 @@ export default function SoundSorter() {
                         >
                           <Volume2 className="w-3.5 h-3.5" />
                         </button>
-                      )}
-                      
-                      {/* Dynamic Icon */}
-                      {!part.isUsed && Icon && (
-                        <div className="text-[#FF6347] mb-1">
-                          {Icon}
-                        </div>
                       )}
                       
                       <span className="font-extrabold text-lg md:text-xl uppercase select-none tracking-wide">
