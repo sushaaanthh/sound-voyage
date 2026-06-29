@@ -60,6 +60,49 @@ export default function ProgressorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [isVerifying, setIsVerifying] = useState(true);
+
+  // Secure Route Guard & IDOR Prevention
+  useEffect(() => {
+    const checkOwnership = async () => {
+      setIsVerifying(true);
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          toast.error('Authentication required. Please log in again.');
+          navigate('/');
+          return;
+        }
+
+        const { data: trueProfile, error: profileError } = await supabase
+          .from('progressors')
+          .select('id')
+          .eq('auth_user_id', user.id)
+          .maybeSingle();
+
+        if (profileError || !trueProfile) {
+          toast.error('Access denied: Profile not found or unauthorized.');
+          navigate('/');
+          return;
+        }
+
+        if (progressorId !== trueProfile.id) {
+          toast.error('Access denied: You do not have permission to view this dashboard.');
+          // Redirect the user to their own authorized URL
+          navigate(`/progressor/${trueProfile.id}`);
+          return;
+        }
+
+        setIsVerifying(false);
+      } catch (err) {
+        console.error('IDOR check error:', err);
+        navigate('/');
+      }
+    };
+
+    checkOwnership();
+  }, [progressorId, navigate]);
+
   const { completedLevels, assignedLevels, setProgressor, updateSession } = useGameSession();
   const safeCompletedLevels = Array.isArray(completedLevels) ? completedLevels : [];
   const safeAssignedLevels = Array.isArray(assignedLevels) ? assignedLevels : [];
@@ -287,6 +330,15 @@ export default function ProgressorDashboard() {
     setShowNotifications(false);
     navigate(`/game/${notif.gameId}/${notif.levelNum}`);
   };
+
+  if (isVerifying) {
+    return (
+      <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center font-poppins">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-muted-foreground text-sm font-medium">Verifying secure session...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
