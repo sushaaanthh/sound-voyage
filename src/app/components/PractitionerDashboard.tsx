@@ -256,26 +256,7 @@ export default function PractitionerDashboard() {
         return;
       }
 
-      // Retrieve all progressor IDs to determine the next sequential ID number
-      const { data: allProgressors } = await supabase
-        .from('progressors')
-        .select('id');
-
-      let nextNum = 1;
-      if (allProgressors && allProgressors.length > 0) {
-        const nums = allProgressors
-          .map(p => {
-            const match = p.id.match(/^E(\d+)$/);
-            return match ? parseInt(match[1], 10) : 0;
-          })
-          .filter(n => n > 0);
-        if (nums.length > 0) {
-          nextNum = Math.max(...nums) + 1;
-        } else {
-          nextNum = allProgressors.length + 1;
-        }
-      }
-      const newId = `E${String(nextNum).padStart(3, '0')}`;
+      const newId = 'PRG-' + Math.random().toString(36).substring(2, 7).toUpperCase();
       const newName = newProgressorName || 'Pending Registration';
 
       // Insert directly into progressors table
