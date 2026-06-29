@@ -235,6 +235,86 @@ export default function LandingPage() {
       return;
     }
 
+    // Isolated Parent Signup logic branch
+    if (selectedRole === 'parent') {
+      try {
+        // Step 1: Sign up in Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: signupEmail,
+          password: signupPassword,
+          options: {
+            data: {
+              name: signupName,
+            }
+          }
+        });
+
+        if (authError || !authData.user) {
+          let msg = authError?.message || 'Failed to create account.';
+          if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('in use') || msg.toLowerCase().includes('exists')) {
+            msg = 'This email is already in use. Please log in or use a different email.';
+          }
+          toast.error(msg);
+          return;
+        }
+
+        if (authData.user.identities?.length === 0) {
+          toast.error('This email is already in use. Please log in or use a different email.');
+          return;
+        }
+
+        // Step 2: Insert profile into parents table
+        const { error: dbError } = await supabase.from('parents').insert([{
+          id: authData.user.id,
+          name: signupName,
+          email: signupEmail
+        }]);
+
+        if (dbError) {
+          toast.error('Database profile insertion failed: ' + dbError.message);
+          return;
+        }
+
+        // Step 3: Auto-link child Progressor (optional)
+        if (signupChildId.trim()) {
+          const childId = signupChildId.trim();
+          try {
+            const { error: linkError } = await supabase
+              .from('progressors')
+              .update({ parent_id: authData.user.id })
+              .eq('id', childId);
+
+            if (linkError) {
+              console.error('Failed to auto-link child Progressor on parent signup:', linkError.message);
+              toast.warning('Account created, but could not link child ID. You can link manually from the dashboard.');
+            } else {
+              toast.success('Child account successfully linked!');
+            }
+          } catch (linkErr) {
+            console.error('Failed to auto-link child Progressor on parent signup:', linkErr);
+            toast.warning('Account created, but could not link child ID. You can link manually from the dashboard.');
+          }
+        }
+
+        toast.success('Parent account successfully created!');
+        setShowSignUp(false);
+        setSignupError('');
+
+        // Clear fields
+        setSignupName('');
+        setSignupEmail('');
+        setSignupPassword('');
+        setSignupChildId('');
+
+        navigate('/parent');
+      } catch (err: any) {
+        console.error('Parent signup error:', err);
+        toast.error('An unexpected error occurred during parent registration: ' + (err.message || err));
+      }
+      return;
+    }
+
+
     // Validate role-specific IDs before signing up for non-practitioner roles (only progressor here)
     if (selectedRole === 'progressor') {
       if (!signupProgressorId) {
@@ -344,53 +424,8 @@ export default function LandingPage() {
         setSignupEmail('');
         setSignupProgressorId('');
         setSignupPassword('');
-      } else if (selectedRole === 'parent') {
-        const { error: insertError } = await supabase
-          .from('parents')
-          .insert([{
-            id: signUpData.user.id,
-            name: signupName,
-            email: signupEmail
-          }]);
-
-        if (insertError) {
-          toast.error('Account created in auth, but parent profile creation failed: ' + insertError.message);
-          return;
-        }
-
-        // If optional child progressor ID is provided, try to link it automatically
-        if (signupChildId.trim()) {
-          const childId = signupChildId.trim();
-          try {
-            const { error: linkError } = await supabase
-              .from('progressors')
-              .update({ parent_id: signUpData.user.id })
-              .eq('id', childId);
-
-            if (linkError) {
-              console.error('Failed to auto-link child Progressor on parent signup:', linkError.message);
-              toast.warning('Account created, but child auto-linking failed. You can link manually from the dashboard.');
-            } else {
-              toast.success('Child account successfully linked!');
-            }
-          } catch (err) {
-            console.error('Failed to auto-link child Progressor on parent signup:', err);
-          }
-        }
-
-        toast.success('Parent account successfully created!');
-        setShowSignUp(false);
-        setSignupError('');
-
-        // Clear fields
-        setSignupName('');
-        setSignupEmail('');
-        setSignupPassword('');
-        setSignupChildId('');
-
-        navigate('/parent');
       } else {
-        // Parent role (or others): standard signUp already run, success toast and state reset
+        // Fallback: standard signUp already run, success toast and state reset
         toast.success('Account successfully created. Please log in.');
         setShowSignUp(false);
         setSignupError('');

@@ -184,21 +184,26 @@ export default function ParentDashboard() {
         return;
       }
 
-      // Query if progressor exists
-      const { data: progressorsFound, error: fetchError } = await supabase
+      // Pre-check the progressor claim status
+      const { data: child, error: fetchError } = await supabase
         .from('progressors')
-        .select('id, parent_id, name')
-        .eq('id', childIdInput);
+        .select('parent_id, name')
+        .eq('id', childIdInput)
+        .single();
 
-      if (fetchError || !progressorsFound || progressorsFound.length === 0) {
-        toast.error("Invalid Progressor ID. Please check the spelling and try again.");
+      if (fetchError || !child) {
+        toast.error("Invalid Progressor ID. Please check the spelling.");
         return;
       }
 
-      const progressor = progressorsFound[0];
+      if (child.parent_id !== null && child.parent_id !== user.id) {
+        toast.warning("This Progressor ID is already securely linked to another parent account.");
+        return;
+      }
 
-      if (progressor.parent_id === user.id) {
+      if (child.parent_id === user.id) {
         toast.info("This child is already linked to your account.");
+        setLinkProgressorId('');
         return;
       }
 
@@ -211,14 +216,14 @@ export default function ParentDashboard() {
       if (updateError) {
         toast.error("Failed to link child account: " + updateError.message);
       } else {
-        toast.success(`Successfully linked ${progressor.name || childIdInput}!`);
+        toast.success(`Successfully linked ${child.name || childIdInput}!`);
         setLinkProgressorId('');
         // Refresh children list
         await fetchChildren(user.id);
       }
     } catch (err) {
       console.error('Link child exception:', err);
-      toast.error("An unexpected error occurred while linking child.");
+      toast.error("An unexpected error occurred while linking.");
     } finally {
       setLinking(false);
     }
