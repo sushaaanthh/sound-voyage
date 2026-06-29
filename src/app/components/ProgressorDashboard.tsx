@@ -90,7 +90,17 @@ export default function ProgressorDashboard() {
   const hasUnread = notifications.some(n => !n.read);
 
   const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    if (!progressorId) return;
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, read: true }));
+      const readKeys = updated.map(n => n.key);
+      try {
+        localStorage.setItem(`voyage_read_assignments_${progressorId}`, JSON.stringify(readKeys));
+      } catch (err) {
+        console.error('Error saving read assignments to localStorage:', err);
+      }
+      return updated;
+    });
   };
 
   useEffect(() => {
@@ -169,9 +179,21 @@ export default function ProgressorDashboard() {
 
   // Derive notifications from assigned levels
   useEffect(() => {
+    if (!progressorId) return;
+
     if (safeAssignedLevels.length > 0) {
-      setNotifications(prev => {
-        const prevMap = new Map(prev.map(n => [n.key, n.read]));
+      let readKeys: string[] = [];
+      try {
+        const stored = localStorage.getItem(`voyage_read_assignments_${progressorId}`);
+        if (stored) {
+          readKeys = JSON.parse(stored);
+          if (!Array.isArray(readKeys)) readKeys = [];
+        }
+      } catch (err) {
+        console.error('Error reading read assignments from localStorage:', err);
+      }
+
+      setNotifications(() => {
         return safeAssignedLevels.map((levelKey, idx) => {
           const lastDashIndex = levelKey.lastIndexOf('-');
           const gameId = levelKey.substring(0, lastDashIndex);
@@ -183,7 +205,7 @@ export default function ProgressorDashboard() {
             id: idx,
             key: levelKey,
             text,
-            read: prevMap.has(levelKey) ? !!prevMap.get(levelKey) : false,
+            read: readKeys.includes(levelKey),
             gameId,
             levelNum: parseInt(levelNum, 10)
           };
@@ -192,7 +214,7 @@ export default function ProgressorDashboard() {
     } else {
       setNotifications([]);
     }
-  }, [safeAssignedLevels]);
+  }, [safeAssignedLevels, progressorId]);
 
   const isLevelUnlocked = (gameId: string, levelNum: number) => {
     const currentLevelKey = `${gameId}-${levelNum}`;
@@ -220,6 +242,22 @@ export default function ProgressorDashboard() {
   };
 
   const handleNotificationClick = (notif: { gameId: string; levelNum: number; key: string }) => {
+    if (progressorId) {
+      try {
+        const stored = localStorage.getItem(`voyage_read_assignments_${progressorId}`);
+        let readKeys: string[] = [];
+        if (stored) {
+          readKeys = JSON.parse(stored);
+          if (!Array.isArray(readKeys)) readKeys = [];
+        }
+        if (!readKeys.includes(notif.key)) {
+          readKeys.push(notif.key);
+          localStorage.setItem(`voyage_read_assignments_${progressorId}`, JSON.stringify(readKeys));
+        }
+      } catch (err) {
+        console.error('Error saving read notification to localStorage:', err);
+      }
+    }
     setNotifications(prev => prev.map(n => n.key === notif.key ? { ...n, read: true } : n));
     setShowNotifications(false);
     navigate(`/game/${notif.gameId}/${notif.levelNum}`);
@@ -241,8 +279,11 @@ export default function ProgressorDashboard() {
             <div className="relative" ref={popoverRef}>
               <button
                 onClick={() => {
-                  setShowNotifications(!showNotifications);
-                  markAllRead();
+                  const nextShow = !showNotifications;
+                  setShowNotifications(nextShow);
+                  if (nextShow) {
+                    markAllRead();
+                  }
                 }}
                 className="p-4 rounded-[2rem] bg-card shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 border border-border relative flex items-center justify-center text-foreground"
                 aria-label="Notifications"
@@ -264,9 +305,9 @@ export default function ProgressorDashboard() {
                         No new notifications
                       </div>
                     ) : (
-                      notifications.map((notif) => (
+                      [...notifications].reverse().map((notif) => (
                         <button
-                          key={notif.id}
+                          key={notif.key}
                           onClick={() => handleNotificationClick(notif)}
                           className={`w-full text-left p-3 rounded-[1.25rem] text-sm transition-all border block hover:scale-[1.02] active:scale-95 cursor-pointer ${
                             notif.read
