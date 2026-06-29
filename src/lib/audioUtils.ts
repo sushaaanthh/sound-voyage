@@ -81,6 +81,11 @@ const phonemeMap: Record<string, string> = {
   'll': ' , ull , '
 };
 
+// Warm up the speech synthesis engine to force browser to load voices immediately on mount
+if (typeof window !== 'undefined' && window.speechSynthesis) {
+  window.speechSynthesis.getVoices();
+}
+
 /**
  * Translates phonetic cues and slash-wrapped phonemes into hacked spellings 
  * to force standard TTS engines to make the correct sounds.
@@ -152,25 +157,25 @@ export function playAudio(
   // Cancel ongoing speech gracefully to handle rapid clicks
   window.speechSynthesis.cancel();
 
-  // Apply phonetic lookup and translations
-  const spokenText = translateText(text);
+  // Apply phonetic lookup and translations, and lowercase to prevent acronym reading
+  const spokenText = translateText(text).toLowerCase();
 
   const utterance = new SpeechSynthesisUtterance(spokenText);
   utterance.rate = 0.9;
   utterance.volume = 1.0;
   utterance.pitch = 1.1;
 
-  // Retrieve voices and select Indian English
+  // Retrieve voices and select a high-quality, consistent English voice
   const voices = window.speechSynthesis.getVoices();
-  const indianVoice = voices.find(
-    (voice) =>
-      voice.lang === 'en-IN' ||
-      voice.lang.startsWith('en-IN') ||
-      voice.lang.replace('_', '-').includes('en-IN')
-  );
+  const matchedVoice = voices.find(v => v.name.includes("Google US English")) ||
+                       voices.find(v => v.name.includes("Google UK English Female")) ||
+                       voices.find(v => v.name.includes("Samantha")) ||
+                       voices.find(v => v.lang === 'en-IN' || v.lang.startsWith('en-IN')) ||
+                       voices.find(v => v.lang.startsWith('en-')) ||
+                       voices[0];
 
-  if (indianVoice) {
-    utterance.voice = indianVoice;
+  if (matchedVoice) {
+    utterance.voice = matchedVoice;
   }
 
   // Attach status callbacks
