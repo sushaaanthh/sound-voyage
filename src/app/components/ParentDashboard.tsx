@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { LogOut, Clock, TrendingUp, MessageSquare, Star, Link as LinkIcon, Award, Target, Calendar, User } from 'lucide-react';
+import { LogOut, Clock, TrendingUp, MessageSquare, Star, Link as LinkIcon, Award, Target, Calendar, User, Unlink } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 import { supabase } from '../../lib/supabase';
@@ -67,6 +67,17 @@ export default function ParentDashboard() {
   const [linkProgressorId, setLinkProgressorId] = useState('');
   const [linking, setLinking] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    childId: string | null;
+  }>({
+    visible: false,
+    x: 0,
+    y: 0,
+    childId: null,
+  });
 
   const handleLogoutConfirm = async () => {
     setShowLogoutModal(false);
@@ -80,6 +91,17 @@ export default function ParentDashboard() {
       navigate('/');
     }
   };
+
+  // Dismiss context menu on click anywhere
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      if (contextMenu.visible) {
+        setContextMenu(prev => ({ ...prev, visible: false }));
+      }
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, [contextMenu.visible]);
 
   // Fetch Parent profile and children on load
   useEffect(() => {
@@ -226,6 +248,39 @@ export default function ParentDashboard() {
       toast.error("An unexpected error occurred while linking.");
     } finally {
       setLinking(false);
+    }
+  };
+
+  // Handle unlinking a child progressor
+  const handleUnlink = async () => {
+    const childIdToUnlink = contextMenu.childId;
+    if (!childIdToUnlink) return;
+
+    try {
+      const { error } = await supabase
+        .from('progressors')
+        .update({ parent_id: null })
+        .eq('id', childIdToUnlink);
+
+      if (error) {
+        toast.error("Failed to unlink child: " + error.message);
+        return;
+      }
+
+      toast.success("Child unlinked successfully");
+
+      setChildren(prev => {
+        const updated = prev.filter(c => c.id !== childIdToUnlink);
+        if (selectedChild?.id === childIdToUnlink) {
+          setSelectedChild(updated.length > 0 ? updated[0] : null);
+        }
+        return updated;
+      });
+    } catch (err) {
+      console.error("Error unlinking child:", err);
+      toast.error("An unexpected error occurred while unlinking.");
+    } finally {
+      setContextMenu(prev => ({ ...prev, visible: false, childId: null }));
     }
   };
 
@@ -392,6 +447,10 @@ export default function ParentDashboard() {
                   <button
                     key={child.id}
                     onClick={() => setSelectedChild(child)}
+                    onContextMenu={(e) => {
+                      e.preventDefault(); // Prevent standard browser menu
+                      setContextMenu({ visible: true, x: e.pageX, y: e.pageY, childId: child.id });
+                    }}
                     className={`px-6 py-3.5 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 border cursor-pointer ${
                       selectedChild?.id === child.id
                         ? 'bg-primary text-primary-foreground border-primary font-bold shadow-lg shadow-primary/10'
@@ -647,6 +706,22 @@ export default function ParentDashboard() {
         onClose={() => setShowLogoutModal(false)} 
         onConfirm={handleLogoutConfirm} 
       />
+
+      {contextMenu.visible && (
+        <div
+          className="absolute z-50 bg-card border border-border shadow-xl rounded-[1.25rem] p-1.5 min-w-[160px] animate-in fade-in zoom-in-95 duration-100"
+          style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={handleUnlink}
+            className="w-full flex items-center gap-2.5 px-4 py-3 rounded-[0.75rem] text-sm font-bold text-destructive hover:bg-destructive/10 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer text-left"
+          >
+            <Unlink className="w-4 h-4" />
+            Unlink Progressor
+          </button>
+        </div>
+      )}
     </div>
   );
 }
