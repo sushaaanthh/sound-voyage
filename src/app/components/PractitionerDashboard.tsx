@@ -43,13 +43,6 @@ const GAMES: Game[] = [
   { id: 'sound-synk', name: 'Sound Synk', icon: Shuffle },
   { id: 'sound-sorter', name: 'Sound Sorter', icon: PackageSearch },
 ];
-
-const mockProgressors: Progressor[] = [
-  { id: 'E001', name: 'Sushanth Kumar', age: 8, lastSession: '2026-04-20', completedLevels: [], assignedLevels: [] },
-  { id: 'E002', name: 'Priya Sharma', age: 10, lastSession: '2026-04-22', completedLevels: [], assignedLevels: [] },
-  { id: 'E003', name: 'Rohan Patel', age: 7, lastSession: '2026-04-18', completedLevels: [], assignedLevels: [] },
-];
-
 export default function PractitionerDashboard() {
   const [activeView, setActiveView] = useState<'progressors' | 'analytics' | 'tasks' | 'notifications'>('progressors');
   const [selectedProgressor, setSelectedProgressor] = useState<Progressor | null>(null);
@@ -60,7 +53,8 @@ export default function PractitionerDashboard() {
   const [parentName, setParentName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
-  const [progressors, setProgressors] = useState<Progressor[]>(mockProgressors);
+  const [progressors, setProgressors] = useState<Progressor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Deletion modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -94,6 +88,7 @@ export default function PractitionerDashboard() {
   // Setup dynamic loading of progressors
   useEffect(() => {
     const initializeDashboard = async () => {
+      setIsLoading(true);
       try {
         // Auth Check
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -108,10 +103,11 @@ export default function PractitionerDashboard() {
           .from('practitioners')
           .select('id, name, email, avatar_url')
           .eq('auth_user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError || !practData) {
-          toast.error('Failed to load practitioner profile.');
+          toast.error('Access denied: Practitioner profile not found.');
+          navigate('/');
           return;
         }
 
@@ -148,6 +144,8 @@ export default function PractitionerDashboard() {
       } catch (err) {
         console.error('Failed to initialize dashboard:', err);
         toast.error('An unexpected error occurred during dashboard initialization.');
+      } finally {
+        setIsLoading(false);
       }
     };
     initializeDashboard();
@@ -451,6 +449,15 @@ export default function PractitionerDashboard() {
       setSavingAssignments(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center font-poppins">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-muted-foreground text-sm font-medium">Verifying credentials and loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
