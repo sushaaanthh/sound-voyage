@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, Plus, X, Trash2, History, ShieldAlert, TrendingUp, LogOut, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon, Bell, Award, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { Search, Plus, X, Trash2, History, ShieldAlert, TrendingUp, LogOut, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon, Bell, Award, CheckCircle2, AlertCircle, Clock, User } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 import LogoutConfirmModal from './ui/LogoutConfirmModal';
+import ProfileModal from './ui/ProfileModal';
 
 interface Progressor {
   id: string;
@@ -74,6 +75,8 @@ export default function PractitionerDashboard() {
   const navigate = useNavigate();
   const [currentPractitionerId, setCurrentPractitionerId] = useState<string | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [userData, setUserData] = useState<{ id: string; name: string; age?: number; email?: string; avatar_url: string | null } | null>(null);
 
   const handleLogoutConfirm = async () => {
     setShowLogoutModal(false);
@@ -103,7 +106,7 @@ export default function PractitionerDashboard() {
         // Profile Fetch
         const { data: practData, error: profileError } = await supabase
           .from('practitioners')
-          .select('id')
+          .select('id, name, email, avatar_url')
           .eq('auth_user_id', user.id)
           .single();
 
@@ -114,6 +117,12 @@ export default function PractitionerDashboard() {
 
         // State Lock
         setCurrentPractitionerId(practData.id);
+        setUserData({
+          id: practData.id,
+          name: practData.name || '',
+          email: practData.email || '',
+          avatar_url: practData.avatar_url || null,
+        });
 
         // Registry Fetch
         const { data, error: registryError } = await supabase
@@ -451,8 +460,27 @@ export default function PractitionerDashboard() {
           <ThemeToggle />
         </div>
 
-        <div className="mb-12">
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight font-sans" style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}>Practitioner Dashboard</h1>
+        <div className="mb-12 flex items-center gap-3">
+          <button
+            onClick={() => setIsProfileModalOpen(true)}
+            className="w-12 h-12 rounded-full border border-border overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
+            aria-label="Open profile modal"
+          >
+            {userData?.avatar_url ? (
+              <img
+                src={userData.avatar_url}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-[#FF6347]/10 flex items-center justify-center text-[#FF6347]">
+                <User className="w-6 h-6" />
+              </div>
+            )}
+          </button>
+          <div>
+            <h1 className="text-xl font-extrabold text-foreground tracking-tight font-sans leading-tight" style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}>Practitioner Dashboard</h1>
+          </div>
         </div>
 
         <nav className="space-y-3">
@@ -1434,6 +1462,17 @@ export default function PractitionerDashboard() {
         isOpen={showLogoutModal} 
         onClose={() => setShowLogoutModal(false)} 
         onConfirm={handleLogoutConfirm} 
+      />
+
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        role="practitioner"
+        userId={currentPractitionerId || ''}
+        userData={userData}
+        onUpdate={(newAvatarUrl) => {
+          setUserData(prev => prev ? { ...prev, avatar_url: newAvatarUrl } : null);
+        }}
       />
     </div>
   );

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
-import { LogOut, Lock, Target, Map as MapIcon, Route, Shuffle, PackageSearch, LucideIcon, Bell } from 'lucide-react';
+import { LogOut, Lock, Target, Map as MapIcon, Route, Shuffle, PackageSearch, LucideIcon, Bell, User } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 import LogoutConfirmModal from './ui/LogoutConfirmModal';
+import ProfileModal from './ui/ProfileModal';
 import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 
 interface Game {
@@ -68,6 +69,8 @@ export default function ProgressorDashboard() {
   });
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [userData, setUserData] = useState<{ id: string; name: string; age?: number; email?: string; avatar_url: string | null } | null>(null);
 
   const handleLogoutConfirm = async () => {
     setShowLogoutModal(false);
@@ -123,7 +126,7 @@ export default function ProgressorDashboard() {
       try {
         const { data, error } = await supabase
           .from('progressors')
-          .select('name, completed_levels, assigned_levels')
+          .select('id, name, age, assigned_email, completed_levels, assigned_levels, avatar_url')
           .eq('id', progressorId)
           .maybeSingle();
 
@@ -134,6 +137,13 @@ export default function ProgressorDashboard() {
             data.completed_levels || [],
             data.assigned_levels || []
           );
+          setUserData({
+            id: data.id,
+            name: data.name || '',
+            age: data.age || 0,
+            email: data.assigned_email || '',
+            avatar_url: data.avatar_url || null,
+          });
         }
       } catch (err) {
         console.error('Error fetching latest progressor data:', err);
@@ -154,13 +164,28 @@ export default function ProgressorDashboard() {
           filter: `id=eq.${progressorId}`,
         },
         (payload) => {
-          const newData = payload.new as { name?: string; completed_levels?: any[]; assigned_levels?: any[] };
+          const newData = payload.new as {
+            id: string;
+            name?: string;
+            age?: number;
+            assigned_email?: string;
+            completed_levels?: any[];
+            assigned_levels?: any[];
+            avatar_url?: string | null;
+          };
           updateSession(
             progressorId,
             newData.name || '',
             newData.completed_levels || [],
             newData.assigned_levels || []
           );
+          setUserData({
+            id: newData.id,
+            name: newData.name || '',
+            age: newData.age || 0,
+            email: newData.assigned_email || '',
+            avatar_url: newData.avatar_url || null,
+          });
         }
       )
       .subscribe();
@@ -268,9 +293,28 @@ export default function ProgressorDashboard() {
       {/* Header */}
       <div className="bg-card border-b border-border px-8 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="mb-1 text-foreground">Ready for your Voyage?</h1>
-            <p className="text-muted-foreground">Choose a game to start playing</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsProfileModalOpen(true)}
+              className="w-12 h-12 rounded-full border border-border overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
+              aria-label="Open profile modal"
+            >
+              {userData?.avatar_url ? (
+                <img
+                  src={userData.avatar_url}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-[#FF6347]/10 flex items-center justify-center text-[#FF6347]">
+                  <User className="w-6 h-6" />
+                </div>
+              )}
+            </button>
+            <div>
+              <h1 className="mb-1 text-foreground">Ready for your Voyage?</h1>
+              <p className="text-muted-foreground">Choose a game to start playing</p>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -452,6 +496,17 @@ export default function ProgressorDashboard() {
         isOpen={showLogoutModal} 
         onClose={() => setShowLogoutModal(false)} 
         onConfirm={handleLogoutConfirm} 
+      />
+
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        role="progressor"
+        userId={progressorId || ''}
+        userData={userData}
+        onUpdate={(newAvatarUrl) => {
+          setUserData(prev => prev ? { ...prev, avatar_url: newAvatarUrl } : null);
+        }}
       />
     </div>
   );
