@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, Plus, X, Trash2, History, ShieldAlert, TrendingUp, LogOut, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon, Bell, Award, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
@@ -147,7 +147,7 @@ export default function PractitionerDashboard() {
   // Analytics State
   const [analyticsSessions, setAnalyticsSessions] = useState<GameSession[]>([]);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
-  const [analyticsGameFilter, setAnalyticsGameFilter] = useState<string>('all');
+  const [selectedGameFilter, setSelectedGameFilter] = useState<string>('All');
 
   // Task Assignment State
   const [selectedLevelsToAssign, setSelectedLevelsToAssign] = useState<string[]>([]);
@@ -607,22 +607,6 @@ export default function PractitionerDashboard() {
                     ))}
                   </select>
                 </div>
-
-                {selectedProgressor && (
-                  <div className="w-full sm:w-56">
-                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Filter by Game</label>
-                    <select
-                      value={analyticsGameFilter}
-                      onChange={(e) => setAnalyticsGameFilter(e.target.value)}
-                      className="w-full px-4 py-3 rounded-[1rem] bg-card border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary font-bold transition-all"
-                    >
-                      <option value="all">All Games</option>
-                      {GAMES.map(g => (
-                        <option key={g.id} value={g.id}>{g.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -637,7 +621,7 @@ export default function PractitionerDashboard() {
               </div>
             ) : (() => {
               const filteredSessions = analyticsSessions.filter(s => 
-                analyticsGameFilter === 'all' ? true : s.game_id === analyticsGameFilter
+                selectedGameFilter === 'All' ? true : s.game_id === selectedGameFilter
               );
 
               if (filteredSessions.length === 0) {
@@ -662,7 +646,7 @@ export default function PractitionerDashboard() {
 
               // Prepare Chart Data
               const chartData = filteredSessions.map((s, index) => ({
-                name: `Sess ${index + 1}`,
+                name: `S${index + 1}`,
                 date: new Date(s.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
                 level: `Level ${s.level}`,
                 accuracy: s.accuracy,
@@ -674,6 +658,41 @@ export default function PractitionerDashboard() {
 
               return (
                 <div className="space-y-6">
+                  {/* Game Filter Pills */}
+                  <div className="bg-card p-6 rounded-[2rem] border border-border">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Filter by Game</p>
+                    <div className="flex flex-wrap gap-2.5">
+                      <button
+                        onClick={() => setSelectedGameFilter('All')}
+                        className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer ${
+                          selectedGameFilter === 'All'
+                            ? 'bg-primary text-primary-foreground shadow-md scale-105'
+                            : 'bg-secondary hover:bg-muted text-foreground border border-border'
+                        }`}
+                      >
+                        All Games
+                      </button>
+                      {GAMES.map(game => {
+                        const Icon = game.icon;
+                        const isSelected = selectedGameFilter === game.id;
+                        return (
+                          <button
+                            key={game.id}
+                            onClick={() => setSelectedGameFilter(game.id)}
+                            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${
+                              isSelected
+                                ? 'bg-primary text-primary-foreground shadow-md scale-105'
+                                : 'bg-secondary hover:bg-muted text-foreground border border-border'
+                            }`}
+                          >
+                            <Icon className="w-3.5 h-3.5" />
+                            {game.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {/* Summary Cards */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-card p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
@@ -717,43 +736,123 @@ export default function PractitionerDashboard() {
                     </div>
                   </div>
 
-                  {/* Trend Chart */}
-                  <div className="bg-card p-8 rounded-[2rem] border border-border">
-                    <h3 className="mb-6 text-foreground font-bold font-sans">
-                      Performance Telemetry Trend ({analyticsGameFilter === 'all' ? 'All Games' : GAMES.find(g => g.id === analyticsGameFilter)?.name})
-                    </h3>
-                    <div className="w-full h-[400px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                          <XAxis dataKey="name" stroke="#888888" fontSize={12} />
-                          <YAxis yAxisId="left" domain={[0, 100]} stroke="#888888" fontSize={12} label={{ value: 'Accuracy % / Score', angle: -90, position: 'insideLeft', fill: '#888888', style: { textAnchor: 'middle' }, offset: 5 }} />
-                          <YAxis yAxisId="right" orientation="right" stroke="#888888" fontSize={12} label={{ value: 'Time Taken (seconds)', angle: 90, position: 'insideRight', fill: '#888888', style: { textAnchor: 'middle' }, offset: 5 }} />
-                          <Tooltip
-                            content={({ active, payload }) => {
-                              if (active && payload && payload.length) {
-                                const data = payload[0].payload;
-                                return (
-                                  <div className="bg-card border border-border p-4 rounded-xl shadow-xl">
-                                    <p className="font-bold text-foreground">{data.date} • {data.gameName}</p>
-                                    <p className="text-xs text-muted-foreground mb-2">{data.level}</p>
-                                    <div className="space-y-1 text-xs font-semibold">
-                                      <p className="text-[#FF6347]">Accuracy: {data.accuracy}%</p>
-                                      <p className="text-[#4169E1]">Score: {data.score}</p>
-                                      <p className="text-[#32CD32]">Time Taken: {data.timeString}</p>
+                  {/* Performance Telemetry Charts */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Chart 1: Accuracy Trend */}
+                    <div className="bg-card p-6 rounded-[2rem] border border-border flex flex-col justify-between shadow-sm">
+                      <div className="mb-4">
+                        <h4 className="text-foreground font-bold font-sans">Accuracy (%)</h4>
+                        <p className="text-xs text-muted-foreground">Target sound identification accuracy trend</p>
+                      </div>
+                      <div className="w-full h-[280px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="accuracyGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/>
+                                <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                            <XAxis dataKey="name" stroke="#888888" fontSize={11} tickLine={false} />
+                            <YAxis domain={[0, 100]} stroke="#888888" fontSize={11} tickLine={false} />
+                            <Tooltip
+                              content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                  const data = payload[0].payload;
+                                  return (
+                                    <div className="bg-card border border-border p-4 rounded-2xl shadow-xl">
+                                      <p className="font-bold text-foreground mb-1 text-xs">{data.gameName}</p>
+                                      <p className="text-[10px] text-muted-foreground mb-2">{data.level} • {data.date}</p>
+                                      <p className="text-xs font-bold text-[#f43f5e]">Accuracy: {data.accuracy}%</p>
                                     </div>
-                                  </div>
-                                );
-                              }
-                              return null;
-                            }}
-                          />
-                          <Legend verticalAlign="top" height={36} />
-                          <Line yAxisId="left" type="monotone" dataKey="accuracy" stroke="#FF6347" strokeWidth={3} name="Accuracy %" activeDot={{ r: 8 }} />
-                          <Line yAxisId="left" type="monotone" dataKey="score" stroke="#4169E1" strokeWidth={3} name="Score Achieved" />
-                          <Line yAxisId="right" type="monotone" dataKey="timeSeconds" stroke="#32CD32" strokeWidth={3} name="Duration (secs)" />
-                        </LineChart>
-                      </ResponsiveContainer>
+                                  );
+                                }
+                                return null;
+                              }}
+                            />
+                            <Area type="monotone" dataKey="accuracy" stroke="#f43f5e" strokeWidth={3} fill="url(#accuracyGrad)" activeDot={{ r: 6 }} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Chart 2: Score Progression */}
+                    <div className="bg-card p-6 rounded-[2rem] border border-border flex flex-col justify-between shadow-sm">
+                      <div className="mb-4">
+                        <h4 className="text-foreground font-bold font-sans">Score</h4>
+                        <p className="text-xs text-muted-foreground">Points achieved per gameplay session</p>
+                      </div>
+                      <div className="w-full h-[280px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                            <XAxis dataKey="name" stroke="#888888" fontSize={11} tickLine={false} />
+                            <YAxis domain={['auto', 'auto']} stroke="#888888" fontSize={11} tickLine={false} />
+                            <Tooltip
+                              content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                  const data = payload[0].payload;
+                                  return (
+                                    <div className="bg-card border border-border p-4 rounded-2xl shadow-xl">
+                                      <p className="font-bold text-foreground mb-1 text-xs">{data.gameName}</p>
+                                      <p className="text-[10px] text-muted-foreground mb-2">{data.level} • {data.date}</p>
+                                      <p className="text-xs font-bold text-[#3b82f6]">Score: {data.score}</p>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }}
+                            />
+                            <Area type="monotone" dataKey="score" stroke="#3b82f6" strokeWidth={3} fill="url(#scoreGrad)" activeDot={{ r: 6 }} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Chart 3: Speed / Time Taken */}
+                    <div className="bg-card p-6 rounded-[2rem] border border-border flex flex-col justify-between shadow-sm">
+                      <div className="mb-4">
+                        <h4 className="text-foreground font-bold font-sans">Time Taken (Seconds)</h4>
+                        <p className="text-xs text-muted-foreground">Duration of session in seconds</p>
+                      </div>
+                      <div className="w-full h-[280px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="speedGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                            <XAxis dataKey="name" stroke="#888888" fontSize={11} tickLine={false} />
+                            <YAxis domain={['auto', 'auto']} stroke="#888888" fontSize={11} tickLine={false} />
+                            <Tooltip
+                              content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                  const data = payload[0].payload;
+                                  return (
+                                    <div className="bg-card border border-border p-4 rounded-2xl shadow-xl">
+                                      <p className="font-bold text-foreground mb-1 text-xs">{data.gameName}</p>
+                                      <p className="text-[10px] text-muted-foreground mb-2">{data.level} • {data.date}</p>
+                                      <p className="text-xs font-bold text-[#10b981]">Time Taken: {data.timeSeconds}s ({data.timeString})</p>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }}
+                            />
+                            <Area type="monotone" dataKey="timeSeconds" stroke="#10b981" strokeWidth={3} fill="url(#speedGrad)" activeDot={{ r: 6 }} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   </div>
                 </div>
