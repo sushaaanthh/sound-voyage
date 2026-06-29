@@ -6,14 +6,14 @@ import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
-import { supabase } from '../../../lib/supabase';
+import { submitGameSession } from '../../../lib/telemetryUtils';
 import { soundTrailData, SoundTrailLevel, SoundTrailChain } from '../../../data/soundTrailData';
 import { playAudio } from '../../../lib/audioUtils';
 
 export default function SoundTrail() {
   const navigate = useNavigate();
   const { level } = useParams();
-  const { progressorId, completedLevels } = useGameSession();
+  const { progressorId } = useGameSession();
 
   const levelStr = level || '1';
   const levelNum = Number(levelStr);
@@ -274,30 +274,20 @@ export default function SoundTrail() {
         description: `Accuracy: ${accuracy}% - Moving to Results`,
         duration: 2000,
       });
-
-      // Save progression to Supabase user profile
-      const compositeKey = `${gameId}-${levelNum}`;
-      const activeId = progressorId || 'demo';
-      
-      if (activeId !== 'demo') {
-        try {
-          const updatedLevels = completedLevels.includes(compositeKey)
-            ? completedLevels
-            : [...completedLevels, compositeKey];
-
-          const { error } = await supabase
-            .from('progressors')
-            .update({ completed_levels: updatedLevels })
-            .eq('id', activeId);
-            
-          if (error) {
-            console.error('Failed to update progressor profile in Supabase:', error.message);
-          }
-        } catch (err) {
-          console.error('Error executing Supabase update:', err);
-        }
-      }
     }
+
+    // Submit telemetry in the background (fires silently, handles database logs and level unlocking)
+    submitGameSession({
+      progressorId: progressorId || 'demo',
+      gameId: 'sound-trail',
+      level: levelNum,
+      score: finalScore,
+      totalQuestions: totalRounds,
+      accuracy: accuracy,
+      timeTaken: formattedTime
+    }).catch((err) => {
+      console.error('Failed to submit game session telemetry:', err);
+    });
 
     // Direct result page navigation logs it in session database table
     navigate('/result', {

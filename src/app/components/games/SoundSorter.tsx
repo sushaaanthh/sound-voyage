@@ -7,7 +7,7 @@ import { ThemeToggle } from '../ThemeToggle';
 import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { playAudio } from '../../../lib/audioUtils';
-import { supabase } from '../../../lib/supabase';
+import { submitGameSession } from '../../../lib/telemetryUtils';
 
 // Data types
 interface SorterWord {
@@ -503,57 +503,18 @@ export default function SoundSorter() {
     // 1. Context telemetry write
     await saveGameResult('sound-sorter', levelNum, finalScore, accuracy, formattedTime, totalQuestionsCount);
 
-    // 2. Direct telemetry inserts and progression checks
-    try {
-      const { error: telemetryErr } = await supabase
-        .from('game_sessions')
-        .insert([
-          {
-            progressor_id: activeId,
-            game_id: 'sound-sorter',
-            level: levelNum,
-            score: finalScore,
-            accuracy: accuracy,
-            time_taken: formattedTime,
-            total_questions: totalQuestionsCount
-          }
-        ]);
-
-      if (telemetryErr) {
-        console.error('Direct telemetry write failed:', telemetryErr.message);
-      }
-
-      if (accuracy >= 60 && activeId !== 'demo') {
-        const primaryKey = `sound-sorter-${levelNum}`;
-
-        let currentCompleted: string[] = [];
-        const { data: profile } = await supabase
-          .from('progressors')
-          .select('completed_levels')
-          .eq('id', activeId)
-          .single();
-
-        if (profile?.completed_levels) {
-          currentCompleted = Array.isArray(profile.completed_levels)
-            ? profile.completed_levels.map(String)
-            : [];
-        }
-
-        const nextCompleted = [...currentCompleted];
-        if (!nextCompleted.includes(primaryKey)) nextCompleted.push(primaryKey);
-
-        const { error: unlockErr } = await supabase
-          .from('progressors')
-          .update({ completed_levels: nextCompleted })
-          .eq('id', activeId);
-
-        if (unlockErr) {
-          console.error('Direct level unlock progression update failed:', unlockErr.message);
-        }
-      }
-    } catch (err) {
-      console.error('Supabase telemetry/progression write failed:', err);
-    }
+    // 2. Submit telemetry in the background (fires silently, handles database logs and level unlocking)
+    submitGameSession({
+      progressorId: activeId,
+      gameId: 'sound-sorter',
+      level: levelNum,
+      score: finalScore,
+      totalQuestions: totalQuestionsCount,
+      accuracy: accuracy,
+      timeTaken: formattedTime
+    }).catch((err) => {
+      console.error('Failed to submit game session telemetry:', err);
+    });
 
     // 3. Navigate to result screen
     navigate('/result', {

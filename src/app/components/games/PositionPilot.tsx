@@ -9,6 +9,7 @@ import { useGameSession } from '../../context/GameSessionContext';
 import { positionPilotData, PositionPilotQuestion } from '../../../data/positionPilotData';
 import { getOptionIcon } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
+import { submitGameSession } from '../../../lib/telemetryUtils';
 
 const CHOICES = [
   { label: 'BEGINNING', value: 'START' },
@@ -153,6 +154,21 @@ export default function PositionPilot() {
     } else {
       const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
       const formattedTime = formatTime(elapsedSeconds);
+      const accuracy = totalQuestions > 0 ? Math.round((nextScore / totalQuestions) * 100) : 0;
+      const activeId = progressorId || 'demo';
+
+      // Submit telemetry in the background (fires silently, handles database logs and level unlocking)
+      submitGameSession({
+        progressorId: activeId,
+        gameId: 'position-pilot',
+        level: levelNum,
+        score: nextScore,
+        totalQuestions,
+        accuracy,
+        timeTaken: formattedTime
+      }).catch((err) => {
+        console.error('Failed to submit game session telemetry:', err);
+      });
 
       // Navigate to /result with final payload including missedWords
       navigate('/result', {
@@ -164,7 +180,7 @@ export default function PositionPilot() {
           timeElapsed: elapsedSeconds,
           gameId: 'position-pilot',
           level: levelNum,
-          progressorId: progressorId || 'demo',
+          progressorId: activeId,
           missedWords
         }
       });

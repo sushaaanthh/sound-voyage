@@ -10,6 +10,7 @@ import { useGameSession } from '../../context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
 import { getOptionIcon, getOptionIconComponent } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
+import { submitGameSession } from '../../../lib/telemetryUtils';
 
 interface PhonemePopProps {
   levelData?: any; // kept for compatibility if needed, but we pull dynamically
@@ -176,6 +177,21 @@ export default function PhonemePop({}: PhonemePopProps) {
     } else {
       const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
       const formattedTime = formatTime(elapsedSeconds);
+      const accuracy = totalQuestions > 0 ? Math.round((nextScore / totalQuestions) * 100) : 0;
+      const activeId = progressorId || 'demo';
+
+      // Submit telemetry in the background (fires silently, handles database logs and level unlocking)
+      submitGameSession({
+        progressorId: activeId,
+        gameId: 'phoneme-pop',
+        level: levelNum,
+        score: nextScore,
+        totalQuestions,
+        accuracy,
+        timeTaken: formattedTime
+      }).catch((err) => {
+        console.error('Failed to submit game session telemetry:', err);
+      });
 
       // Navigate to /result with final payload including missedWords
       navigate('/result', {
@@ -185,7 +201,7 @@ export default function PhonemePop({}: PhonemePopProps) {
           timeTaken: formattedTime,
           gameId: 'phoneme-pop',
           level: levelNum,
-          progressorId: progressorId || 'demo',
+          progressorId: activeId,
           missedWords
         }
       });

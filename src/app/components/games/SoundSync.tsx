@@ -9,7 +9,7 @@ import { useGameSession } from '../../context/GameSessionContext';
 import { soundSyncData } from '../../../data/soundSyncData';
 import { getOptionIcon } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
-import { supabase } from '../../../lib/supabase';
+import { submitGameSession } from '../../../lib/telemetryUtils';
 
 interface Card {
   id: number;
@@ -232,62 +232,18 @@ export default function SoundSync() {
     // 1. Save game session result in supabase via useGameSession (saves to DB)
     await saveGameResult(activeGameId, levelNum, score, accuracy, formattedTime, totalPairs);
 
-    // 2. Perform direct inserts and updates as required by progression specification
-    try {
-      // Telemetry direct save
-      const { error: telemetryErr } = await supabase
-        .from('game_sessions')
-        .insert([
-          {
-            progressor_id: activeId,
-            game_id: activeGameId,
-            level: levelNum,
-            score: score,
-            accuracy: accuracy,
-            time_taken: formattedTime,
-            total_questions: totalPairs
-          }
-        ]);
-
-      if (telemetryErr) {
-        console.error('Direct telemetry write failed:', telemetryErr.message);
-      }
-
-      // Progression direct save to completed_levels
-      if (accuracy >= 60 && activeId !== 'demo') {
-        const primaryKey = `${activeGameId}-${levelNum}`;
-        const fallbackKey = `${activeGameId === 'sound-synk' ? 'sound-sync' : 'sound-synk'}-${levelNum}`;
-
-        let currentCompleted: string[] = [];
-        const { data: profile } = await supabase
-          .from('progressors')
-          .select('completed_levels')
-          .eq('id', activeId)
-          .single();
-
-        if (profile?.completed_levels) {
-          currentCompleted = Array.isArray(profile.completed_levels)
-            ? profile.completed_levels.map(String)
-            : [];
-        }
-
-        // Add both standard and alternative key spellings for bulletproof unlocking
-        const nextCompleted = [...currentCompleted];
-        if (!nextCompleted.includes(primaryKey)) nextCompleted.push(primaryKey);
-        if (!nextCompleted.includes(fallbackKey)) nextCompleted.push(fallbackKey);
-
-        const { error: unlockErr } = await supabase
-          .from('progressors')
-          .update({ completed_levels: nextCompleted })
-          .eq('id', activeId);
-
-        if (unlockErr) {
-          console.error('Direct level unlock progression update failed:', unlockErr.message);
-        }
-      }
-    } catch (err) {
-      console.error('Supabase telemetry/progression write failed:', err);
-    }
+    // 2. Submit telemetry in the background (fires silently, handles database logs and level unlocking)
+    submitGameSession({
+      progressorId: activeId,
+      gameId: activeGameId,
+      level: levelNum,
+      score: score,
+      totalQuestions: totalPairs,
+      accuracy: accuracy,
+      timeTaken: formattedTime
+    }).catch((err) => {
+      console.error('Failed to submit game session telemetry:', err);
+    });
 
     // 3. Navigate to result screen
     navigate('/result', {
