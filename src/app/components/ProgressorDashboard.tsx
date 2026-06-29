@@ -6,6 +6,7 @@ import { useGameSession } from '../context/GameSessionContext';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 import LogoutConfirmModal from './ui/LogoutConfirmModal';
+import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 
 interface Game {
   id: string;
@@ -195,17 +196,16 @@ export default function ProgressorDashboard() {
 
   const isLevelUnlocked = (gameId: string, levelNum: number) => {
     const currentLevelKey = `${gameId}-${levelNum}`;
-    
-    // Explicit assignments bypass sequence requirements immediately
-    if (safeAssignedLevels.includes(currentLevelKey)) {
-      return true;
-    }
+    const previousLevelKey = `${gameId}-${levelNum - 1}`;
 
     if (levelNum === 1) return true;
 
-    // For levels 2+, check if the previous level was completed
-    const previousLevelKey = `${gameId}-${levelNum - 1}`;
-    return safeCompletedLevels.includes(previousLevelKey);
+    if (levelNum === 2) {
+      return safeCompletedLevels.includes(previousLevelKey);
+    }
+
+    // Strict Practitioner Gate for Level 3+
+    return safeAssignedLevels.includes(currentLevelKey);
   };
 
   const handleLevelClick = (gameId: string, level: number) => {
@@ -354,7 +354,7 @@ export default function ProgressorDashboard() {
                   const isUnlocked = isLevelUnlocked(selectedGame, level);
                   const isCompleted = safeCompletedLevels.includes(`${selectedGame}-${level}`);
 
-                  return (
+                  const levelButton = (
                     <button
                       key={level}
                       onClick={() => handleLevelClick(selectedGame, level)}
@@ -373,8 +373,26 @@ export default function ProgressorDashboard() {
                       {isCompleted && (
                         <span className="text-[10px] text-primary font-semibold mt-1">Done</span>
                       )}
+                      {level >= 3 && !isUnlocked && (
+                        <span className="text-[8px] text-muted-foreground font-medium mt-1 text-center leading-tight px-1">Practitioner Req.</span>
+                      )}
                     </button>
                   );
+
+                  if (level >= 3 && !isUnlocked) {
+                    return (
+                      <Tooltip key={level}>
+                        <TooltipTrigger asChild>
+                          {levelButton}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Practitioner Assignment Required
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  }
+
+                  return levelButton;
                 })}
               </div>
 

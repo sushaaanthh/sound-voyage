@@ -229,12 +229,16 @@ export default function ParentDashboard() {
     const currentLevelKey = `${gameId}-${levelNum}`;
     const safeCompleted = Array.isArray(completedLevels) ? completedLevels : [];
     const safeAssigned = Array.isArray(assignedLevels) ? assignedLevels : [];
-    
-    if (safeAssigned.includes(currentLevelKey)) return true;
+    const previousLevelKey = `${gameId}-${levelNum - 1}`;
+
     if (levelNum === 1) return true;
 
-    const previousLevelKey = `${gameId}-${levelNum - 1}`;
-    return safeCompleted.includes(previousLevelKey);
+    if (levelNum === 2) {
+      return safeCompleted.includes(previousLevelKey);
+    }
+
+    // Strict Practitioner Gate for Level 3+
+    return safeAssigned.includes(currentLevelKey);
   };
 
   const getHighestUnlockedLevel = (gameId: string, completedLevels: string[], assignedLevels: string[]) => {
