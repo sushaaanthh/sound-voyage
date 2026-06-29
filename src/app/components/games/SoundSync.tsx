@@ -4,6 +4,7 @@ import { Home, Volume2, Check, X, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
+import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { soundSyncData } from '../../../data/soundSyncData';
 import { getOptionIcon } from '../OptionIconMapper';
@@ -35,6 +36,7 @@ export default function SoundSync() {
   const [cards, setCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<number[]>([]); // stores card IDs (indices)
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [showQuitModal, setShowQuitModal] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [missedWords, setMissedWords] = useState<string[]>([]);
 
@@ -329,7 +331,7 @@ export default function SoundSync() {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => setShowQuitModal(true)}
               className="p-3 rounded-2xl bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
               aria-label="Back"
             >
@@ -461,6 +463,11 @@ export default function SoundSync() {
       <div className="pb-8 text-center text-xs text-muted-foreground font-sans">
         Sound Voyage Clinical Suite • Sound Sync Memory Matcher
       </div>
+      <QuitGameModal
+        isOpen={showQuitModal}
+        onClose={() => setShowQuitModal(false)}
+        onConfirm={() => navigate(-1)}
+      />
     </div>
   );
 }

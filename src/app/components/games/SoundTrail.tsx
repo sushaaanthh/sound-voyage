@@ -4,6 +4,7 @@ import { Home, Check, X, Play, Volume2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
+import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { supabase } from '../../../lib/supabase';
 import { soundTrailData, SoundTrailLevel, SoundTrailChain } from '../../../data/soundTrailData';
@@ -26,6 +27,7 @@ export default function SoundTrail() {
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [showQuitModal, setShowQuitModal] = useState(false);
   
   // Game states
   const [nodes, setNodes] = useState<Array<{ word: string; x: number; y: number; index: number }>>([]);
@@ -326,7 +328,7 @@ export default function SoundTrail() {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => setShowQuitModal(true)}
               className="p-3 rounded-2xl bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
               aria-label="Back"
             >
@@ -548,6 +550,11 @@ export default function SoundTrail() {
       <div className="pb-8 text-center text-xs text-muted-foreground font-sans">
         Sound Voyage Clinical Suite • Sound Trail Game Engine
       </div>
+      <QuitGameModal
+        isOpen={showQuitModal}
+        onClose={() => setShowQuitModal(false)}
+        onConfirm={() => navigate(-1)}
+      />
     </div>
   );
 }

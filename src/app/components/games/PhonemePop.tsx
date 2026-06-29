@@ -5,6 +5,7 @@ import * as Icons from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
+import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
 import { getOptionIcon } from '../OptionIconMapper';
@@ -53,6 +54,7 @@ export default function PhonemePop({}: PhonemePopProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
 
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [showQuitModal, setShowQuitModal] = useState(false);
   // Timer Ref to track absolute elapsed time precisely
   const startTimeRef = useRef<number>(Date.now());
 
@@ -347,7 +349,7 @@ export default function PhonemePop({}: PhonemePopProps) {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => setShowQuitModal(true)}
               className="p-3 rounded-2xl bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
             >
               <Home className="w-5 h-5" />
@@ -675,6 +677,11 @@ export default function PhonemePop({}: PhonemePopProps) {
             )}
           </motion.div>
         </AnimatePresence>
+        <QuitGameModal
+          isOpen={showQuitModal}
+          onClose={() => setShowQuitModal(false)}
+          onConfirm={() => navigate(-1)}
+        />
       </div>
     </div>
   );

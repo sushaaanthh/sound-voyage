@@ -4,6 +4,7 @@ import { Home, Volume2, RotateCcw, Check, X, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
+import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { getOptionIcon } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
@@ -317,6 +318,7 @@ export default function SoundSorter() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [showQuitModal, setShowQuitModal] = useState(false);
   const [missedWords, setMissedWords] = useState<string[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -598,7 +600,7 @@ export default function SoundSorter() {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => setShowQuitModal(true)}
               className="p-3 rounded-2xl bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
               aria-label="Back"
             >
@@ -796,6 +798,11 @@ export default function SoundSorter() {
       <div className="pb-8 text-center text-xs text-muted-foreground font-sans">
         Sound Voyage Clinical Suite • Phonics Sound Sorter
       </div>
+      <QuitGameModal
+        isOpen={showQuitModal}
+        onClose={() => setShowQuitModal(false)}
+        onConfirm={() => navigate(-1)}
+      />
     </div>
   );
 }

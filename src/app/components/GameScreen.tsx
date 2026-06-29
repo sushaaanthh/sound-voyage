@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { Home, Volume2, RotateCcw, Cat, Dog, Fish, Bird, CheckCircle, XCircle } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import QuitGameModal from './ui/QuitGameModal';
 import PhonemePop from './games/PhonemePop';
 import PositionPilot from './games/PositionPilot';
 import SoundTrail from './games/SoundTrail';
@@ -27,6 +28,7 @@ export default function GameScreen() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [showFeedback, setShowFeedback] = useState<{ show: boolean; correct: boolean } | null>(null);
+  const [showQuitModal, setShowQuitModal] = useState(false);
 
   // Dynamic Routing & Load for Phoneme Pop clinical module
   const gameLevels = (gameData as any)[gameId || ''];
@@ -192,7 +194,7 @@ export default function GameScreen() {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => setShowQuitModal(true)}
               className="p-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
             >
               <Home className="w-5 h-5" />
@@ -465,6 +467,11 @@ export default function GameScreen() {
           </div>
         </div>
       )}
+      <QuitGameModal
+        isOpen={showQuitModal}
+        onClose={() => setShowQuitModal(false)}
+        onConfirm={() => navigate(-1)}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Home, Volume2, Check, X, Music } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
+import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { positionPilotData, PositionPilotQuestion } from '../../../data/positionPilotData';
 import { getOptionIcon } from '../OptionIconMapper';
@@ -35,6 +36,7 @@ export default function PositionPilot() {
   const [selectedAnswer, setSelectedAnswer] = useState<'START' | 'MIDDLE' | 'END' | null>(null);
 
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [showQuitModal, setShowQuitModal] = useState(false);
   // Timer Ref to track absolute elapsed time precisely
   const startTimeRef = useRef<number>(Date.now());
 
@@ -206,7 +208,7 @@ export default function PositionPilot() {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => setShowQuitModal(true)}
               className="p-3 rounded-2xl bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300"
               aria-label="Back"
             >
@@ -327,6 +329,11 @@ export default function PositionPilot() {
       <div className="pb-8 text-center text-xs text-muted-foreground font-sans">
         Sound Voyage Clinical Suite • Position Pilot
       </div>
+      <QuitGameModal
+        isOpen={showQuitModal}
+        onClose={() => setShowQuitModal(false)}
+        onConfirm={() => navigate(-1)}
+      />
     </div>
   );
 }
