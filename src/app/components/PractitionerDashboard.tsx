@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, Plus, X, Trash2, History, ShieldAlert, TrendingUp, Home, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon, Bell, Award, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { Search, Plus, X, Trash2, History, ShieldAlert, TrendingUp, LogOut, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon, Bell, Award, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
+import LogoutConfirmModal from './ui/LogoutConfirmModal';
 
 interface Progressor {
   id: string;
@@ -72,6 +73,20 @@ export default function PractitionerDashboard() {
   const [loadingSessions, setLoadingSessions] = useState(false);
   const navigate = useNavigate();
   const [currentPractitionerId, setCurrentPractitionerId] = useState<string | null>(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogoutConfirm = async () => {
+    setShowLogoutModal(false);
+    try {
+      await supabase.auth.signOut();
+      toast.success('Logged out successfully');
+      navigate('/');
+    } catch (err) {
+      console.error('Logout error:', err);
+      toast.error('An error occurred during logout.');
+      navigate('/');
+    }
+  };
 
   // Setup dynamic loading of progressors
   useEffect(() => {
@@ -461,10 +476,10 @@ export default function PractitionerDashboard() {
         </nav>
 
         <button
-          onClick={() => navigate('/')}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] text-sidebar-foreground hover:bg-sidebar-accent hover:scale-105 active:scale-95 transition-all mt-auto absolute bottom-6"
+          onClick={() => setShowLogoutModal(true)}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] text-sidebar-foreground hover:bg-sidebar-accent hover:scale-105 active:scale-95 transition-all mt-auto absolute bottom-6 cursor-pointer"
         >
-          <Home className="w-5 h-5" />
+          <LogOut className="w-5 h-5" />
           Logout
         </button>
       </div>
@@ -1290,6 +1305,11 @@ export default function PractitionerDashboard() {
           </div>
         </div>
       )}
+      <LogoutConfirmModal 
+        isOpen={showLogoutModal} 
+        onClose={() => setShowLogoutModal(false)} 
+        onConfirm={handleLogoutConfirm} 
+      />
     </div>
   );
 }

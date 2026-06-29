@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { Home, Clock, TrendingUp, MessageSquare, Star, Link as LinkIcon, Award, Target, Calendar, User } from 'lucide-react';
+import { LogOut, Clock, TrendingUp, MessageSquare, Star, Link as LinkIcon, Award, Target, Calendar, User } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
+import LogoutConfirmModal from './ui/LogoutConfirmModal';
 
 interface Progressor {
   id: string;
@@ -65,6 +66,20 @@ export default function ParentDashboard() {
   const [loading, setLoading] = useState(true);
   const [linkProgressorId, setLinkProgressorId] = useState('');
   const [linking, setLinking] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogoutConfirm = async () => {
+    setShowLogoutModal(false);
+    try {
+      await supabase.auth.signOut();
+      toast.success('Logged out successfully');
+      navigate('/');
+    } catch (err) {
+      console.error('Logout error:', err);
+      toast.error('An error occurred during logout.');
+      navigate('/');
+    }
+  };
 
   // Fetch Parent profile and children on load
   useEffect(() => {
@@ -339,14 +354,10 @@ export default function ParentDashboard() {
             <ThemeToggle />
 
             <button
-              onClick={async () => {
-                await supabase.auth.signOut();
-                toast.success('Logged out successfully');
-                navigate('/');
-              }}
+              onClick={() => setShowLogoutModal(true)}
               className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all text-foreground border border-border cursor-pointer font-semibold"
             >
-              <Home className="w-5 h-5" />
+              <LogOut className="w-5 h-5" />
               Logout
             </button>
           </div>
@@ -621,6 +632,12 @@ export default function ParentDashboard() {
           </div>
         )}
       </div>
+
+      <LogoutConfirmModal 
+        isOpen={showLogoutModal} 
+        onClose={() => setShowLogoutModal(false)} 
+        onConfirm={handleLogoutConfirm} 
+      />
     </div>
   );
 }

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
-import { Home, Lock, Target, Map as MapIcon, Route, Shuffle, PackageSearch, LucideIcon, Bell } from 'lucide-react';
+import { LogOut, Lock, Target, Map as MapIcon, Route, Shuffle, PackageSearch, LucideIcon, Bell } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
+import LogoutConfirmModal from './ui/LogoutConfirmModal';
 
 interface Game {
   id: string;
@@ -64,6 +65,21 @@ export default function ProgressorDashboard() {
   const [selectedGame, setSelectedGame] = useState<string | null>(() => {
     return location.state?.selectedGame || null;
   });
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogoutConfirm = async () => {
+    setShowLogoutModal(false);
+    try {
+      await supabase.auth.signOut();
+      toast.success('Logged out successfully');
+      navigate('/');
+    } catch (err) {
+      console.error('Logout error:', err);
+      toast.error('An error occurred during logout.');
+      navigate('/');
+    }
+  };
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Array<{ id: number; key: string; text: string; read: boolean; gameId: string; levelNum: number }>>([]);
@@ -268,11 +284,11 @@ export default function ProgressorDashboard() {
             </div>
 
             <button
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all border border-border text-foreground font-bold"
+              onClick={() => setShowLogoutModal(true)}
+              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all border border-border text-foreground font-bold cursor-pointer"
             >
-              <Home className="w-5 h-5" />
-              Home
+              <LogOut className="w-5 h-5" />
+              Logout
             </button>
           </div>
         </div>
@@ -372,6 +388,12 @@ export default function ProgressorDashboard() {
           </div>
         )}
       </div>
+
+      <LogoutConfirmModal 
+        isOpen={showLogoutModal} 
+        onClose={() => setShowLogoutModal(false)} 
+        onConfirm={handleLogoutConfirm} 
+      />
     </div>
   );
 }
