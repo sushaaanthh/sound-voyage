@@ -381,14 +381,35 @@ export default function PractitionerDashboard() {
     }
     setSavingAssignments(true);
     try {
-      const { error } = await supabase
+      // Fetch the progressor's current assigned_levels array to avoid data loss
+      const { data: progressor, error: fetchError } = await supabase
         .from('progressors')
-        .update({ assigned_levels: selectedLevelsToAssign })
+        .select('assigned_levels')
+        .eq('id', selectedProgressor.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current assignments:', fetchError.message);
+        toast.error('Failed to retrieve current assignments: ' + fetchError.message, {
+          duration: 5000,
+        });
+        setSavingAssignments(false);
+        return;
+      }
+
+      // Merge newly selected levels with existing ones without duplicates
+      const mergedLevels = Array.from(new Set([...(progressor?.assigned_levels || []), ...selectedLevelsToAssign]));
+
+      const { error: updateError } = await supabase
+        .from('progressors')
+        .update({ assigned_levels: mergedLevels })
         .eq('id', selectedProgressor.id);
 
-      if (error) {
-        console.error('Error saving assignments:', error.message);
-        toast.error('Failed to update task assignments: ' + error.message);
+      if (updateError) {
+        console.error('Error saving assignments:', updateError.message);
+        toast.error('Failed to update task assignments: ' + updateError.message, {
+          duration: 5000,
+        });
       } else {
         toast.success(`Successfully updated assignments for ${selectedProgressor.name}`);
         
@@ -397,7 +418,7 @@ export default function PractitionerDashboard() {
           if (p.id === selectedProgressor.id) {
             return {
               ...p,
-              assignedLevels: selectedLevelsToAssign
+              assignedLevels: mergedLevels
             };
           }
           return p;
@@ -406,12 +427,17 @@ export default function PractitionerDashboard() {
         // Update currently selected progressor to keep them in sync
         setSelectedProgressor(prev => prev ? {
           ...prev,
-          assignedLevels: selectedLevelsToAssign
+          assignedLevels: mergedLevels
         } : null);
+
+        // Reset the selection UI state to represent the newly merged assignments
+        setSelectedLevelsToAssign(mergedLevels);
       }
     } catch (err) {
       console.error('Unexpected error saving assignments:', err);
-      toast.error('An unexpected error occurred while saving assignments.');
+      toast.error('An unexpected error occurred while saving assignments.', {
+        duration: 5000,
+      });
     } finally {
       setSavingAssignments(false);
     }
