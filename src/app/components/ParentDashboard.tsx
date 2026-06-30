@@ -65,6 +65,7 @@ export default function ParentDashboard() {
   // UI States
   const [loading, setLoading] = useState(true);
   const [linkProgressorId, setLinkProgressorId] = useState('');
+  const [linkSecurityPin, setLinkSecurityPin] = useState('');
   const [linking, setLinking] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
@@ -196,13 +197,27 @@ export default function ParentDashboard() {
   const handleLinkChild = async (e: React.FormEvent) => {
     e.preventDefault();
     const childIdInput = linkProgressorId.trim();
-    if (!childIdInput) return;
+    const securityPinInput = linkSecurityPin.trim();
+    if (!childIdInput || !securityPinInput) return;
 
     setLinking(true);
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
         toast.error("You must be logged in to link a child account.");
+        return;
+      }
+
+      // Verify strict match of Progressor ID and Security PIN
+      const { data, error } = await supabase
+        .from('progressors')
+        .select('id')
+        .eq('id', childIdInput)
+        .eq('link_passcode', securityPinInput)
+        .single();
+
+      if (error || !data) {
+        toast.error("Linking failed: Invalid Progressor ID or Security PIN.");
         return;
       }
 
@@ -226,6 +241,7 @@ export default function ParentDashboard() {
       if (child.parent_id === user.id) {
         toast.info("This child is already linked to your account.");
         setLinkProgressorId('');
+        setLinkSecurityPin('');
         return;
       }
 
@@ -240,6 +256,7 @@ export default function ParentDashboard() {
       } else {
         toast.success(`Successfully linked ${child.name || childIdInput}!`);
         setLinkProgressorId('');
+        setLinkSecurityPin('');
         // Refresh children list
         await fetchChildren(user.id);
       }
@@ -471,20 +488,35 @@ export default function ParentDashboard() {
               Link Child's Account
             </h3>
             <p className="text-xs text-muted-foreground mb-4">Enter your child's Progressor ID (e.g. E001) to view their live gameplay telemetry.</p>
-            <form onSubmit={handleLinkChild} className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Progressor ID"
-                value={linkProgressorId}
-                onChange={(e) => setLinkProgressorId(e.target.value)}
-                className="flex-1 px-4 py-2.5 rounded-[1.25rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                disabled={linking}
-                required
-              />
+            <form onSubmit={handleLinkChild} className="flex flex-col gap-3">
+              <div>
+                <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Progressor ID</label>
+                <input
+                  type="text"
+                  placeholder="Progressor ID"
+                  value={linkProgressorId}
+                  onChange={(e) => setLinkProgressorId(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-[1.25rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                  disabled={linking}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Security PIN</label>
+                <input
+                  type="text"
+                  placeholder="e.g. A1B2C3"
+                  value={linkSecurityPin}
+                  onChange={(e) => setLinkSecurityPin(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-[1.25rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                  disabled={linking}
+                  required
+                />
+              </div>
               <button
                 type="submit"
-                disabled={linking}
-                className="px-5 py-2.5 rounded-[1.25rem] bg-primary text-primary-foreground font-bold shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all text-sm disabled:opacity-50 cursor-pointer"
+                disabled={linking || !linkProgressorId.trim() || !linkSecurityPin.trim()}
+                className="w-full px-5 py-2.5 rounded-[1.25rem] bg-primary text-primary-foreground font-bold shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all text-sm disabled:opacity-50 cursor-pointer mt-1"
               >
                 {linking ? 'Linking...' : 'Link'}
               </button>
