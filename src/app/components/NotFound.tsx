@@ -45,7 +45,7 @@ export default function NotFound() {
             }}
             className="relative flex items-center justify-center w-24 h-24 rounded-full bg-primary/5 dark:bg-primary/10 border-2 border-primary/20 shadow-md"
           >
-            <img src="/sv_vector.png" alt="Sound Voyage Logo" className="w-12 h-12 object-contain" />
+            <img src="/sv_vector.png" alt="Sound Voyage Logo" className="w-16 h-16 object-contain" />
           </motion.div>
 
           {/* Little question mark helper badge */}
