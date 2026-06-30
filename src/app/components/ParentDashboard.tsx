@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { LogOut, Clock, TrendingUp, MessageSquare, Star, Link as LinkIcon, Award, Target, Calendar, User, Unlink } from 'lucide-react';
+import { LogOut, Clock, TrendingUp, MessageSquare, Star, Award, Target, Calendar, User } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ThemeToggle } from './ThemeToggle';
 import { supabase } from '../../lib/supabase';
@@ -64,20 +64,7 @@ export default function ParentDashboard() {
   
   // UI States
   const [loading, setLoading] = useState(true);
-  const [linkProgressorId, setLinkProgressorId] = useState('');
-  const [linking, setLinking] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [contextMenu, setContextMenu] = useState<{
-    visible: boolean;
-    x: number;
-    y: number;
-    childId: string | null;
-  }>({
-    visible: false,
-    x: 0,
-    y: 0,
-    childId: null,
-  });
 
   const handleLogoutConfirm = async () => {
     setShowLogoutModal(false);
@@ -92,17 +79,6 @@ export default function ParentDashboard() {
     }
   };
 
-  // Dismiss context menu on click anywhere
-  useEffect(() => {
-    const handleGlobalClick = () => {
-      if (contextMenu.visible) {
-        setContextMenu(prev => ({ ...prev, visible: false }));
-      }
-    };
-    window.addEventListener('click', handleGlobalClick);
-    return () => window.removeEventListener('click', handleGlobalClick);
-  }, [contextMenu.visible]);
-
   // Fetch Parent profile and children on load
   useEffect(() => {
     const initializeParentPortal = async () => {
@@ -114,7 +90,36 @@ export default function ParentDashboard() {
           navigate('/');
           return;
         }
-        await fetchChildren(user.id);
+
+        const { data: linkedChildren, error } = await supabase
+          .from('progressors')
+          .select('*')
+          .eq('parent_id', user.id);
+
+        if (error) {
+          console.error('Error fetching children:', error.message);
+          toast.error('Failed to load child profiles.');
+          return;
+        }
+
+        const formattedChildren: Progressor[] = (linkedChildren || []).map(p => ({
+          id: p.id,
+          name: p.name || 'Unnamed Child',
+          age: p.age || 0,
+          completed_levels: Array.isArray(p.completed_levels) ? p.completed_levels.map(String) : [],
+          assigned_levels: Array.isArray(p.assigned_levels) ? p.assigned_levels.map(String) : [],
+          last_session: p.last_session || undefined,
+          parent_id: p.parent_id
+        }));
+
+        setChildren(formattedChildren);
+
+        if (formattedChildren.length > 0) {
+          const childInUrl = formattedChildren.find(c => c.id === progressorId);
+          setSelectedChild(childInUrl || formattedChildren[0]);
+        } else {
+          setSelectedChild(null);
+        }
       } catch (err) {
         console.error('Failed to initialize parent portal:', err);
         toast.error('An unexpected error occurred.');
@@ -124,45 +129,7 @@ export default function ParentDashboard() {
     };
 
     initializeParentPortal();
-  }, [navigate]);
-
-  const fetchChildren = async (parentId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('progressors')
-        .select('*')
-        .eq('parent_id', parentId)
-        .order('name');
-
-      if (error) {
-        console.error('Error fetching children:', error.message);
-        toast.error('Failed to load child profiles.');
-        return;
-      }
-
-      const formattedChildren: Progressor[] = (data || []).map(p => ({
-        id: p.id,
-        name: p.name || 'Unnamed Child',
-        age: p.age || 0,
-        completed_levels: Array.isArray(p.completed_levels) ? p.completed_levels.map(String) : [],
-        assigned_levels: Array.isArray(p.assigned_levels) ? p.assigned_levels.map(String) : [],
-        last_session: p.last_session || undefined,
-        parent_id: p.parent_id
-      }));
-
-      setChildren(formattedChildren);
-
-      // Select active child based on URL parameter or first child available
-      if (formattedChildren.length > 0) {
-        const childInUrl = formattedChildren.find(c => c.id === progressorId);
-        setSelectedChild(childInUrl || formattedChildren[0]);
-      } else {
-        setSelectedChild(null);
-      }
-    } catch (err) {
-      console.error('Unexpected error fetching children:', err);
-    }
-  };
+  }, [navigate, progressorId]);
 
   // Fetch telemetry sessions when selected child changes
   useEffect(() => {
@@ -191,92 +158,6 @@ export default function ParentDashboard() {
 
     fetchSessions();
   }, [selectedChild]);
-
-  // Handle child linking
-  const handleLinkChild = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const childIdInput = linkProgressorId.trim();
-    if (!childIdInput) return;
-
-    setLinking(true);
-    try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        toast.error("You must be logged in to link a child account.");
-        return;
-      }
-
-      // Pre-check the progressor claim status
-      const { data: progressor, error: fetchError } = await supabase
-        .from('progressors')
-        .select('id, parent_id, name')
-        .eq('id', childIdInput)
-        .single();
-
-      if (fetchError || !progressor) {
-        toast.error("Invalid Progressor ID.");
-        return;
-      }
-
-      if (progressor.parent_id !== null) {
-        toast.error("Privacy Lock: This Progressor is already linked to an account.");
-        return;
-      }
-
-      // Update progressor row to link parent_id
-      const { error: updateError } = await supabase
-        .from('progressors')
-        .update({ parent_id: user.id })
-        .eq('id', childIdInput);
-
-      if (updateError) {
-        toast.error("Failed to link child account: " + updateError.message);
-      } else {
-        toast.success(`Successfully linked ${progressor.name || childIdInput}!`);
-        setLinkProgressorId('');
-        // Refresh children list
-        await fetchChildren(user.id);
-      }
-    } catch (err) {
-      console.error('Link child exception:', err);
-      toast.error("An unexpected error occurred while linking.");
-    } finally {
-      setLinking(false);
-    }
-  };
-
-  // Handle unlinking a child progressor
-  const handleUnlink = async () => {
-    const childIdToUnlink = contextMenu.childId;
-    if (!childIdToUnlink) return;
-
-    try {
-      const { error } = await supabase
-        .from('progressors')
-        .update({ parent_id: null })
-        .eq('id', childIdToUnlink);
-
-      if (error) {
-        toast.error("Failed to unlink child: " + error.message);
-        return;
-      }
-
-      toast.success("Child unlinked successfully");
-
-      setChildren(prev => {
-        const updated = prev.filter(c => c.id !== childIdToUnlink);
-        if (selectedChild?.id === childIdToUnlink) {
-          setSelectedChild(updated.length > 0 ? updated[0] : null);
-        }
-        return updated;
-      });
-    } catch (err) {
-      console.error("Error unlinking child:", err);
-      toast.error("An unexpected error occurred while unlinking.");
-    } finally {
-      setContextMenu(prev => ({ ...prev, visible: false, childId: null }));
-    }
-  };
 
   // Level unlock helper logic
   const isLevelUnlocked = (gameId: string, levelNum: number, completedLevels: string[], assignedLevels: string[]) => {
@@ -425,66 +306,27 @@ export default function ParentDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-8 py-10">
         
-        {/* Child Selector Tabs & Link Account form */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-10">
-          
-          {/* Linked Children Tabs */}
-          <div className="flex-1">
+        {/* Child Selector Tabs */}
+        {children.length > 0 && (
+          <div className="mb-10">
             <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">Linked Children</h3>
-            {children.length === 0 ? (
-              <div className="p-5 rounded-2xl bg-secondary/30 border border-border/60 text-center">
-                <p className="text-muted-foreground text-sm font-medium">No children linked to this parent account yet.</p>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-3">
-                {children.map(child => (
-                  <button
-                    key={child.id}
-                    onClick={() => setSelectedChild(child)}
-                    onContextMenu={(e) => {
-                      e.preventDefault(); // Prevent standard browser menu
-                      setContextMenu({ visible: true, x: e.pageX, y: e.pageY, childId: child.id });
-                    }}
-                    className={`px-6 py-3.5 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 border cursor-pointer ${
-                      selectedChild?.id === child.id
-                        ? 'bg-primary text-primary-foreground border-primary font-bold shadow-lg shadow-primary/10'
-                        : 'bg-card text-foreground border-border hover:bg-secondary'
-                    }`}
-                  >
-                    {child.name} <span className="opacity-70 text-xs font-normal">({child.id})</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="flex flex-wrap gap-3">
+              {children.map(child => (
+                <button
+                  key={child.id}
+                  onClick={() => setSelectedChild(child)}
+                  className={`px-6 py-3.5 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 border cursor-pointer ${
+                    selectedChild?.id === child.id
+                      ? 'bg-primary text-primary-foreground border-primary font-bold shadow-lg shadow-primary/10'
+                      : 'bg-card text-foreground border-border hover:bg-secondary'
+                  }`}
+                >
+                  {child.name} <span className="opacity-70 text-xs font-normal">({child.id})</span>
+                </button>
+              ))}
+            </div>
           </div>
-
-          {/* Link Child Form */}
-          <div className="w-full md:w-96 bg-card border border-border rounded-[2rem] p-6 shadow-sm">
-            <h3 className="text-foreground font-bold mb-1 flex items-center gap-2">
-              <LinkIcon className="w-5 h-5 text-primary" />
-              Link Child's Account
-            </h3>
-            <p className="text-xs text-muted-foreground mb-4">Enter your child's Progressor ID (e.g. E001) to view their live gameplay telemetry.</p>
-            <form onSubmit={handleLinkChild} className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Progressor ID"
-                value={linkProgressorId}
-                onChange={(e) => setLinkProgressorId(e.target.value)}
-                className="flex-1 px-4 py-2.5 rounded-[1.25rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                disabled={linking}
-                required
-              />
-              <button
-                type="submit"
-                disabled={linking}
-                className="px-5 py-2.5 rounded-[1.25rem] bg-primary text-primary-foreground font-bold shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all text-sm disabled:opacity-50 cursor-pointer"
-              >
-                {linking ? 'Linking...' : 'Link'}
-              </button>
-            </form>
-          </div>
-        </div>
+        )}
 
         {selectedChild ? (
           <>
@@ -683,14 +525,11 @@ export default function ParentDashboard() {
           </>
         ) : (
           <div className="text-center py-20 bg-card rounded-[2rem] border border-border p-8 max-w-2xl mx-auto shadow-sm">
-            <LinkIcon className="w-16 h-16 mx-auto mb-4 text-primary opacity-80" />
+            <User className="w-16 h-16 mx-auto mb-4 text-primary opacity-80" />
             <h3 className="text-foreground text-xl font-bold mb-2">Observation Deck Setup</h3>
-            <p className="text-muted-foreground max-w-md mx-auto mb-8 text-sm leading-relaxed">
-              Welcome to Sound Voyage! You have successfully signed up. To start viewing progress charts and gameplay telemetry, please link your child's Progressor ID using the link panel above.
+            <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed">
+              Welcome to your Observation Deck. Your account is currently pending assignment. Savyit Psych Services will link your child's profile shortly.
             </p>
-            <div className="flex justify-center gap-2 items-center text-xs text-muted-foreground">
-              <span>Need help? Ask your child's practitioner for their ID.</span>
-            </div>
           </div>
         )}
       </div>
@@ -700,22 +539,6 @@ export default function ParentDashboard() {
         onClose={() => setShowLogoutModal(false)} 
         onConfirm={handleLogoutConfirm} 
       />
-
-      {contextMenu.visible && (
-        <div
-          className="absolute z-50 bg-card border border-border shadow-xl rounded-[1.25rem] p-1.5 min-w-[160px] animate-in fade-in zoom-in-95 duration-100"
-          style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={handleUnlink}
-            className="w-full flex items-center gap-2.5 px-4 py-3 rounded-[0.75rem] text-sm font-bold text-destructive hover:bg-destructive/10 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer text-left"
-          >
-            <Unlink className="w-4 h-4" />
-            Unlink Progressor
-          </button>
-        </div>
-      )}
     </div>
   );
 }

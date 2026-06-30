@@ -51,6 +51,7 @@ export default function PractitionerDashboard() {
   const [newProgressorAge, setNewProgressorAge] = useState('');
   const [newProgressorEmail, setNewProgressorEmail] = useState('');
   const [parentName, setParentName] = useState('');
+  const [parentEmail, setParentEmail] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [progressors, setProgressors] = useState<Progressor[]>([]);
@@ -256,6 +257,22 @@ export default function PractitionerDashboard() {
         return;
       }
 
+      let parentId: string | null = null;
+      if (parentEmail.trim()) {
+        const inputEmail = parentEmail.trim();
+        const { data: parent } = await supabase
+          .from('parents')
+          .select('id')
+          .eq('email', inputEmail)
+          .single();
+
+        if (!parent || !parent.id) {
+          toast.error("Parent email not found. Ensure they have registered an account.");
+          return;
+        }
+        parentId = parent.id;
+      }
+
       const newId = 'PRG-' + Math.random().toString(36).substring(2, 7).toUpperCase();
       const newName = newProgressorName || 'Pending Registration';
 
@@ -270,7 +287,8 @@ export default function PractitionerDashboard() {
             age: parseInt(newProgressorAge, 10) || 0,
             completed_levels: [],
             assigned_email: assignedEmail || null,
-            parent_name: parentName || null
+            parent_name: parentName || null,
+            parent_id: parentId
           }
         ]);
 
@@ -294,6 +312,9 @@ export default function PractitionerDashboard() {
 
       setProgressors(prev => [...prev, newProgressor]);
       toast.success(`Successfully generated Progressor ID: ${newId}`);
+      if (parentId) {
+        toast.success("Progressor successfully assigned to Parent.");
+      }
     } catch (err) {
       console.error('Failed to create progressor:', err);
       toast.error('An unexpected error occurred during progressor creation.');
@@ -303,6 +324,7 @@ export default function PractitionerDashboard() {
       setNewProgressorAge('');
       setNewProgressorEmail('');
       setParentName('');
+      setParentEmail('');
     }
   };
 
@@ -1186,6 +1208,17 @@ export default function PractitionerDashboard() {
                   value={parentName}
                   onChange={(e) => setParentName(e.target.value)}
                   placeholder="Parent's Full Name"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 text-foreground font-sans" style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}>Parent Email (Optional)</label>
+                <input
+                  type="email"
+                  value={parentEmail}
+                  onChange={(e) => setParentEmail(e.target.value)}
+                  placeholder="Enter parent's registered email"
                   className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground"
                 />
               </div>
