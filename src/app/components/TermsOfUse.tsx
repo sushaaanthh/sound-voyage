@@ -95,10 +95,7 @@ export default function TermsOfUse({ isOpen, onClose }: TermsOfUseProps) {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6 animate-in fade-in">
       <div className="bg-card rounded-[2rem] p-8 max-w-lg w-full shadow-2xl border border-border animate-in zoom-in duration-300 text-left">
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold font-zilla text-foreground">Terms of Use</h2>
-            <p className="text-xs text-muted-foreground mt-1 font-poppins">Effective Date: June 30, 2026</p>
-          </div>
+          <h2 className="text-2xl font-bold font-zilla text-foreground">Terms of Use</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer text-foreground/80 hover:text-foreground"
