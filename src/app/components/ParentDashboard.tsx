@@ -207,25 +207,19 @@ export default function ParentDashboard() {
       }
 
       // Pre-check the progressor claim status
-      const { data: child, error: fetchError } = await supabase
+      const { data: progressor, error: fetchError } = await supabase
         .from('progressors')
-        .select('parent_id, name')
+        .select('id, parent_id, name')
         .eq('id', childIdInput)
         .single();
 
-      if (fetchError || !child) {
-        toast.error("Invalid Progressor ID. Please check the spelling.");
+      if (fetchError || !progressor) {
+        toast.error("Invalid Progressor ID.");
         return;
       }
 
-      if (child.parent_id !== null && child.parent_id !== user.id) {
-        toast.warning("This Progressor ID is already securely linked to another parent account.");
-        return;
-      }
-
-      if (child.parent_id === user.id) {
-        toast.info("This child is already linked to your account.");
-        setLinkProgressorId('');
+      if (progressor.parent_id !== null) {
+        toast.error("Privacy Lock: This Progressor is already linked to an account.");
         return;
       }
 
@@ -238,7 +232,7 @@ export default function ParentDashboard() {
       if (updateError) {
         toast.error("Failed to link child account: " + updateError.message);
       } else {
-        toast.success(`Successfully linked ${child.name || childIdInput}!`);
+        toast.success(`Successfully linked ${progressor.name || childIdInput}!`);
         setLinkProgressorId('');
         // Refresh children list
         await fetchChildren(user.id);
