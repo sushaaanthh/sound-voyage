@@ -627,22 +627,23 @@ export default function LandingPage() {
 
 
         {/* Footer */}
-        <footer className="mt-12 pb-8 text-center flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-sm text-muted-foreground border-t border-border/20 pt-8 w-full">
-          <p>© 2026 Sound Voyage. All rights reserved.</p>
-          <span className="hidden sm:inline text-muted-foreground/30">•</span>
-          <button
-            onClick={() => setShowPrivacy(true)}
-            className="hover:text-foreground transition-colors underline decoration-dotted underline-offset-4 cursor-pointer"
-          >
-            Privacy Policy
-          </button>
-          <span className="text-muted-foreground/30">•</span>
-          <Link
-            to="/terms"
-            className="hover:text-foreground transition-colors underline decoration-dotted underline-offset-4 cursor-pointer"
-          >
-            Terms of Use
-          </Link>
+        <footer className="mt-12 pb-8 text-center flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground border-t border-border/20 pt-8 w-full">
+          <div className="flex items-center gap-3 font-poppins">
+            <Link
+              to="/terms"
+              className="hover:text-foreground transition-colors underline decoration-dotted underline-offset-4 cursor-pointer"
+            >
+              Terms of Use
+            </Link>
+            <span className="text-muted-foreground/30">|</span>
+            <button
+              onClick={() => setShowPrivacy(true)}
+              className="hover:text-foreground transition-colors underline decoration-dotted underline-offset-4 cursor-pointer"
+            >
+              Privacy Policy
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground/80 font-poppins">© Samvidh Psych Services</p>
         </footer>
       </div>
 
