@@ -17,7 +17,6 @@ interface Progressor {
   parentName?: string;
   completedLevels: string[];
   assignedLevels: string[];
-  linkPasscode?: string;
 }
 
 interface GameSession {
@@ -139,8 +138,7 @@ export default function PractitionerDashboard() {
             parentName: p.parent_name || '',
             lastSession: p.last_session || 'No sessions yet',
             completedLevels: Array.isArray(p.completed_levels) ? p.completed_levels.map(String) : [],
-            assignedLevels: Array.isArray(p.assigned_levels) ? p.assigned_levels.map(String) : [],
-            linkPasscode: p.link_passcode || ''
+            assignedLevels: Array.isArray(p.assigned_levels) ? p.assigned_levels.map(String) : []
           })));
         }
       } catch (err) {
@@ -259,7 +257,6 @@ export default function PractitionerDashboard() {
       }
 
       const newId = 'PRG-' + Math.random().toString(36).substring(2, 7).toUpperCase();
-      const linkPasscode = Math.random().toString(36).substring(2, 8).toUpperCase();
       const newName = newProgressorName || 'Pending Registration';
 
       // Insert directly into progressors table
@@ -273,8 +270,7 @@ export default function PractitionerDashboard() {
             age: parseInt(newProgressorAge, 10) || 0,
             completed_levels: [],
             assigned_email: assignedEmail || null,
-            parent_name: parentName || null,
-            link_passcode: linkPasscode
+            parent_name: parentName || null
           }
         ]);
 
@@ -293,12 +289,11 @@ export default function PractitionerDashboard() {
         parentName: parentName || '',
         lastSession: 'No sessions yet',
         completedLevels: [],
-        assignedLevels: [],
-        linkPasscode: linkPasscode
+        assignedLevels: []
       };
 
       setProgressors(prev => [...prev, newProgressor]);
-      toast.success(`Successfully generated Progressor ID: ${newId} (Security PIN: ${linkPasscode})`);
+      toast.success(`Successfully generated Progressor ID: ${newId}`);
     } catch (err) {
       console.error('Failed to create progressor:', err);
       toast.error('An unexpected error occurred during progressor creation.');
@@ -571,7 +566,7 @@ export default function PractitionerDashboard() {
                     <div>
                       <h3 className="text-foreground">{progressor.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        ID: <span className="font-mono font-bold text-foreground">{progressor.id}</span> • PIN: <span className="font-mono font-bold text-primary">{progressor.linkPasscode || 'N/A'}</span> • Age: {progressor.age} • Last Session: {progressor.lastSession}
+                        ID: {progressor.id} • Age: {progressor.age} • Last Session: {progressor.lastSession}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -1271,7 +1266,7 @@ export default function PractitionerDashboard() {
                   Details: {selectedDetailsProgressor.name}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-                  Progressor ID: {selectedDetailsProgressor.id} {selectedDetailsProgressor.linkPasscode ? `| PIN: ${selectedDetailsProgressor.linkPasscode}` : ''}
+                  Progressor ID: {selectedDetailsProgressor.id}
                 </p>
               </div>
               <button
