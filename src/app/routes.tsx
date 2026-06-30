@@ -6,12 +6,17 @@ import ParentDashboard from "./components/ParentDashboard";
 import GameScreen from "./components/GameScreen";
 import ResultScreen from "./components/ResultScreen";
 import UpdatePassword from "./components/UpdatePassword";
+import TermsOfUse from "./components/TermsOfUse";
 import NotFound from "./components/NotFound";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: LandingPage,
+  },
+  {
+    path: "/terms",
+    Component: TermsOfUse,
   },
   {
     path: "/practitioner",
