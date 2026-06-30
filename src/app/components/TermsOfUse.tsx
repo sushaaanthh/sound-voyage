@@ -134,19 +134,28 @@ export default function TermsOfUse() {
           </div>
 
           {/* Legal Sections */}
-          <div className="space-y-8">
-            {SECTIONS.map((section, index) => (
-              <section key={index} className="space-y-3">
-                <h2 className="font-zilla text-xl md:text-2xl font-bold text-primary">
-                  {section.title}
-                </h2>
-                <div className="space-y-3 text-foreground/80 leading-relaxed font-poppins text-sm md:text-base">
-                  {section.paragraphs.map((p, pIndex) => (
-                    <p key={pIndex}>{p}</p>
-                  ))}
+          <div className="space-y-4">
+            {SECTIONS.map((section, index) => {
+              const match = section.title.match(/^(\d+)\.\s*(.*)$/);
+              const number = match ? match[1] : (index + 1).toString();
+              const name = match ? match[2] : section.title;
+
+              return (
+                <div key={index} className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base md:text-lg">
+                    <span className="flex items-center justify-center w-6 h-6 min-w-[1.5rem] rounded-full bg-primary/10 text-xs text-primary font-bold">
+                      {number}
+                    </span>
+                    <span className="font-zilla font-bold">{name}</span>
+                  </h3>
+                  <div className="text-sm opacity-90 pl-8 space-y-3 leading-relaxed font-poppins text-foreground/90">
+                    {section.paragraphs.map((p, pIndex) => (
+                      <p key={pIndex}>{p}</p>
+                    ))}
+                  </div>
                 </div>
-              </section>
-            ))}
+              );
+            })}
           </div>
 
           {/* Bottom Back Button */}
