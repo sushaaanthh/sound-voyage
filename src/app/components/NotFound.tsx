@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { Compass, HelpCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -43,9 +43,9 @@ export default function NotFound() {
               duration: 6, 
               ease: "easeInOut" 
             }}
-            className="relative flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg border-4 border-background"
+            className="relative flex items-center justify-center w-24 h-24 rounded-full bg-primary/5 dark:bg-primary/10 border-2 border-primary/20 shadow-md"
           >
-            <Compass className="w-12 h-12 stroke-[1.5]" />
+            <img src="/sv_vector.png" alt="Sound Voyage Logo" className="w-12 h-12 object-contain" />
           </motion.div>
 
           {/* Little question mark helper badge */}
