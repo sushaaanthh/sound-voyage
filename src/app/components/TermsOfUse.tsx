@@ -1,8 +1,9 @@
-import { Link } from 'react-router';
-import { ArrowLeft } from 'lucide-react';
-import { motion } from 'motion/react';
-import { ThemeToggle } from './ThemeToggle';
-import { Button } from './ui/button';
+import { X } from 'lucide-react';
+
+interface TermsOfUseProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 interface Section {
   title: string;
@@ -87,53 +88,27 @@ const SECTIONS: Section[] = [
   }
 ];
 
-export default function TermsOfUse() {
+export default function TermsOfUse({ isOpen, onClose }: TermsOfUseProps) {
+  if (!isOpen) return null;
+
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-secondary/30 relative overflow-x-hidden font-poppins text-foreground">
-      {/* Mesh gradient background effect matching LandingPage / NotFound */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.06),transparent_50%)] pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,99,71,0.1),transparent_50%)] pointer-events-none" />
-
-      {/* Floating abstract decorative shapes (sound waves theme) */}
-      <div className="absolute top-1/4 left-1/10 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/10 w-80 h-80 bg-primary/8 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="relative z-10 max-w-4xl mx-auto py-12 px-6">
-        {/* Navigation / Header controls */}
-        <header className="flex justify-between items-center mb-8 border-b border-border/10 pb-6">
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button variant="ghost" asChild className="hover:text-primary rounded-[2rem] hover:bg-primary/10">
-              <Link to="/" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to Home
-              </Link>
-            </Button>
-          </motion.div>
-          
-          <ThemeToggle />
-        </header>
-
-        {/* Glassmorphic Content Card */}
-        <motion.main
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="bg-card/45 dark:bg-card/30 backdrop-blur-xl border border-border/40 dark:border-white/10 p-8 md:p-12 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.2)]"
-        >
-          {/* Main Title & Subtitle */}
-          <div className="mb-10 text-center md:text-left">
-            <h1 className="font-zilla text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-3">
-              Terms of Use
-            </h1>
-            <p className="text-sm text-muted-foreground font-poppins">
-              Effective Date: June 30, 2026
-            </p>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6 animate-in fade-in">
+      <div className="bg-card rounded-[2rem] p-8 max-w-lg w-full shadow-2xl border border-border animate-in zoom-in duration-300 text-left">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold font-zilla text-foreground">Terms of Use</h2>
+            <p className="text-xs text-muted-foreground mt-1 font-poppins">Effective Date: June 30, 2026</p>
           </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer text-foreground/80 hover:text-foreground"
+            aria-label="Close Terms of Use"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          {/* Legal Sections */}
+        <div className="space-y-6 text-sm md:text-base text-foreground/90 overflow-y-auto max-h-[60vh] pr-2">
           <div className="space-y-4">
             {SECTIONS.map((section, index) => {
               const match = section.title.match(/^(\d+)\.\s*(.*)$/);
@@ -142,11 +117,11 @@ export default function TermsOfUse() {
 
               return (
                 <div key={index} className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
-                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base md:text-lg">
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
                     <span className="flex items-center justify-center w-6 h-6 min-w-[1.5rem] rounded-full bg-primary/10 text-xs text-primary font-bold">
                       {number}
                     </span>
-                    <span className="font-zilla font-bold">{name}</span>
+                    <span className="font-zilla font-bold text-foreground">{name}</span>
                   </h3>
                   <div className="text-sm opacity-90 pl-8 space-y-3 leading-relaxed font-poppins text-foreground/90">
                     {section.paragraphs.map((p, pIndex) => (
@@ -158,27 +133,14 @@ export default function TermsOfUse() {
             })}
           </div>
 
-          {/* Bottom Back Button */}
-          <div className="mt-12 pt-8 border-t border-border/20 flex justify-center">
-            <motion.div
-              whileHover={{ scale: 1.05, translateY: -2 }}
-              whileTap={{ scale: 0.95 }}
+          <div className="pt-4 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-8 py-3 rounded-full bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 font-semibold cursor-pointer"
             >
-              <Button variant="outline" asChild className="hover:text-primary rounded-[2rem] px-8 py-5 border-border hover:bg-primary/5">
-                <Link to="/" className="flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Home
-                </Link>
-              </Button>
-            </motion.div>
+              Close
+            </button>
           </div>
-        </motion.main>
-
-        {/* Decorative Watermark */}
-        <div className="mt-8 text-center pointer-events-none select-none">
-          <span className="font-zilla text-xs uppercase tracking-[0.2em] text-foreground/20 font-bold">
-            Sound Voyage
-          </span>
         </div>
       </div>
     </div>

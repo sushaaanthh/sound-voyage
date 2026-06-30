@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate } from 'react-router';
 import { Target, Route, Shuffle, Eye, EyeOff, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
+import TermsOfUse from './TermsOfUse';
 
 type Role = 'progressor' | 'parent' | 'practitioner';
 
@@ -45,6 +46,7 @@ export default function LandingPage() {
   const [resetEmail, setResetEmail] = useState('');
   const [isResetLoading, setIsResetLoading] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   
   // Sign-Up states
@@ -629,12 +631,12 @@ export default function LandingPage() {
         {/* Footer */}
         <footer className="mt-12 pb-8 text-center flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground border-t border-border/20 pt-8 w-full">
           <div className="flex items-center gap-3 font-poppins">
-            <Link
-              to="/terms"
+            <button
+              onClick={() => setShowTerms(true)}
               className="hover:text-foreground transition-colors underline decoration-dotted underline-offset-4 cursor-pointer"
             >
               Terms of Use
-            </Link>
+            </button>
             <span className="text-muted-foreground/30">|</span>
             <button
               onClick={() => setShowPrivacy(true)}
@@ -1103,6 +1105,8 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      <TermsOfUse isOpen={showTerms} onClose={() => setShowTerms(false)} />
     </div>
   );
 }
