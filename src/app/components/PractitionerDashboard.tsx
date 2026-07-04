@@ -13,6 +13,10 @@ interface Progressor {
   name: string;
   age: number;
   lastSession: string;
+  recentSession?: {
+    date: string;
+    gameName?: string;
+  };
   assignedEmail?: string;
   parentName?: string;
   completedLevels: string[];
@@ -123,23 +127,53 @@ export default function PractitionerDashboard() {
         // Registry Fetch
         const { data, error: registryError } = await supabase
           .from('progressors')
-          .select('*')
+          .select('*, game_sessions ( created_at, game_id )')
           .eq('practitioner_id', practData.id)
           .order('name');
 
         if (registryError) {
           toast.error('Error fetching progressors: ' + registryError.message);
         } else if (data) {
-          setProgressors(data.map(p => ({
-            id: p.id,
-            name: p.name || 'Unnamed Progressor',
-            age: p.age || 0,
-            assignedEmail: p.assigned_email || '',
-            parentName: p.parent_name || '',
-            lastSession: p.last_session || 'No sessions yet',
-            completedLevels: Array.isArray(p.completed_levels) ? p.completed_levels.map(String) : [],
-            assignedLevels: Array.isArray(p.assigned_levels) ? p.assigned_levels.map(String) : []
-          })));
+          setProgressors(data.map(p => {
+            const sessions = Array.isArray(p.game_sessions) ? [...p.game_sessions] : [];
+            sessions.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            const mostRecent = sessions[0];
+
+            let recentSessionObj = undefined;
+            let lastSessionText = 'No sessions yet';
+
+            if (mostRecent && mostRecent.created_at) {
+              const dateStr = new Date(mostRecent.created_at).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              });
+              const gameNameMap: Record<string, string> = {
+                'sound-sorter': 'Sound Sorter',
+                'position-pilot': 'Position Pilot',
+                'phoneme-pop': 'Phoneme Pop',
+                'sound-sync': 'Sound Sync',
+                'sound-trail': 'Sound Trail'
+              };
+              const gameName = mostRecent.game_id ? (gameNameMap[mostRecent.game_id] || mostRecent.game_id) : undefined;
+              lastSessionText = gameName ? `${dateStr} - ${gameName}` : dateStr;
+              recentSessionObj = { date: dateStr, gameName };
+            } else if (p.last_session) {
+              lastSessionText = p.last_session;
+            }
+
+            return {
+              id: p.id,
+              name: p.name || 'Unnamed Progressor',
+              age: p.age || 0,
+              assignedEmail: p.assigned_email || '',
+              parentName: p.parent_name || '',
+              lastSession: lastSessionText,
+              recentSession: recentSessionObj,
+              completedLevels: Array.isArray(p.completed_levels) ? p.completed_levels.map(String) : [],
+              assignedLevels: Array.isArray(p.assigned_levels) ? p.assigned_levels.map(String) : []
+            };
+          }));
         }
       } catch (err) {
         console.error('Failed to initialize dashboard:', err);
@@ -566,7 +600,17 @@ export default function PractitionerDashboard() {
                     <div>
                       <h3 className="text-foreground">{progressor.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        ID: {progressor.id} • Age: {progressor.age} • Last Session: {progressor.lastSession}
+                        ID: {progressor.id} • Age: {progressor.age} • Last Session:{' '}
+                        {progressor.recentSession ? (
+                          <span className="text-foreground font-medium">
+                            {progressor.recentSession.date}
+                            {progressor.recentSession.gameName ? ` - ${progressor.recentSession.gameName}` : ''}
+                          </span>
+                        ) : progressor.lastSession !== 'No sessions yet' ? (
+                          <span className="text-foreground font-medium">{progressor.lastSession}</span>
+                        ) : (
+                          <span className="italic">No sessions yet</span>
+                        )}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
