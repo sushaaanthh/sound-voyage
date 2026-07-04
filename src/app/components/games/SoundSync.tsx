@@ -22,7 +22,7 @@ interface Card {
 export default function SoundSync() {
   const navigate = useNavigate();
   const { gameId, level } = useParams();
-  const { progressorId, saveGameResult } = useGameSession();
+  const { progressorId } = useGameSession();
 
   const levelStr = level || '1';
   const levelNum = Number(levelStr);
@@ -229,11 +229,8 @@ export default function SoundSync() {
 
     const activeId = progressorId || 'demo';
 
-    // 1. Save game session result in supabase via useGameSession (saves to DB)
-    await saveGameResult(activeGameId, levelNum, score, accuracy, formattedTime, totalPairs);
-
-    // 2. Submit telemetry in the background (fires silently, handles database logs and level unlocking)
-    submitGameSession({
+    // 1. Submit telemetry to database FIRST using locally calculated variables
+    await submitGameSession({
       progressorId: activeId,
       gameId: activeGameId,
       level: levelNum,
@@ -241,8 +238,6 @@ export default function SoundSync() {
       totalQuestions: totalPairs,
       accuracy: accuracy,
       timeTaken: formattedTime
-    }).catch((err) => {
-      console.error('Failed to submit game session telemetry:', err);
     });
 
     // 3. Navigate to result screen

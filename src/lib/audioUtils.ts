@@ -1,3 +1,5 @@
+import { PHONEME_AUDIO_MAP } from '../data/phonemeAudioMap';
+
 const phonemeMap: Record<string, string> = {
   // Slash format
   '/k/': ' , k-uh , ',
@@ -94,6 +96,14 @@ export function translateText(text: string): string {
   const trimmed = text.trim();
   const normalized = trimmed.toLowerCase();
   
+  // 0. Intercept exact phoneme notation from PHONEME_AUDIO_MAP with prosodic pauses
+  if (PHONEME_AUDIO_MAP[trimmed]) {
+    return `, ${PHONEME_AUDIO_MAP[trimmed]}, `;
+  }
+  if (PHONEME_AUDIO_MAP[text]) {
+    return `, ${PHONEME_AUDIO_MAP[text]}, `;
+  }
+  
   // 1. Direct match check (trim outer commas/spaces for isolated option words)
   if (phonemeMap[normalized]) {
     return phonemeMap[normalized].replace(/^[\s,]+|[\s,]+$/g, '');
@@ -109,6 +119,20 @@ export function translateText(text: string): string {
 
   // 3. Replace all phonetic keys in the sentence dynamically
   let translated = text;
+
+  // First replace phoneme notations using PHONEME_AUDIO_MAP with prosodic breaks
+  const audioMapKeys = Object.keys(PHONEME_AUDIO_MAP).sort((a, b) => b.length - a.length);
+  for (const key of audioMapKeys) {
+    const pauseFormattedSound = `, ${PHONEME_AUDIO_MAP[key]}, `;
+    if (key.startsWith('/') && key.endsWith('/')) {
+      const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escaped, 'gi');
+      translated = translated.replace(regex, pauseFormattedSound);
+    } else {
+      translated = translated.split(key).join(pauseFormattedSound);
+    }
+  }
+
   // Sort keys by length descending to replace longer/more specific patterns first
   const keys = Object.keys(phonemeMap).sort((a, b) => b.length - a.length);
 
@@ -157,8 +181,11 @@ export function playAudio(
   // Cancel ongoing speech gracefully to handle rapid clicks
   window.speechSynthesis.cancel();
 
-  // Apply phonetic lookup and translations, and lowercase to prevent acronym reading
-  const spokenText = translateText(text).toLowerCase();
+  // Intercept text using PHONEME_AUDIO_MAP before speaking
+  const rawText = text.trim();
+  const exactSound = PHONEME_AUDIO_MAP[rawText] || PHONEME_AUDIO_MAP[text];
+  const textToSpeak = exactSound ? `, ${exactSound}, ` : translateText(text);
+  const spokenText = textToSpeak.toLowerCase();
 
   const utterance = new SpeechSynthesisUtterance(spokenText);
   utterance.rate = 0.9;

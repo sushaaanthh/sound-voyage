@@ -5,6 +5,7 @@ import * as Icons from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
+import { PhonemeText } from '../PhonemeText';
 import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
@@ -168,7 +169,7 @@ export default function PhonemePop({}: PhonemePopProps) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const advanceQuestion = (nextScore: number) => {
+  const advanceQuestion = async (nextScore: number) => {
     setSelectedAnswer(null);
     setSelectedAnswers([]);
     setIsTransitioning(false);
@@ -180,8 +181,8 @@ export default function PhonemePop({}: PhonemePopProps) {
       const accuracy = totalQuestions > 0 ? Math.round((nextScore / totalQuestions) * 100) : 0;
       const activeId = progressorId || 'demo';
 
-      // Submit telemetry in the background (fires silently, handles database logs and level unlocking)
-      submitGameSession({
+      // 1. Submit telemetry to database FIRST using locally calculated variables
+      await submitGameSession({
         progressorId: activeId,
         gameId: 'phoneme-pop',
         level: levelNum,
@@ -189,8 +190,6 @@ export default function PhonemePop({}: PhonemePopProps) {
         totalQuestions,
         accuracy,
         timeTaken: formattedTime
-      }).catch((err) => {
-        console.error('Failed to submit game session telemetry:', err);
       });
 
       // Navigate to /result with final payload including missedWords
@@ -419,7 +418,11 @@ export default function PhonemePop({}: PhonemePopProps) {
             {/* Instruction Title */}
             <div className="flex items-center justify-center gap-3 mb-4 max-w-2xl">
               <h2 className="text-3xl font-bold text-center font-poppins">
-                {getInstructionTitle()}
+                {getInstructionTitle().split(/(\/[^\/]+\/)/g).map((part, idx) => 
+                  part.startsWith('/') && part.endsWith('/') && part.length > 2 
+                    ? <PhonemeText key={idx} phoneme={part} /> 
+                    : part
+                )}
               </h2>
               <button
                 onClick={() => playIndianAudio(getInstructionTitle(), 'question')}

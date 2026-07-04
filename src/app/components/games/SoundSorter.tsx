@@ -4,6 +4,7 @@ import { Home, Volume2, RotateCcw, Check, X, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
+import { PhonemeText } from '../PhonemeText';
 import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { playAudio } from '../../../lib/audioUtils';
@@ -305,7 +306,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 export default function SoundSorter() {
   const navigate = useNavigate();
   const { level } = useParams();
-  const { progressorId, saveGameResult } = useGameSession();
+  const { progressorId } = useGameSession();
 
   const levelStr = level || '1';
   const levelNum = Number(levelStr);
@@ -500,11 +501,8 @@ export default function SoundSorter() {
 
     const activeId = progressorId || 'demo';
 
-    // 1. Context telemetry write
-    await saveGameResult('sound-sorter', levelNum, finalScore, accuracy, formattedTime, totalQuestionsCount);
-
-    // 2. Submit telemetry in the background (fires silently, handles database logs and level unlocking)
-    submitGameSession({
+    // 1. Submit telemetry to database FIRST using locally calculated variables
+    await submitGameSession({
       progressorId: activeId,
       gameId: 'sound-sorter',
       level: levelNum,
@@ -512,8 +510,6 @@ export default function SoundSorter() {
       totalQuestions: totalQuestionsCount,
       accuracy: accuracy,
       timeTaken: formattedTime
-    }).catch((err) => {
-      console.error('Failed to submit game session telemetry:', err);
     });
 
     // 3. Navigate to result screen
@@ -655,9 +651,10 @@ export default function SoundSorter() {
                       onClick={() => handlePlacedClick(idx)}
                       className="w-full h-full flex flex-col items-center justify-center p-2 relative text-foreground font-poppins"
                     >
-                      <span className="font-bold text-lg md:text-xl uppercase select-none leading-none">
-                        {part}
-                      </span>
+                      <PhonemeText
+                        phoneme={part}
+                        className="font-bold text-lg md:text-xl uppercase select-none leading-none"
+                      />
                       <div className="absolute top-1.5 right-1.5 p-0.5 rounded-full bg-[#FF6347]/10 text-[#FF6347] hover:bg-[#FF6347]/20 transition-colors">
                         <X className="w-3 h-3" />
                       </div>
@@ -705,9 +702,10 @@ export default function SoundSorter() {
                         </button>
                       )}
                       
-                      <span className="font-extrabold text-lg md:text-xl uppercase select-none tracking-wide">
-                        {part.text}
-                      </span>
+                      <PhonemeText
+                        phoneme={part.text}
+                        className="font-extrabold text-lg md:text-xl uppercase select-none tracking-wide"
+                      />
                     </motion.button>
                   );
                 })}

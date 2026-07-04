@@ -276,8 +276,8 @@ export default function SoundTrail() {
       });
     }
 
-    // Submit telemetry in the background (fires silently, handles database logs and level unlocking)
-    submitGameSession({
+    // 1. Submit telemetry to database FIRST using locally calculated variables
+    await submitGameSession({
       progressorId: progressorId || 'demo',
       gameId: 'sound-trail',
       level: levelNum,
@@ -285,8 +285,6 @@ export default function SoundTrail() {
       totalQuestions: totalRounds,
       accuracy: accuracy,
       timeTaken: formattedTime
-    }).catch((err) => {
-      console.error('Failed to submit game session telemetry:', err);
     });
 
     // Direct result page navigation logs it in session database table

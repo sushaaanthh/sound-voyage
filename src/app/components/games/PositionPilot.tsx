@@ -4,6 +4,7 @@ import { Home, Volume2, Check, X, Music } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
+import { PhonemeText } from '../PhonemeText';
 import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { positionPilotData, PositionPilotQuestion } from '../../../data/positionPilotData';
@@ -145,7 +146,7 @@ export default function PositionPilot() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const advanceQuestion = (nextScore: number) => {
+  const advanceQuestion = async (nextScore: number) => {
     setSelectedAnswer(null);
     setIsTransitioning(false);
 
@@ -157,8 +158,8 @@ export default function PositionPilot() {
       const accuracy = totalQuestions > 0 ? Math.round((nextScore / totalQuestions) * 100) : 0;
       const activeId = progressorId || 'demo';
 
-      // Submit telemetry in the background (fires silently, handles database logs and level unlocking)
-      submitGameSession({
+      // 1. Submit telemetry to database FIRST using locally calculated variables
+      await submitGameSession({
         progressorId: activeId,
         gameId: 'position-pilot',
         level: levelNum,
@@ -166,8 +167,6 @@ export default function PositionPilot() {
         totalQuestions,
         accuracy,
         timeTaken: formattedTime
-      }).catch((err) => {
-        console.error('Failed to submit game session telemetry:', err);
       });
 
       // Navigate to /result with final payload including missedWords
@@ -272,7 +271,7 @@ export default function PositionPilot() {
             {/* Instruction Title */}
             <div className="flex items-center justify-center gap-3 mb-2 max-w-2xl">
               <h2 className="text-2xl md:text-3xl font-bold text-center font-poppins text-foreground leading-tight">
-                Where do you hear the /{currentQuestion.targetSound}/ sound?
+                Where do you hear the <PhonemeText phoneme={`/${currentQuestion.targetSound}/`} /> sound?
               </h2>
               <button
                 onClick={() => playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound?`)}

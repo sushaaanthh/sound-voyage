@@ -86,34 +86,15 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const saveGameResult = async (
     gameId: string,
     level: number,
-    score: number,
+    _score: number,
     accuracy: number,
-    timeTaken: string,
-    totalQuestions: number
+    _timeTaken: string,
+    _totalQuestions: number
   ) => {
     const activeId = progressorId || 'demo';
     
     try {
-      // 1. Write the session result to the game_sessions table
-      const { error: sessionError } = await supabase
-        .from('game_sessions')
-        .insert([
-          {
-            progressor_id: activeId,
-            game_id: gameId,
-            level: level,
-            score: score,
-            accuracy: accuracy,
-            time_taken: timeTaken,
-            total_questions: totalQuestions,
-          },
-        ]);
-
-      if (sessionError) {
-        console.error('Failed to write game session to Supabase:', sessionError.message);
-      }
-
-      // 2. If score is passing (accuracy >= 60%), append to completedLevels and update progressors table
+      // If score is passing (accuracy >= 60%), append to completedLevels and update progressors table
       if (accuracy >= 60) {
         const compositeKey = `${gameId}-${level}`;
         const updatedLevels = completedLevels.includes(compositeKey)

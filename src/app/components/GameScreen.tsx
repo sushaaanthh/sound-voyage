@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { Home, Volume2, RotateCcw, Cat, Dog, Fish, Bird, CheckCircle, XCircle } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { PhonemeText } from './PhonemeText';
 import QuitGameModal from './ui/QuitGameModal';
 import PhonemePop from './games/PhonemePop';
 import PositionPilot from './games/PositionPilot';
@@ -393,7 +394,7 @@ export default function GameScreen() {
                     className="w-32 h-32 rounded-[1.5rem] border-2 border-dashed border-border bg-card flex items-center justify-center"
                   >
                     {draggedItems[idx] ? (
-                      <span className="text-3xl">{draggedItems[idx]}</span>
+                      <PhonemeText phoneme={draggedItems[idx]} className="text-3xl" />
                     ) : (
                       <span className="text-muted-foreground">Drop here</span>
                     )}
@@ -424,7 +425,7 @@ export default function GameScreen() {
                     }}
                     className="w-32 h-32 rounded-[1.5rem] bg-primary text-primary-foreground shadow-lg hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center"
                   >
-                    <span className="text-3xl">{phoneme}</span>
+                    <PhonemeText phoneme={phoneme} className="text-3xl" />
                   </button>
                 ))}
               </div>
