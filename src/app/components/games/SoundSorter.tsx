@@ -463,17 +463,17 @@ export default function SoundSorter() {
     if (isCorrect) {
       setScore(nextScore);
       toast.success(`Awesome! The word is "${currentQ.word.toUpperCase()}"`, {
-        icon: <Check className="w-5 h-5 text-green-500" />,
-        className: 'bg-card border border-green-500 text-foreground rounded-[1.5rem] p-4 font-bold shadow-lg flex items-center gap-3',
-        duration: 1200,
+        icon: <Check className="w-10 h-10 md:w-12 md:h-12 text-green-500 shrink-0" />,
+        className: 'bg-card border-2 border-green-500 text-foreground rounded-[2.5rem] p-8 text-3xl md:text-4xl font-extrabold shadow-2xl flex items-center gap-6',
+        duration: 2500,
       });
     } else {
       // Record missed word
       setMissedWords(prev => [...prev, currentQ.word]);
       toast.error(`Keep practicing! The word is "${currentQ.word.toUpperCase()}"`, {
-        icon: <X className="w-5 h-5 text-primary" />,
-        className: 'bg-card border border-primary text-foreground rounded-[1.5rem] p-4 font-bold shadow-lg flex items-center gap-3',
-        duration: 1500,
+        icon: <X className="w-10 h-10 md:w-12 md:h-12 text-primary shrink-0" />,
+        className: 'bg-card border-2 border-primary text-foreground rounded-[2.5rem] p-8 text-3xl md:text-4xl font-extrabold shadow-2xl flex items-center gap-6',
+        duration: 2500,
       });
     }
 
@@ -487,7 +487,7 @@ export default function SoundSorter() {
       } else {
         handleLevelComplete(nextScore);
       }
-    }, 1500);
+    }, 2500);
   };
 
   const handleLevelComplete = async (finalScore: number) => {
