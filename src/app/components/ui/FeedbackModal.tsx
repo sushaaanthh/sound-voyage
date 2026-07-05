@@ -11,7 +11,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ status }) => {
   const isCorrect = status === 'correct';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none p-4">
       {/* Card Container - Removed heavy gradient for a cleaner, high-end white look */}
       <div
         className={`w-[400px] p-10 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center text-center transform transition-all duration-300 scale-100 opacity-100 bg-white border ${isCorrect ? 'border-green-100 dark:border-green-900/30' : 'border-red-50 dark:border-red-900/30'

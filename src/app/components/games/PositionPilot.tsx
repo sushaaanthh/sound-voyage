@@ -7,6 +7,7 @@ import { ThemeToggle } from '../ThemeToggle';
 import { PhonemeText } from '../PhonemeText';
 import { AudioWaveMask } from '../AudioWaveMask';
 import QuitGameModal from '../ui/QuitGameModal';
+import { FeedbackModal } from '../ui/FeedbackModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { positionPilotData, PositionPilotQuestion } from '../../../data/positionPilotData';
 import { getOptionIcon } from '../OptionIconMapper';
@@ -38,9 +39,11 @@ export default function PositionPilot() {
   const [missedWords, setMissedWords] = useState<string[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<'START' | 'MIDDLE' | 'END' | null>(null);
   const [isQuestionRevealed, setIsQuestionRevealed] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState<'correct' | 'wrong' | null>(null);
 
   useEffect(() => {
     setIsQuestionRevealed(false);
+    setFeedbackStatus(null);
   }, [currentQuestionIndex, levelNum]);
 
   const [timeElapsed, setTimeElapsed] = useState(0);
@@ -153,6 +156,7 @@ export default function PositionPilot() {
   };
 
   const advanceQuestion = async (nextScore: number) => {
+    setFeedbackStatus(null);
     setSelectedAnswer(null);
     setIsTransitioning(false);
 
@@ -203,21 +207,14 @@ export default function PositionPilot() {
 
     if (isCorrect) {
       setScore(nextScore);
-      toast.success('Correct!', {
-        icon: <Check className="w-8 h-8 md:w-10 md:h-10 text-green-700 shrink-0" />,
-        className: 'bg-green-100 text-green-700 border-2 border-green-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('correct');
     } else {
       setMissedWords((prev) => [...prev, currentQuestion.word]);
-      toast.error('Keep trying!', {
-        icon: <X className="w-8 h-8 md:w-10 md:h-10 text-red-700 shrink-0" />,
-        className: 'bg-red-100 text-red-700 border-2 border-red-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('wrong');
     }
 
     setTimeout(() => {
+      setFeedbackStatus(null);
       advanceQuestion(nextScore);
     }, 2500);
   };
@@ -398,6 +395,7 @@ export default function PositionPilot() {
         onClose={() => setShowQuitModal(false)}
         onConfirm={() => navigate(-1)}
       />
+      <FeedbackModal status={feedbackStatus} />
     </div>
   );
 }

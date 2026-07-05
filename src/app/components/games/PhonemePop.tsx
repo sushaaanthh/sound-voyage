@@ -8,6 +8,7 @@ import { ThemeToggle } from '../ThemeToggle';
 import { PhonemeText } from '../PhonemeText';
 import { AudioWaveMask } from '../AudioWaveMask';
 import QuitGameModal from '../ui/QuitGameModal';
+import { FeedbackModal } from '../ui/FeedbackModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
 import { getOptionIcon, getOptionIconComponent } from '../OptionIconMapper';
@@ -50,9 +51,11 @@ export default function PhonemePop({}: PhonemePopProps) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [missedWords, setMissedWords] = useState<string[]>([]);
   const [isQuestionRevealed, setIsQuestionRevealed] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState<'correct' | 'wrong' | null>(null);
 
   useEffect(() => {
     setIsQuestionRevealed(false);
+    setFeedbackStatus(null);
   }, [currentQuestionIndex, levelNum]);
   
   // selectedAnswer is string for binary ('yes'|'no'), number for multiple-choice (index), or -1/non-null for submitted select-all
@@ -176,6 +179,7 @@ export default function PhonemePop({}: PhonemePopProps) {
   };
 
   const advanceQuestion = async (nextScore: number) => {
+    setFeedbackStatus(null);
     setSelectedAnswer(null);
     setSelectedAnswers([]);
     setIsTransitioning(false);
@@ -223,11 +227,7 @@ export default function PhonemePop({}: PhonemePopProps) {
 
     if (isCorrect) {
       setScore(nextScore);
-      toast.success('Correct!', {
-        icon: <Check className="w-8 h-8 md:w-10 md:h-10 text-green-700 shrink-0" />,
-        className: 'bg-green-100 text-green-700 border-2 border-green-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('correct');
     } else {
       // Record missed identifier dynamically
       let wordLabel = '';
@@ -237,15 +237,11 @@ export default function PhonemePop({}: PhonemePopProps) {
         wordLabel = currentQuestion.word || '';
       }
       setMissedWords((prev) => [...prev, wordLabel]);
-
-      toast.error('Keep trying!', {
-        icon: <X className="w-8 h-8 md:w-10 md:h-10 text-red-700 shrink-0" />,
-        className: 'bg-red-100 text-red-700 border-2 border-red-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('wrong');
     }
 
     setTimeout(() => {
+      setFeedbackStatus(null);
       advanceQuestion(nextScore);
     }, 2500);
   };
@@ -259,24 +255,16 @@ export default function PhonemePop({}: PhonemePopProps) {
 
     if (isCorrect) {
       setScore(nextScore);
-      toast.success('Correct!', {
-        icon: <Check className="w-8 h-8 md:w-10 md:h-10 text-green-700 shrink-0" />,
-        className: 'bg-green-100 text-green-700 border-2 border-green-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('correct');
     } else {
       // Record correct word they should have selected
       const correctLabel = currentQuestion.options?.find(o => o.isCorrect)?.label || '';
       setMissedWords((prev) => [...prev, correctLabel]);
-
-      toast.error('Keep trying!', {
-        icon: <X className="w-8 h-8 md:w-10 md:h-10 text-red-700 shrink-0" />,
-        className: 'bg-red-100 text-red-700 border-2 border-red-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('wrong');
     }
 
     setTimeout(() => {
+      setFeedbackStatus(null);
       advanceQuestion(nextScore);
     }, 2500);
   };
@@ -305,11 +293,7 @@ export default function PhonemePop({}: PhonemePopProps) {
 
     if (isExactlyCorrect) {
       setScore(nextScore);
-      toast.success('Correct!', {
-        icon: <Check className="w-8 h-8 md:w-10 md:h-10 text-green-700 shrink-0" />,
-        className: 'bg-green-100 text-green-700 border-2 border-green-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('correct');
     } else {
       // Record missed sound group
       const targetSoundText = currentQuestion.targetSound || activeLevelConfig.targetSound;
@@ -318,15 +302,11 @@ export default function PhonemePop({}: PhonemePopProps) {
         : '';
       const missedLabel = `${targetSoundText}: ${correctLabels}`;
       setMissedWords((prev) => [...prev, missedLabel]);
-
-      toast.error('Keep trying!', {
-        icon: <X className="w-8 h-8 md:w-10 md:h-10 text-red-700 shrink-0" />,
-        className: 'bg-red-100 text-red-700 border-2 border-red-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('wrong');
     }
 
     setTimeout(() => {
+      setFeedbackStatus(null);
       advanceQuestion(nextScore);
     }, 2500);
   };
@@ -788,6 +768,7 @@ export default function PhonemePop({}: PhonemePopProps) {
           onClose={() => setShowQuitModal(false)}
           onConfirm={() => navigate(-1)}
         />
+        <FeedbackModal status={feedbackStatus} />
       </div>
     </div>
   );
