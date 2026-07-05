@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router';
-import { Home, Volume2, Check, X, Music, Eye, EyeOff } from 'lucide-react';
+import { Home, Volume2, Check, X, Music, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
@@ -204,22 +204,22 @@ export default function PositionPilot() {
     if (isCorrect) {
       setScore(nextScore);
       toast.success('Correct!', {
-        icon: <Check className="w-5 h-5 text-green-500" />,
-        className: 'bg-card border border-green-500 text-foreground rounded-[1.5rem] p-4 font-bold shadow-lg flex items-center gap-3',
-        duration: 1000,
+        icon: <Check className="w-10 h-10 md:w-12 md:h-12 text-green-500 shrink-0" />,
+        className: 'bg-card border-2 border-green-500 text-foreground rounded-[2.5rem] p-8 text-3xl md:text-4xl font-extrabold shadow-2xl flex items-center gap-6',
+        duration: 2500,
       });
     } else {
       setMissedWords((prev) => [...prev, currentQuestion.word]);
       toast.error('Keep trying!', {
-        icon: <X className="w-5 h-5 text-primary" />,
-        className: 'bg-card border border-primary text-foreground rounded-[1.5rem] p-4 font-bold shadow-lg flex items-center gap-3',
-        duration: 1000,
+        icon: <X className="w-10 h-10 md:w-12 md:h-12 text-primary shrink-0" />,
+        className: 'bg-card border-2 border-primary text-foreground rounded-[2.5rem] p-8 text-3xl md:text-4xl font-extrabold shadow-2xl flex items-center gap-6',
+        duration: 2500,
       });
     }
 
     setTimeout(() => {
       advanceQuestion(nextScore);
-    }, 1000);
+    }, 2500);
   };
 
   return (
@@ -293,7 +293,7 @@ export default function PositionPilot() {
                   !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                <AudioWaveMask onClick={() => playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound in the word ${currentQuestion.word}?`)} />
+                <AudioWaveMask variant="main" onClick={() => playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound in the word ${currentQuestion.word}?`)} />
               </div>
 
               {/* Unified Toggle Button */}
@@ -336,7 +336,7 @@ export default function PositionPilot() {
                       !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                     }`}
                   >
-                    <AudioWaveMask />
+                    <AudioWaveMask variant="option" />
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300 shrink-0">
