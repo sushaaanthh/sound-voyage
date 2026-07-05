@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router';
-import { Home, Volume2, Check, X, Music } from 'lucide-react';
+import { Home, Volume2, Check, X, Music, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import { PhonemeText } from '../PhonemeText';
+import { AudioWaveMask } from '../AudioWaveMask';
 import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { positionPilotData, PositionPilotQuestion } from '../../../data/positionPilotData';
@@ -36,6 +37,11 @@ export default function PositionPilot() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [missedWords, setMissedWords] = useState<string[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<'START' | 'MIDDLE' | 'END' | null>(null);
+  const [isQuestionRevealed, setIsQuestionRevealed] = useState(false);
+
+  useEffect(() => {
+    setIsQuestionRevealed(false);
+  }, [currentQuestionIndex, levelNum]);
 
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [showQuitModal, setShowQuitModal] = useState(false);
@@ -269,28 +275,72 @@ export default function PositionPilot() {
             className="w-full flex flex-col items-center"
           >
             {/* Instruction Title */}
-            <div className="flex items-center justify-center gap-3 mb-2 max-w-2xl">
-              <h2 className="text-2xl md:text-3xl font-bold text-center font-poppins text-foreground leading-tight">
-                Where do you hear the <PhonemeText phoneme={`/${currentQuestion.targetSound}/`} /> sound?
-              </h2>
-              <button
-                onClick={() => playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound?`)}
-                className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
-                aria-label="Speak question"
-              >
-                <Volume2 className="w-6 h-6 text-muted-foreground hover:text-primary" />
-              </button>
+            <div className="flex items-center justify-center gap-3 mb-2 max-w-3xl min-h-[4rem]">
+              <div className="relative grid place-items-center min-h-[3.5rem] flex-1">
+                {/* The Text */}
+                <div
+                  className={`absolute transition-opacity duration-500 ease-in-out ${
+                    isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                  }`}
+                >
+                  <h2 className="text-2xl md:text-3xl font-bold text-center font-poppins text-foreground leading-tight">
+                    Where do you hear the <PhonemeText phoneme={`/${currentQuestion.targetSound}/`} /> sound in the word <span className="text-primary font-extrabold ml-1">{currentQuestion.word.toUpperCase()}</span>?
+                  </h2>
+                </div>
+
+                {/* The Soundwave */}
+                <div
+                  className={`absolute transition-opacity duration-500 ease-in-out ${
+                    !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                  }`}
+                >
+                  <AudioWaveMask className="scale-125" />
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound in the word ${currentQuestion.word}?`)}
+                  className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
+                  aria-label="Speak question"
+                >
+                  <Volume2 className="w-6 h-6 text-muted-foreground hover:text-primary" />
+                </button>
+                <button
+                  onClick={() => setIsQuestionRevealed(!isQuestionRevealed)}
+                  className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
+                  aria-label="Toggle question visibility"
+                >
+                  {isQuestionRevealed ? (
+                    <EyeOff className="w-6 h-6 text-muted-foreground hover:text-primary" />
+                  ) : (
+                    <Eye className="w-6 h-6 text-muted-foreground hover:text-primary" />
+                  )}
+                </button>
+              </div>
             </div>
             <div className="flex flex-col items-center mb-10 w-full">
               <button
                 onClick={playSound}
                 disabled={isTransitioning || isPlaying}
-                className={`px-12 py-6 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`px-12 py-6 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[6rem] min-w-[16rem]`}
               >
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-poppins">
-                  {currentQuestion.word}
-                </h1>
-                <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300">
+                <div className="relative grid place-items-center min-w-[8rem] min-h-[3rem]">
+                  <h1
+                    className={`text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-poppins absolute transition-opacity duration-500 ease-in-out ${
+                      isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                    }`}
+                  >
+                    {currentQuestion.word}
+                  </h1>
+                  <div
+                    className={`absolute transition-opacity duration-500 ease-in-out ${
+                      !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                    }`}
+                  >
+                    <AudioWaveMask className="scale-125" />
+                  </div>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300 shrink-0">
                   <Music className="w-5 h-5" />
                 </div>
               </button>

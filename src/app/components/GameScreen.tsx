@@ -113,7 +113,7 @@ export default function GameScreen() {
       setScore(score + 1);
     }
 
-    // Wait 1 second before proceeding
+    // Wait 2.5 seconds before proceeding
     setTimeout(() => {
       setShowFeedback(null);
 
@@ -132,7 +132,7 @@ export default function GameScreen() {
           },
         });
       }
-    }, 1000);
+    }, 2500);
   };
 
   const handleCardFlip = (cardId: number) => {
@@ -446,22 +446,22 @@ export default function GameScreen() {
       {showFeedback && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm animate-in fade-in">
           <div
-            className={`p-12 rounded-[3rem] shadow-2xl animate-in zoom-in ${
+            className={`p-16 rounded-[3.5rem] shadow-2xl animate-in zoom-in ${
               showFeedback.correct
                 ? 'bg-green-500 text-white'
                 : 'bg-red-500 text-white'
             }`}
           >
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-6">
               {showFeedback.correct ? (
                 <>
-                  <CheckCircle className="w-24 h-24" />
-                  <h1 className="text-white">Right Answer!</h1>
+                  <CheckCircle className="w-32 h-32" />
+                  <h1 className="text-white text-4xl md:text-5xl font-extrabold tracking-tight">Right Answer!</h1>
                 </>
               ) : (
                 <>
-                  <XCircle className="w-24 h-24" />
-                  <h1 className="text-white">Oops, Wrong Answer!</h1>
+                  <XCircle className="w-32 h-32" />
+                  <h1 className="text-white text-4xl md:text-5xl font-extrabold tracking-tight">Oops, Wrong Answer!</h1>
                 </>
               )}
             </div>

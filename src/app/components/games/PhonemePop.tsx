@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router';
-import { Home, Volume2, HelpCircle, Check, X, Music } from 'lucide-react';
+import { Home, Volume2, HelpCircle, Check, X, Music, Eye, EyeOff } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import { PhonemeText } from '../PhonemeText';
+import { AudioWaveMask } from '../AudioWaveMask';
 import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
@@ -48,6 +49,11 @@ export default function PhonemePop({}: PhonemePopProps) {
   // Transition lock and clinical tracking states
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [missedWords, setMissedWords] = useState<string[]>([]);
+  const [isQuestionRevealed, setIsQuestionRevealed] = useState(false);
+
+  useEffect(() => {
+    setIsQuestionRevealed(false);
+  }, [currentQuestionIndex, levelNum]);
   
   // selectedAnswer is string for binary ('yes'|'no'), number for multiple-choice (index), or -1/non-null for submitted select-all
   const [selectedAnswer, setSelectedAnswer] = useState<string | number | null>(null);
@@ -343,23 +349,26 @@ export default function PhonemePop({}: PhonemePopProps) {
   // Determine instruction title dynamically based on level config
   const getInstructionTitle = () => {
     const soundText = currentQuestion.targetSound || activeLevelConfig.targetSound;
-    if (soundText === 'varies' || !soundText) {
-      return activeLevelConfig.instruction;
+    let base = activeLevelConfig.instruction;
+    if (soundText !== 'varies' && soundText) {
+      if (mechanic === 'binary-dual') {
+        base = `Do both words contain the ${soundText} sound?`;
+      } else if (mechanic === 'binary-single') {
+        base = `Does this word contain the ${soundText} sound?`;
+      } else if (mechanic === 'multiple-choice') {
+        base = `Select the word that contains the ${soundText} sound`;
+      } else if (mechanic === 'select-all') {
+        base = `Select all the words that contain the ${soundText} sound`;
+      }
     }
-    
-    if (mechanic === 'binary-dual') {
-      return `Do both words contain the ${soundText} sound?`;
+    if (currentQuestion.word && !base.toLowerCase().includes('in the word')) {
+      const cleanBase = base.endsWith('?') ? base.slice(0, -1) : base;
+      base = `${cleanBase} in the word ${currentQuestion.word.toUpperCase()}${base.endsWith('?') ? '?' : ''}`;
+    } else if (currentQuestion.word1 && currentQuestion.word2 && !base.toLowerCase().includes('in the words')) {
+      const cleanBase = base.endsWith('?') ? base.slice(0, -1) : base;
+      base = `${cleanBase} in the words ${currentQuestion.word1.toUpperCase()} and ${currentQuestion.word2.toUpperCase()}${base.endsWith('?') ? '?' : ''}`;
     }
-    if (mechanic === 'binary-single') {
-      return `Does this word contain the ${soundText} sound?`;
-    }
-    if (mechanic === 'multiple-choice') {
-      return `Select the word that contains the ${soundText} sound`;
-    }
-    if (mechanic === 'select-all') {
-      return `Select all the words that contain the ${soundText} sound`;
-    }
-    return activeLevelConfig.instruction;
+    return base;
   };
 
   return (
@@ -416,21 +425,52 @@ export default function PhonemePop({}: PhonemePopProps) {
 
 
             {/* Instruction Title */}
-            <div className="flex items-center justify-center gap-3 mb-4 max-w-2xl">
-              <h2 className="text-3xl font-bold text-center font-poppins">
-                {getInstructionTitle().split(/(\/[^\/]+\/)/g).map((part, idx) => 
-                  part.startsWith('/') && part.endsWith('/') && part.length > 2 
-                    ? <PhonemeText key={idx} phoneme={part} /> 
-                    : part
-                )}
-              </h2>
-              <button
-                onClick={() => playIndianAudio(getInstructionTitle(), 'question')}
-                className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
-                aria-label="Speak question"
-              >
-                <Volume2 className="w-6 h-6 text-muted-foreground hover:text-primary" />
-              </button>
+            <div className="flex items-center justify-center gap-3 mb-4 max-w-3xl min-h-[4rem]">
+              <div className="relative grid place-items-center min-h-[3.5rem] flex-1">
+                {/* The Text */}
+                <div
+                  className={`absolute transition-opacity duration-500 ease-in-out ${
+                    isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                  }`}
+                >
+                  <h2 className="text-3xl font-bold text-center font-poppins">
+                    {getInstructionTitle().split(/(\/[^\/]+\/)/g).map((part, idx) => 
+                      part.startsWith('/') && part.endsWith('/') && part.length > 2 
+                        ? <PhonemeText key={idx} phoneme={part} /> 
+                        : part
+                    )}
+                  </h2>
+                </div>
+
+                {/* The Soundwave */}
+                <div
+                  className={`absolute transition-opacity duration-500 ease-in-out ${
+                    !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                  }`}
+                >
+                  <AudioWaveMask className="scale-125" />
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => playIndianAudio(getInstructionTitle(), 'question')}
+                  className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
+                  aria-label="Speak question"
+                >
+                  <Volume2 className="w-6 h-6 text-muted-foreground hover:text-primary" />
+                </button>
+                <button
+                  onClick={() => setIsQuestionRevealed(!isQuestionRevealed)}
+                  className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
+                  aria-label="Toggle question visibility"
+                >
+                  {isQuestionRevealed ? (
+                    <EyeOff className="w-6 h-6 text-muted-foreground hover:text-primary" />
+                  ) : (
+                    <Eye className="w-6 h-6 text-muted-foreground hover:text-primary" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <p className="text-muted-foreground mb-12">
@@ -446,12 +486,25 @@ export default function PhonemePop({}: PhonemePopProps) {
                   <button
                     onClick={() => playIndianAudio(currentQuestion.word1 || '', 'word1')}
                     disabled={isTransitioning || isPlaying}
-                    className={`flex-1 px-10 py-8 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[140px]`}
+                    className={`flex-1 px-10 py-8 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[140px] min-w-[140px]`}
                   >
-                    <h1 className="text-3xl font-extrabold tracking-wide uppercase text-foreground font-poppins">
-                      {currentQuestion.word1}
-                    </h1>
-                    <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300">
+                    <div className="relative grid place-items-center min-w-[7rem] min-h-[2.5rem]">
+                      <h1
+                        className={`text-3xl font-extrabold tracking-wide uppercase text-foreground font-poppins absolute transition-opacity duration-500 ease-in-out ${
+                          isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                        }`}
+                      >
+                        {currentQuestion.word1}
+                      </h1>
+                      <div
+                        className={`absolute transition-opacity duration-500 ease-in-out ${
+                          !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                        }`}
+                      >
+                        <AudioWaveMask />
+                      </div>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300 shrink-0">
                       <Music className="w-5 h-5 animate-in zoom-in" />
                     </div>
                   </button>
@@ -460,12 +513,25 @@ export default function PhonemePop({}: PhonemePopProps) {
                   <button
                     onClick={() => playIndianAudio(currentQuestion.word2 || '', 'word2')}
                     disabled={isTransitioning || isPlaying}
-                    className={`flex-1 px-10 py-8 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[140px]`}
+                    className={`flex-1 px-10 py-8 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[140px] min-w-[140px]`}
                   >
-                    <h1 className="text-3xl font-extrabold tracking-wide uppercase text-foreground font-poppins">
-                      {currentQuestion.word2}
-                    </h1>
-                    <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300">
+                    <div className="relative grid place-items-center min-w-[7rem] min-h-[2.5rem]">
+                      <h1
+                        className={`text-3xl font-extrabold tracking-wide uppercase text-foreground font-poppins absolute transition-opacity duration-500 ease-in-out ${
+                          isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                        }`}
+                      >
+                        {currentQuestion.word2}
+                      </h1>
+                      <div
+                        className={`absolute transition-opacity duration-500 ease-in-out ${
+                          !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                        }`}
+                      >
+                        <AudioWaveMask />
+                      </div>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300 shrink-0">
                       <Music className="w-5 h-5 animate-in zoom-in" />
                     </div>
                   </button>
@@ -522,12 +588,25 @@ export default function PhonemePop({}: PhonemePopProps) {
                     <button
                       onClick={playSound}
                       disabled={isTransitioning || isPlaying}
-                      className={`px-12 py-6 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+                      className={`px-12 py-6 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[6rem] min-w-[16rem]`}
                     >
-                      <h1 className="text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-poppins">
-                        {currentQuestion.word}
-                      </h1>
-                      <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300">
+                      <div className="relative grid place-items-center min-w-[8rem] min-h-[3rem]">
+                        <h1
+                          className={`text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-poppins absolute transition-opacity duration-500 ease-in-out ${
+                            isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                          }`}
+                        >
+                          {currentQuestion.word}
+                        </h1>
+                        <div
+                          className={`absolute transition-opacity duration-500 ease-in-out ${
+                            !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                          }`}
+                        >
+                          <AudioWaveMask className="scale-125" />
+                        </div>
+                      </div>
+                      <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300 shrink-0">
                         <Music className="w-5 h-5" />
                       </div>
                     </button>

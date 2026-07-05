@@ -37,7 +37,7 @@ export const PHONEME_AUDIO_MAP: Record<string, string> = {
   '/i_ee/': 'yee',
   '/j_juh/': 'juh',
   '/j_yuh/': 'yuh',
-  '/o_aww/': 'aww',
+  '/o_aww/': 'o',
   '/o_oo/': 'oo',
   '/o_oh/': 'oh',
   '/q_kuh/': 'kuh',
