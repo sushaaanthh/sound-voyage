@@ -67,9 +67,15 @@ export default function PractitionerDashboard() {
   // View details modal state
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedDetailsProgressor, setSelectedDetailsProgressor] = useState<Progressor | null>(null);
-  const [detailsActiveTab, setDetailsActiveTab] = useState<'progression' | 'history'>('progression');
+  const [detailsActiveTab, setDetailsActiveTab] = useState<'progression' | 'history' | 'settings'>('progression');
   const [sessions, setSessions] = useState<GameSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
+
+  // Profile Settings edit form state
+  const [editName, setEditName] = useState('');
+  const [editAge, setEditAge] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const navigate = useNavigate();
   const [currentPractitionerId, setCurrentPractitionerId] = useState<string | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -366,6 +372,74 @@ export default function PractitionerDashboard() {
     setSelectedDetailsProgressor(progressor);
     setShowDetailsModal(true);
     fetchGameSessions(progressor.id);
+    setEditName(progressor.name);
+    setEditAge(progressor.age ? progressor.age.toString() : '');
+    setEditEmail(progressor.assignedEmail || '');
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedDetailsProgressor) return;
+
+    setIsUpdatingProfile(true);
+    try {
+      let parent: { id: string } | null = null;
+
+      if (editEmail.trim()) {
+        const { data: parentData, error: parentError } = await supabase
+          .from('parents')
+          .select('id')
+          .eq('email', editEmail.trim())
+          .maybeSingle();
+
+        if (parentError || !parentData) {
+          toast.error("Error: No registered parent found with this email.");
+          setIsUpdatingProfile(false);
+          return;
+        }
+        parent = parentData;
+      }
+
+      const parsedAge = parseInt(editAge, 10) || 0;
+      const updatePayload: any = {
+        name: editName.trim(),
+        age: parsedAge,
+        assigned_email: editEmail.trim() || null,
+      };
+      if (parent) {
+        updatePayload.parent_id = parent.id;
+      }
+
+      const { error: updateError } = await supabase
+        .from('progressors')
+        .update(updatePayload)
+        .eq('id', selectedDetailsProgressor.id);
+
+      if (updateError) {
+        console.error('Error updating profile:', updateError.message);
+        toast.error('Failed to update profile: ' + updateError.message);
+        return;
+      }
+
+      toast.success("Profile updated successfully");
+
+      const updatedProgressor: Progressor = {
+        ...selectedDetailsProgressor,
+        name: editName.trim(),
+        age: parsedAge,
+        assignedEmail: editEmail.trim(),
+      };
+      setSelectedDetailsProgressor(updatedProgressor);
+
+      setProgressors(prev => prev.map(p =>
+        p.id === selectedDetailsProgressor.id ? { ...p, ...updatedProgressor } : p
+      ));
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      toast.error('An unexpected error occurred during profile update.');
+    } finally {
+      setIsUpdatingProfile(false);
+    }
   };
 
   // Delete Progressor logic
@@ -1348,6 +1422,16 @@ export default function PractitionerDashboard() {
               >
                 Session History
               </button>
+              <button
+                onClick={() => setDetailsActiveTab('settings')}
+                className={`pb-2 px-1 text-sm font-bold transition-all relative ${
+                  detailsActiveTab === 'settings'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Profile Settings
+              </button>
             </div>
 
             {/* Tab Contents */}
@@ -1484,6 +1568,76 @@ export default function PractitionerDashboard() {
                       </table>
                     </div>
                   )}
+                </div>
+              )}
+
+              {detailsActiveTab === 'settings' && (
+                <div className="max-w-xl mx-auto py-4 animate-in fade-in">
+                  <form onSubmit={handleUpdateProfile} className="space-y-6">
+                    <div>
+                      <label className="block mb-2 text-sm font-bold text-foreground font-sans" style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}>
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        required
+                        placeholder="Enter full name"
+                        className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground transition-all font-sans"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block mb-2 text-sm font-bold text-foreground font-sans" style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}>
+                        Age
+                      </label>
+                      <input
+                        type="number"
+                        value={editAge}
+                        onChange={(e) => setEditAge(e.target.value)}
+                        required
+                        min="1"
+                        max="120"
+                        placeholder="Enter age"
+                        className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground transition-all font-sans"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block mb-2 text-sm font-bold text-foreground font-sans" style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}>
+                        Assigned Parent Email
+                      </label>
+                      <input
+                        type="email"
+                        value={editEmail}
+                        onChange={(e) => setEditEmail(e.target.value)}
+                        placeholder="Enter parent's registered email"
+                        className="w-full px-6 py-4 rounded-[1.5rem] bg-input-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground transition-all font-sans"
+                      />
+                      <p className="text-xs text-muted-foreground mt-2 pl-2 font-sans">
+                        Linking a parent's registered email enables Zero-Touch onboarding and links this progressor to their parent account.
+                      </p>
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={isUpdatingProfile}
+                        className="w-full px-8 py-4 rounded-[2rem] bg-[#FF6B4A] text-white shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all duration-300 font-bold font-sans flex items-center justify-center gap-2 cursor-pointer"
+                        style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}
+                      >
+                        {isUpdatingProfile ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                            Updating...
+                          </>
+                        ) : (
+                          'Update Profile'
+                        )}
+                      </button>
+                    </div>
+                  </form>
                 </div>
               )}
             </div>
