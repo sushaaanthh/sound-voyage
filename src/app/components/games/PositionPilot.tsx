@@ -275,48 +275,45 @@ export default function PositionPilot() {
             className="w-full flex flex-col items-center"
           >
             {/* Instruction Title */}
-            <div className="flex items-center justify-center gap-3 mb-2 max-w-3xl min-h-[4rem]">
-              <div className="relative grid place-items-center min-h-[3.5rem] flex-1">
-                {/* The Text */}
-                <div
-                  className={`absolute transition-opacity duration-500 ease-in-out ${
-                    isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-                  }`}
-                >
-                  <h2 className="text-2xl md:text-3xl font-bold text-center font-poppins text-foreground leading-tight">
-                    Where do you hear the <PhonemeText phoneme={`/${currentQuestion.targetSound}/`} /> sound in the word <span className="text-primary font-extrabold ml-1">{currentQuestion.word.toUpperCase()}</span>?
-                  </h2>
-                </div>
+            <div className="relative flex items-center justify-center w-full min-h-[6rem] max-w-4xl mx-auto px-4 mt-4 mb-4">
+              {/* Text Container: Add w-full and inset-0 so it doesn't collapse */}
+              <div
+                className={`absolute inset-0 flex items-center justify-center w-full transition-opacity duration-500 ease-in-out ${
+                  isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                }`}
+              >
+                <h2 className="text-2xl md:text-3xl font-bold text-center font-poppins text-foreground leading-relaxed px-12">
+                  Where do you hear the <PhonemeText phoneme={`/${currentQuestion.targetSound}/`} /> sound in the word <span className="text-primary font-extrabold ml-1">{currentQuestion.word.toUpperCase()}</span>?
+                </h2>
+              </div>
 
-                {/* The Soundwave */}
-                <div
-                  className={`absolute transition-opacity duration-500 ease-in-out ${
-                    !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-                  }`}
-                >
-                  <AudioWaveMask className="scale-125" />
-                </div>
+              {/* Soundwave Container: Same layout fix */}
+              <div
+                className={`absolute inset-0 flex items-center justify-center w-full transition-opacity duration-500 ease-in-out ${
+                  !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                }`}
+              >
+                <AudioWaveMask onClick={() => playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound in the word ${currentQuestion.word}?`)} />
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  onClick={() => playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound in the word ${currentQuestion.word}?`)}
-                  className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
-                  aria-label="Speak question"
-                >
-                  <Volume2 className="w-6 h-6 text-muted-foreground hover:text-primary" />
-                </button>
-                <button
-                  onClick={() => setIsQuestionRevealed(!isQuestionRevealed)}
-                  className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
-                  aria-label="Toggle question visibility"
-                >
-                  {isQuestionRevealed ? (
-                    <EyeOff className="w-6 h-6 text-muted-foreground hover:text-primary" />
-                  ) : (
-                    <Eye className="w-6 h-6 text-muted-foreground hover:text-primary" />
-                  )}
-                </button>
-              </div>
+
+              {/* Unified Toggle Button */}
+              <button
+                onClick={() => {
+                  const nextState = !isQuestionRevealed;
+                  setIsQuestionRevealed(nextState);
+                  if (!nextState) {
+                    playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound in the word ${currentQuestion.word}?`);
+                  }
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-secondary transition-colors z-20 cursor-pointer"
+                aria-label="Toggle Question View"
+              >
+                {isQuestionRevealed ? (
+                  <Volume2 className="w-7 h-7 text-primary hover:scale-110 transition-transform" />
+                ) : (
+                  <Eye className="w-7 h-7 text-muted-foreground hover:text-primary hover:scale-110 transition-transform" />
+                )}
+              </button>
             </div>
             <div className="flex flex-col items-center mb-10 w-full">
               <button
@@ -324,20 +321,22 @@ export default function PositionPilot() {
                 disabled={isTransitioning || isPlaying}
                 className={`px-12 py-6 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[6rem] min-w-[16rem]`}
               >
-                <div className="relative grid place-items-center min-w-[8rem] min-h-[3rem]">
-                  <h1
-                    className={`text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-poppins absolute transition-opacity duration-500 ease-in-out ${
+                <div className="relative flex items-center justify-center w-full min-w-[12rem] min-h-[3.5rem]">
+                  <div
+                    className={`absolute inset-0 flex items-center justify-center w-full transition-opacity duration-500 ease-in-out ${
                       isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                     }`}
                   >
-                    {currentQuestion.word}
-                  </h1>
+                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-poppins text-center">
+                      {currentQuestion.word}
+                    </h1>
+                  </div>
                   <div
-                    className={`absolute transition-opacity duration-500 ease-in-out ${
+                    className={`absolute inset-0 flex items-center justify-center w-full transition-opacity duration-500 ease-in-out ${
                       !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                     }`}
                   >
-                    <AudioWaveMask className="scale-125" />
+                    <AudioWaveMask />
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-white dark:bg-muted shadow-md flex items-center justify-center text-primary transition-transform duration-300 shrink-0">
