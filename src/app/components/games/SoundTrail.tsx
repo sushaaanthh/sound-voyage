@@ -218,9 +218,9 @@ export default function SoundTrail() {
         setScore(nextScore);
 
         toast.success(earnedPoint ? 'Perfect Trail!' : 'Trail Completed!', {
-          icon: <Check className="w-5 h-5 text-green-500" />,
-          className: 'bg-card border border-green-500 text-foreground rounded-[1.5rem] p-4 font-bold shadow-lg flex items-center gap-3',
-          duration: 1000,
+          icon: <Check className="w-8 h-8 md:w-10 md:h-10 text-green-700 shrink-0" />,
+          className: 'bg-green-100 text-green-700 border-2 border-green-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
+          duration: 2500,
         });
 
         setTimeout(async () => {
@@ -231,7 +231,7 @@ export default function SoundTrail() {
             // Level is completed!
             await completeLevel(nextScore);
           }
-        }, 1200);
+        }, 2500);
       } else {
         // Not at the end yet: move to next step index, triggering automatic autoplay
         setCurrentStepIndex(nextStep);
@@ -247,9 +247,9 @@ export default function SoundTrail() {
       }
 
       toast.error('Oops, that\'s incorrect! Let\'s listen again.', {
-        icon: <X className="w-5 h-5 text-[#FF6347]" />,
-        className: 'bg-card border border-primary text-foreground rounded-[1.5rem] p-4 font-bold shadow-lg flex items-center gap-3',
-        duration: 1200,
+        icon: <X className="w-8 h-8 md:w-10 md:h-10 text-red-700 shrink-0" />,
+        className: 'bg-red-100 text-red-700 border-2 border-red-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
+        duration: 2500,
       });
 
       // Freeze inputs and replay the transition to reinforce training
@@ -257,7 +257,7 @@ export default function SoundTrail() {
       setTimeout(() => {
         setIsTransitioning(false);
         playCurrentTransition();
-      }, 1200);
+      }, 2500);
     }
   };
 

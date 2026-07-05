@@ -463,16 +463,16 @@ export default function SoundSorter() {
     if (isCorrect) {
       setScore(nextScore);
       toast.success(`Awesome! The word is "${currentQ.word.toUpperCase()}"`, {
-        icon: <Check className="w-10 h-10 md:w-12 md:h-12 text-green-500 shrink-0" />,
-        className: 'bg-card border-2 border-green-500 text-foreground rounded-[2.5rem] p-8 text-3xl md:text-4xl font-extrabold shadow-2xl flex items-center gap-6',
+        icon: <Check className="w-8 h-8 md:w-10 md:h-10 text-green-700 shrink-0" />,
+        className: 'bg-green-100 text-green-700 border-2 border-green-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
         duration: 2500,
       });
     } else {
       // Record missed word
       setMissedWords(prev => [...prev, currentQ.word]);
       toast.error(`Keep practicing! The word is "${currentQ.word.toUpperCase()}"`, {
-        icon: <X className="w-10 h-10 md:w-12 md:h-12 text-primary shrink-0" />,
-        className: 'bg-card border-2 border-primary text-foreground rounded-[2.5rem] p-8 text-3xl md:text-4xl font-extrabold shadow-2xl flex items-center gap-6',
+        icon: <X className="w-8 h-8 md:w-10 md:h-10 text-red-700 shrink-0" />,
+        className: 'bg-red-100 text-red-700 border-2 border-red-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
         duration: 2500,
       });
     }

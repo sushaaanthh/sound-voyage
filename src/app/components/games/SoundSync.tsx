@@ -170,10 +170,10 @@ export default function SoundSync() {
           setIsTransitioning(false);
 
           toast.success('Found a match!', {
-            icon: <Check className="w-5 h-5 text-green-500" />,
+            icon: <Check className="w-8 h-8 md:w-10 md:h-10 text-green-700 shrink-0" />,
             className:
-              'bg-card border border-green-500 text-foreground rounded-[1.5rem] p-4 font-bold shadow-lg flex items-center gap-3',
-            duration: 1000
+              'bg-green-100 text-green-700 border-2 border-green-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
+            duration: 2500
           });
 
           // Check if game complete
@@ -181,7 +181,7 @@ export default function SoundSync() {
           if (allMatched) {
             setTimeout(() => {
               handleLevelComplete();
-            }, 1200);
+            }, 2500);
           }
         }, 500);
       } else {
@@ -203,12 +203,12 @@ export default function SoundSync() {
           setIsTransitioning(false);
 
           toast.error('Not a match, try again!', {
-            icon: <X className="w-5 h-5 text-[#FF6347]" />,
+            icon: <X className="w-8 h-8 md:w-10 md:h-10 text-red-700 shrink-0" />,
             className:
-              'bg-card border border-primary text-foreground rounded-[1.5rem] p-4 font-bold shadow-lg flex items-center gap-3',
-            duration: 1000
+              'bg-red-100 text-red-700 border-2 border-red-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
+            duration: 2500
           });
-        }, 1200);
+        }, 2500);
       }
     }
   };
