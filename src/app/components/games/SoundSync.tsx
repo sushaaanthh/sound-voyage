@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Home, Volume2, Check, X, RefreshCw } from 'lucide-react';
+import { Home, Volume2, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
-import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import QuitGameModal from '../ui/QuitGameModal';
+import { FeedbackModal } from '../ui/FeedbackModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { soundSyncData } from '../../../data/soundSyncData';
 import { getOptionIcon } from '../OptionIconMapper';
@@ -39,6 +39,7 @@ export default function SoundSync() {
   const [showQuitModal, setShowQuitModal] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [missedWords, setMissedWords] = useState<string[]>([]);
+  const [feedbackStatus, setFeedbackStatus] = useState<'correct' | 'wrong' | null>(null);
 
   // Timer Ref
   const startTimeRef = useRef<number>(Date.now());
@@ -75,6 +76,7 @@ export default function SoundSync() {
     setSelectedCards([]);
     setMissedWords([]);
     setIsTransitioning(false);
+    setFeedbackStatus(null);
 
     // Grab the pool of pairs
     const pool = levelConfig.wordPool;
@@ -169,12 +171,8 @@ export default function SoundSync() {
           setSelectedCards([]);
           setIsTransitioning(false);
 
-          toast.success('Found a match!', {
-            icon: <Check className="w-8 h-8 md:w-10 md:h-10 text-green-700 shrink-0" />,
-            className:
-              'bg-green-100 text-green-700 border-2 border-green-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-            duration: 2500
-          });
+          setFeedbackStatus('correct');
+          setTimeout(() => setFeedbackStatus(null), 2500);
 
           // Check if game complete
           const allMatched = finalCards.every((c) => c.isMatched);
@@ -194,20 +192,16 @@ export default function SoundSync() {
           return arr;
         });
 
+        setFeedbackStatus('wrong');
+
         setTimeout(() => {
+          setFeedbackStatus(null);
           const finalCards = [...cards];
           finalCards[firstIdx].isFlipped = false;
           finalCards[secondIdx].isFlipped = false;
           setCards(finalCards);
           setSelectedCards([]);
           setIsTransitioning(false);
-
-          toast.error('Not a match, try again!', {
-            icon: <X className="w-8 h-8 md:w-10 md:h-10 text-red-700 shrink-0" />,
-            className:
-              'bg-red-100 text-red-700 border-2 border-red-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-            duration: 2500
-          });
         }, 2500);
       }
     }
@@ -419,6 +413,7 @@ export default function SoundSync() {
         onClose={() => setShowQuitModal(false)}
         onConfirm={() => navigate(-1)}
       />
+      <FeedbackModal status={feedbackStatus} />
     </div>
   );
 }

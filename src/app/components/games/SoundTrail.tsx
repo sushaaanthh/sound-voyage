@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Home, Check, X, Play, Volume2 } from 'lucide-react';
+import { Home, Play, Volume2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import QuitGameModal from '../ui/QuitGameModal';
+import { FeedbackModal } from '../ui/FeedbackModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { submitGameSession } from '../../../lib/telemetryUtils';
 import { soundTrailData, SoundTrailLevel, SoundTrailChain } from '../../../data/soundTrailData';
@@ -28,6 +28,7 @@ export default function SoundTrail() {
   const [score, setScore] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [showQuitModal, setShowQuitModal] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState<'correct' | 'wrong' | null>(null);
   
   // Game states
   const [nodes, setNodes] = useState<Array<{ word: string; x: number; y: number; index: number }>>([]);
@@ -138,6 +139,7 @@ export default function SoundTrail() {
   // Setup round nodes and select a random chain from pool
   const startNewRound = () => {
     setIsTransitioning(false);
+    setFeedbackStatus(null);
     setUserSequence([0]); // Start at the first node
     setCurrentStepIndex(0);
     setRoundHasMistake(false);
@@ -217,13 +219,10 @@ export default function SoundTrail() {
         const nextScore = score + (earnedPoint ? 1 : 0);
         setScore(nextScore);
 
-        toast.success(earnedPoint ? 'Perfect Trail!' : 'Trail Completed!', {
-          icon: <Check className="w-8 h-8 md:w-10 md:h-10 text-green-700 shrink-0" />,
-          className: 'bg-green-100 text-green-700 border-2 border-green-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-          duration: 2500,
-        });
+        setFeedbackStatus('correct');
 
         setTimeout(async () => {
+          setFeedbackStatus(null);
           if (currentRound < totalRounds - 1) {
             setCurrentRound(currentRound + 1);
             startNewRound();
@@ -246,15 +245,12 @@ export default function SoundTrail() {
         setMissedWords((prev) => [...prev, incorrectWord]);
       }
 
-      toast.error('Oops, that\'s incorrect! Let\'s listen again.', {
-        icon: <X className="w-8 h-8 md:w-10 md:h-10 text-red-700 shrink-0" />,
-        className: 'bg-red-100 text-red-700 border-2 border-red-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('wrong');
 
       // Freeze inputs and replay the transition to reinforce training
       setIsTransitioning(true);
       setTimeout(() => {
+        setFeedbackStatus(null);
         setIsTransitioning(false);
         playCurrentTransition();
       }, 2500);
@@ -268,13 +264,6 @@ export default function SoundTrail() {
     const secs = elapsedSeconds % 60;
     const formattedTime = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     const gameId = 'sound-trail';
-
-    if (accuracy >= 60) {
-      toast.success('Congratulations! Level Cleared!', {
-        description: `Accuracy: ${accuracy}% - Moving to Results`,
-        duration: 2000,
-      });
-    }
 
     // 1. Submit telemetry to database FIRST using locally calculated variables
     await submitGameSession({
@@ -543,6 +532,7 @@ export default function SoundTrail() {
         onClose={() => setShowQuitModal(false)}
         onConfirm={() => navigate(-1)}
       />
+      <FeedbackModal status={feedbackStatus} />
     </div>
   );
 }

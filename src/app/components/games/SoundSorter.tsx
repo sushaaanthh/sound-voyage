@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Home, Volume2, RotateCcw, Check, X, ArrowRight } from 'lucide-react';
+import { Home, Volume2, RotateCcw, X, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import { PhonemeText } from '../PhonemeText';
 import QuitGameModal from '../ui/QuitGameModal';
+import { FeedbackModal } from '../ui/FeedbackModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { playAudio } from '../../../lib/audioUtils';
 import { submitGameSession } from '../../../lib/telemetryUtils';
@@ -321,6 +322,7 @@ export default function SoundSorter() {
   const [showQuitModal, setShowQuitModal] = useState(false);
   const [missedWords, setMissedWords] = useState<string[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState<'correct' | 'wrong' | null>(null);
 
   // Question active board state
   const [placedParts, setPlacedParts] = useState<(string | null)[]>([]);
@@ -354,6 +356,7 @@ export default function SoundSorter() {
 
   // Setup state for active question
   const setupQuestion = (q: SorterWord) => {
+    setFeedbackStatus(null);
     setPlacedParts(Array(q.parts.length).fill(null));
     
     // Shuffle the available parts with a unique id mapping
@@ -462,23 +465,16 @@ export default function SoundSorter() {
 
     if (isCorrect) {
       setScore(nextScore);
-      toast.success(`Awesome! The word is "${currentQ.word.toUpperCase()}"`, {
-        icon: <Check className="w-8 h-8 md:w-10 md:h-10 text-green-700 shrink-0" />,
-        className: 'bg-green-100 text-green-700 border-2 border-green-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('correct');
     } else {
       // Record missed word
       setMissedWords(prev => [...prev, currentQ.word]);
-      toast.error(`Keep practicing! The word is "${currentQ.word.toUpperCase()}"`, {
-        icon: <X className="w-8 h-8 md:w-10 md:h-10 text-red-700 shrink-0" />,
-        className: 'bg-red-100 text-red-700 border-2 border-red-200 rounded-2xl px-8 py-4 text-2xl md:text-3xl font-bold shadow-xl flex items-center justify-center gap-4',
-        duration: 2500,
-      });
+      setFeedbackStatus('wrong');
     }
 
     // Advance to next question or complete level after delay
     setTimeout(() => {
+      setFeedbackStatus(null);
       const nextIndex = currentIndex + 1;
       if (nextIndex < questions.length) {
         setCurrentIndex(nextIndex);
@@ -748,6 +744,7 @@ export default function SoundSorter() {
         onClose={() => setShowQuitModal(false)}
         onConfirm={() => navigate(-1)}
       />
+      <FeedbackModal status={feedbackStatus} />
     </div>
   );
 }

@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router';
-import { Home, Volume2, Check, X, Music, Eye } from 'lucide-react';
+import { Home, Volume2, Music, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { toast } from 'sonner';
 import { ThemeToggle } from '../ThemeToggle';
 import { PhonemeText } from '../PhonemeText';
 import { AudioWaveMask } from '../AudioWaveMask';
