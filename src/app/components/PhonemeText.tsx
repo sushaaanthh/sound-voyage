@@ -1,12 +1,13 @@
 import React from 'react';
-import { PHONEME_AUDIO_MAP } from '../../data/phonemeAudioMap';
+import { PHONEME_AUDIO_MAP, getPhonemeAudioStr } from '../../data/phonemeAudioMap';
 
 export interface PhonemeTextProps extends React.HTMLAttributes<HTMLSpanElement> {
   phoneme: string;
+  word?: string;
 }
 
-export const PhonemeText: React.FC<PhonemeTextProps> = ({ phoneme, className = '', ...props }) => {
-  const mappedSound = PHONEME_AUDIO_MAP[phoneme] || PHONEME_AUDIO_MAP[phoneme.trim()];
+export const PhonemeText: React.FC<PhonemeTextProps> = ({ phoneme, word, className = '', ...props }) => {
+  const mappedSound = getPhonemeAudioStr(phoneme, word);
   const ariaLabelText = mappedSound ? `, ${mappedSound}, ` : phoneme;
 
   // If phoneme is "/u_uh/", displayText becomes "/u/"

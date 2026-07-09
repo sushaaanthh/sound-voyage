@@ -562,6 +562,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   water: Waves,
   wrench: Wrench,
   yoga: User,
+  'first sound': ArrowLeft,
+  'middle sound': AlignCenter,
+  'last sound': ArrowRight,
+  'start': ArrowLeft,
 };
 
 export function getOptionIconComponent(text: string): React.ComponentType<{ className?: string }> {

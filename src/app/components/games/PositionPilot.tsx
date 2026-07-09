@@ -12,11 +12,12 @@ import { positionPilotData, PositionPilotQuestion } from '../../../data/position
 import { getOptionIcon } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
 import { submitGameSession } from '../../../lib/telemetryUtils';
+import { getPhonemeAudioStr } from '../../../data/phonemeAudioMap';
 
 const CHOICES = [
-  { label: 'BEGINNING', value: 'START' },
-  { label: 'MIDDLE', value: 'MIDDLE' },
-  { label: 'END', value: 'END' }
+  { label: 'First Sound', value: 'START' },
+  { label: 'Middle Sound', value: 'MIDDLE' },
+  { label: 'Last Sound', value: 'END' }
 ] as const;
 
 export default function PositionPilot() {
@@ -107,7 +108,7 @@ export default function PositionPilot() {
   }, []);
 
   // Native Text-to-Speech engine supporting en-IN
-  const playIndianAudio = (text: string) => {
+  const playIndianAudio = (text: string, wordContext?: string) => {
     playAudio(text, {
       onStart: () => {
         setIsPlaying(true);
@@ -117,8 +118,9 @@ export default function PositionPilot() {
       },
       onError: () => {
         setIsPlaying(false);
-      }
-    });
+      },
+      wordContext
+    }, wordContext);
   };
 
   // Cleanup speech synthesis on unmount
@@ -143,9 +145,15 @@ export default function PositionPilot() {
   const totalQuestions = questions.length;
   const progressPercent = (currentQuestionIndex / totalQuestions) * 100;
 
+  const getQuestionAudioText = () => {
+    if (!currentQuestion) return '';
+    const phonemeAudio = getPhonemeAudioStr(`/${currentQuestion.targetSound}/`, currentQuestion.word) || currentQuestion.targetSound;
+    return `Where do you hear the ${phonemeAudio} sound, in the word ${currentQuestion.word}?`;
+  };
+
   const playSound = () => {
     if (!currentQuestion || isTransitioning) return;
-    playIndianAudio(currentQuestion.word);
+    playIndianAudio(currentQuestion.word, currentQuestion.word);
   };
 
   const formatTime = (seconds: number) => {
@@ -293,7 +301,7 @@ export default function PositionPilot() {
                 }`}
               >
                 <h2 className="text-2xl md:text-3xl font-bold text-center font-poppins text-foreground leading-relaxed px-12">
-                  Where do you hear the <PhonemeText phoneme={`/${currentQuestion.targetSound}/`} /> sound in the word <span className="text-primary font-extrabold ml-1">{currentQuestion.word.toUpperCase()}</span>?
+                  Where do you hear the <PhonemeText phoneme={`/${currentQuestion.targetSound}/`} word={currentQuestion.word} /> sound, in the word <span className="text-primary font-extrabold ml-1">'{currentQuestion.word.toUpperCase()}'</span>?
                 </h2>
               </div>
 
@@ -303,7 +311,7 @@ export default function PositionPilot() {
                   !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                <AudioWaveMask variant="main" onClick={() => playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound in the word ${currentQuestion.word}?`)} />
+                <AudioWaveMask variant="main" onClick={() => playIndianAudio(getQuestionAudioText(), currentQuestion.word)} />
               </div>
 
               {/* Unified Toggle Button */}
@@ -312,7 +320,7 @@ export default function PositionPilot() {
                   const nextState = !isQuestionRevealed;
                   setIsQuestionRevealed(nextState);
                   if (!nextState) {
-                    playIndianAudio(`Where do you hear the /${currentQuestion.targetSound}/ sound in the word ${currentQuestion.word}?`);
+                    playIndianAudio(getQuestionAudioText(), currentQuestion.word);
                   }
                 }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-secondary transition-colors z-20 cursor-pointer"
@@ -387,7 +395,7 @@ export default function PositionPilot() {
                     key={choice.value}
                     onClick={() => handleChoiceSelect(choice.value)}
                     disabled={isLocked}
-                    className={`py-8 rounded-[2rem] border-2 text-base md:text-xl font-extrabold transition-all duration-300 flex items-center justify-center gap-3 shadow-md disabled:cursor-not-allowed ${buttonStyle}`}
+                    className={`py-8 rounded-[2rem] border-2 text-base md:text-xl font-extrabold font-poppins transition-all duration-300 flex items-center justify-center gap-3 shadow-md disabled:cursor-not-allowed ${buttonStyle}`}
                   >
                     {getOptionIcon(choice.label)}
                     <span>{choice.label}</span>
