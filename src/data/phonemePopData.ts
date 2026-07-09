@@ -18,7 +18,7 @@ export interface PhonemeQuestion {
 export interface PhonemeLevel {
   level: number;
   targetSound: string;
-  mechanic: 'binary-single' | 'binary-dual' | 'multiple-choice' | 'select-all';
+  mechanic: 'binary-single' | 'binary-dual' | 'multiple-choice' | 'select-all' | 'position';
   instruction: string;
   questions: PhonemeQuestion[];
 }

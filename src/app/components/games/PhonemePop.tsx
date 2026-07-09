@@ -773,7 +773,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                   Submit Answer
                 </button>
               </div>
-            ) : mechanic === 'position' ? (
+            ) : (mechanic as string) === 'position' ? (
               <div className="flex flex-col sm:flex-row gap-6 w-full max-w-3xl justify-center">
                 {(['START', 'MIDDLE', 'END'] as const).map((pos) => {
                   const label = pos === 'START' ? 'BEGINNING' : pos;
