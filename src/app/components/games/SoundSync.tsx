@@ -4,12 +4,93 @@ import { Home, Volume2, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ThemeToggle } from '../ThemeToggle';
 import QuitGameModal from '../ui/QuitGameModal';
-import { FeedbackModal } from '../ui/FeedbackModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { soundSyncData } from '../../../data/soundSyncData';
 import { getOptionIcon } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
 import { submitGameSession } from '../../../lib/telemetryUtils';
+
+const playCorrectBell = () => {
+  const audio = new Audio('/sounds/correct-bell.mp3');
+  audio.volume = 1.0;
+  audio.play().catch(() => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(1.0, ctx.currentTime);
+      masterGain.connect(ctx.destination);
+
+      // Fundamental harmonic (D5 -> A5 chime)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+      osc1.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
+      gain1.gain.setValueAtTime(0.85, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.55);
+      osc1.connect(gain1);
+      gain1.connect(masterGain);
+      osc1.start();
+      osc1.stop(ctx.currentTime + 0.55);
+
+      // Bright overtone chime (D6 -> E6) for extra loudness and clarity
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(1174.66, ctx.currentTime); // D6
+      osc2.frequency.exponentialRampToValueAtTime(1318.51, ctx.currentTime + 0.12); // E6
+      gain2.gain.setValueAtTime(0.65, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+      osc2.connect(gain2);
+      gain2.connect(masterGain);
+      osc2.start();
+      osc2.stop(ctx.currentTime + 0.45);
+    } catch (e) {
+      console.log(e);
+    }
+  });
+};
+
+const playWrongBuzzer = () => {
+  const audio = new Audio('/sounds/wrong-buzzer.mp3');
+  audio.volume = 1.0;
+  audio.play().catch(() => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(1.0, ctx.currentTime);
+      masterGain.connect(ctx.destination);
+
+      // Main low sawtooth tone
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(140, ctx.currentTime);
+      gain1.gain.setValueAtTime(0.75, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc1.connect(gain1);
+      gain1.connect(masterGain);
+      osc1.start();
+      osc1.stop(ctx.currentTime + 0.4);
+
+      // Dissonant square harmonic for strong buzzing punch and volume
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(155, ctx.currentTime);
+      gain2.gain.setValueAtTime(0.55, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc2.connect(gain2);
+      gain2.connect(masterGain);
+      osc2.start();
+      osc2.stop(ctx.currentTime + 0.4);
+    } catch (e) {
+      console.log(e);
+    }
+  });
+};
 
 interface Card {
   id: number;
@@ -39,7 +120,6 @@ export default function SoundSync() {
   const [showQuitModal, setShowQuitModal] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [missedWords, setMissedWords] = useState<string[]>([]);
-  const [feedbackStatus, setFeedbackStatus] = useState<'correct' | 'wrong' | null>(null);
 
   // Timer Ref
   const startTimeRef = useRef<number>(Date.now());
@@ -76,7 +156,6 @@ export default function SoundSync() {
     setSelectedCards([]);
     setMissedWords([]);
     setIsTransitioning(false);
-    setFeedbackStatus(null);
 
     // Grab the pool of pairs
     const pool = levelConfig.wordPool;
@@ -161,29 +240,26 @@ export default function SoundSync() {
       const card1 = cards[firstIdx];
       const card2 = cards[secondIdx];
 
-      if (card1.pairIndex === card2.pairIndex) {
+      if (card1.word === card2.word || card1.pairIndex === card2.pairIndex) {
         // MATCH!
-        setTimeout(() => {
-          const finalCards = [...cards];
-          finalCards[firstIdx].isMatched = true;
-          finalCards[secondIdx].isMatched = true;
-          setCards(finalCards);
-          setSelectedCards([]);
-          setIsTransitioning(false);
+        playCorrectBell();
+        const finalCards = [...cards];
+        finalCards[firstIdx].isMatched = true;
+        finalCards[secondIdx].isMatched = true;
+        setCards(finalCards);
+        setSelectedCards([]);
+        setIsTransitioning(false);
 
-          setFeedbackStatus('correct');
-          setTimeout(() => setFeedbackStatus(null), 2500);
-
-          // Check if game complete
-          const allMatched = finalCards.every((c) => c.isMatched);
-          if (allMatched) {
-            setTimeout(() => {
-              handleLevelComplete();
-            }, 2500);
-          }
-        }, 500);
+        // Check if game complete
+        const allMatched = finalCards.every((c) => c.isMatched);
+        if (allMatched) {
+          setTimeout(() => {
+            handleLevelComplete();
+          }, 1000);
+        }
       } else {
         // NO MATCH!
+        playWrongBuzzer();
         // Record missed words for clinical analysis
         setMissedWords((prev) => {
           const arr = [...prev];
@@ -192,17 +268,15 @@ export default function SoundSync() {
           return arr;
         });
 
-        setFeedbackStatus('wrong');
-
+        // Auto-flip back after 800ms so the child sees the mistake briefly
         setTimeout(() => {
-          setFeedbackStatus(null);
           const finalCards = [...cards];
           finalCards[firstIdx].isFlipped = false;
           finalCards[secondIdx].isFlipped = false;
           setCards(finalCards);
           setSelectedCards([]);
           setIsTransitioning(false);
-        }, 2500);
+        }, 800);
       }
     }
   };
@@ -413,7 +487,6 @@ export default function SoundSync() {
         onClose={() => setShowQuitModal(false)}
         onConfirm={() => navigate(-1)}
       />
-      <FeedbackModal status={feedbackStatus} />
     </div>
   );
 }
