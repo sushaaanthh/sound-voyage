@@ -10,6 +10,82 @@ import { submitGameSession } from '../../../lib/telemetryUtils';
 import { soundTrailData, SoundTrailLevel, SoundTrailChain } from '../../../data/soundTrailData';
 import { playAudio } from '../../../lib/audioUtils';
 
+const playCorrectBell = () => {
+  const audio = new Audio('/sounds/correct-bell.mp3');
+  audio.volume = 1.0;
+  audio.play().catch(() => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(1.0, ctx.currentTime);
+      masterGain.connect(ctx.destination);
+
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
+      gain1.gain.setValueAtTime(0.85, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.55);
+      osc1.connect(gain1);
+      gain1.connect(masterGain);
+      osc1.start();
+      osc1.stop(ctx.currentTime + 0.55);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(1174.66, ctx.currentTime);
+      osc2.frequency.exponentialRampToValueAtTime(1318.51, ctx.currentTime + 0.12);
+      gain2.gain.setValueAtTime(0.65, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+      osc2.connect(gain2);
+      gain2.connect(masterGain);
+      osc2.start();
+      osc2.stop(ctx.currentTime + 0.45);
+    } catch (e) {
+      console.log(e);
+    }
+  });
+};
+
+const playWrongBuzzer = () => {
+  const audio = new Audio('/sounds/wrong-buzzer.mp3');
+  audio.volume = 1.0;
+  audio.play().catch(() => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(1.0, ctx.currentTime);
+      masterGain.connect(ctx.destination);
+
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(140, ctx.currentTime);
+      gain1.gain.setValueAtTime(0.75, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc1.connect(gain1);
+      gain1.connect(masterGain);
+      osc1.start();
+      osc1.stop(ctx.currentTime + 0.4);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(155, ctx.currentTime);
+      gain2.gain.setValueAtTime(0.55, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc2.connect(gain2);
+      gain2.connect(masterGain);
+      osc2.start();
+      osc2.stop(ctx.currentTime + 0.4);
+    } catch (e) {
+      console.log(e);
+    }
+  });
+};
+
 export default function SoundTrail() {
   const navigate = useNavigate();
   const { level } = useParams();
@@ -47,6 +123,7 @@ export default function SoundTrail() {
   // Refs
   const startTimeRef = useRef<number>(Date.now());
   const synthContextRef = useRef<AudioContext | null>(null);
+  const isPlayingRef = useRef<boolean>(false);
 
   // Timer tick
   useEffect(() => {
@@ -179,12 +256,19 @@ export default function SoundTrail() {
     startNewRound();
   }, [levelStr, currentLevelConfig]);
 
-  // Autoplay current step transition when nodes or active step changes
+  // Autoplay current step transition when active step index changes
   useEffect(() => {
-    if (nodes.length > 0 && currentChain) {
-      playCurrentTransition();
-    }
-  }, [currentStepIndex, nodes, currentChain]);
+    // Only play the sequence once when the step changes
+    if (isPlayingRef.current || nodes.length === 0 || !currentChain) return;
+
+    const playNewSequence = async () => {
+      isPlayingRef.current = true;
+      await playCurrentTransition();
+      isPlayingRef.current = false;
+    };
+
+    playNewSequence();
+  }, [currentStepIndex]); // Strictly bound to the step changing
 
   // Clean up audio on unmount
   useEffect(() => {
@@ -211,15 +295,10 @@ export default function SoundTrail() {
 
     if (positionValue === expectedPosition) {
       // Correct position selected
+      playCorrectBell();
       const nextStep = currentStepIndex + 1;
       const nextUserSeq = [...userSequence, nextStep];
       setUserSequence(nextUserSeq);
-      
-      // Advance active node indicator
-      setHighlightNodeIndex(nextStep);
-      playSynthBeep(nextStep);
-      await speakWord(nodes[nextStep].word);
-      setHighlightNodeIndex(null);
 
       if (nextStep === currentChain.words.length - 1) {
         // Reached the final node of the chain: Round completed!
@@ -241,11 +320,12 @@ export default function SoundTrail() {
           }
         }, 2500);
       } else {
-        // Not at the end yet: move to next step index, triggering automatic autoplay
+        // Not at the end yet: silently move to next step index, triggering automatic single-play via useEffect
         setCurrentStepIndex(nextStep);
       }
     } else {
       // Incorrect position selected
+      playWrongBuzzer();
       setRoundHasMistake(true);
       
       // Log the incorrect word transition target
@@ -256,13 +336,12 @@ export default function SoundTrail() {
 
       setFeedbackStatus('wrong');
 
-      // Freeze inputs and replay the transition to reinforce training
+      // Show wrong feedback briefly, then return control without auto-replaying audio
       setIsTransitioning(true);
       setTimeout(() => {
         setFeedbackStatus(null);
         setIsTransitioning(false);
-        playCurrentTransition();
-      }, 2500);
+      }, 1500);
     }
   };
 
