@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Home, Play, Volume2 } from 'lucide-react';
+import { Home, Play, Volume2, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ThemeToggle } from '../ThemeToggle';
 import QuitGameModal from '../ui/QuitGameModal';
@@ -42,6 +42,7 @@ export default function SoundTrail() {
   const [missedWords, setMissedWords] = useState<string[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [roundHasMistake, setRoundHasMistake] = useState(false);
+  const [isTrailRevealed, setIsTrailRevealed] = useState(false);
 
   // Refs
   const startTimeRef = useRef<number>(Date.now());
@@ -57,7 +58,7 @@ export default function SoundTrail() {
     return () => clearInterval(timer);
   }, []);
 
-  // TTS Speech Synthesis Engine
+  // TTS Speech Synthesis Engine (Single play, slowed rate)
   const speakWord = (word: string): Promise<void> => {
     return new Promise((resolve) => {
       playAudio(word, {
@@ -66,6 +67,13 @@ export default function SoundTrail() {
         onError: () => resolve()
       });
     });
+  };
+
+  // Single-play node audio click handler
+  const handleNodeClick = async (nodeIdx: number) => {
+    if (isPlayingSequence || isTransitioning || !nodes[nodeIdx]) return;
+    playSynthBeep(nodeIdx);
+    await speakWord(nodes[nodeIdx].word);
   };
 
   // Synthesizer note player (Major Pentatonic Pitch Scale)
@@ -143,6 +151,7 @@ export default function SoundTrail() {
     setUserSequence([0]); // Start at the first node
     setCurrentStepIndex(0);
     setRoundHasMistake(false);
+    setIsTrailRevealed(false);
     
     const chainsPool = currentLevelConfig.chains;
     
@@ -388,6 +397,26 @@ export default function SoundTrail() {
               </div>
             </div>
 
+            {/* Eye Toggle Bar */}
+            <div className="flex justify-center mb-6 z-20">
+              <button
+                onClick={() => setIsTrailRevealed(!isTrailRevealed)}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-full shadow-sm hover:bg-gray-50 dark:hover:bg-muted transition-all pointer-events-auto cursor-pointer"
+              >
+                {isTrailRevealed ? (
+                  <>
+                    <EyeOff size={20} className="text-gray-500 dark:text-gray-400" />
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Hide Words</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye size={20} className="text-[#FF6347]" />
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Reveal Words</span>
+                  </>
+                )}
+              </button>
+            </div>
+
             {/* Visual Canvas Board */}
             <div className="w-full max-w-3xl aspect-[1.8/1] bg-card border border-border rounded-[2.5rem] shadow-2xl relative overflow-hidden backdrop-blur-md">
               {/* Background gradient grid glow */}
@@ -463,30 +492,31 @@ export default function SoundTrail() {
                 const showLabel = !isWorkingMemoryMode || isCurrent || isHighlighted;
 
                 return (
-                  <motion.div
+                  <motion.button
                     key={`node-${node.index}`}
+                    onClick={() => handleNodeClick(node.index)}
                     style={{
                       position: 'absolute',
                       left: `${node.x}%`,
                       top: `${node.y}%`,
                       transform: 'translate(-50%, -50%)',
                     }}
-                    className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-3 flex flex-col items-center justify-center shadow-lg transition-all duration-300 font-poppins relative select-none z-10 ${borderStyles} ${glowStyles}`}
+                    className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-3 flex flex-col items-center justify-center shadow-lg transition-all duration-300 font-poppins relative select-none z-10 cursor-pointer ${borderStyles} ${glowStyles}`}
                   >
                     {/* Index Label */}
                     <span className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${isHighlighted ? 'text-white/80' : 'text-muted-foreground'}`}>
                       Node {node.index + 1}
                     </span>
-                    {/* Word Chain Phoneme */}
-                    <span className="text-sm md:text-base font-extrabold tracking-wide uppercase">
-                      {showLabel ? node.word : '???'}
+                    {/* Masked / Revealed Node Label */}
+                    <span className="text-sm md:text-base font-extrabold tracking-wide uppercase text-center px-1 break-words">
+                      {showLabel && isTrailRevealed ? node.word : (showLabel ? `Node ${node.index + 1}` : '???')}
                     </span>
                     
                     {/* Pulse Rings for Active highlights */}
                     {isHighlighted && (
                       <span className="absolute inset-0 rounded-full border border-[#FF6347] animate-ping opacity-75" />
                     )}
-                  </motion.div>
+                  </motion.button>
                 );
               })}
             </div>
