@@ -24,8 +24,10 @@ const phonemeMap: Record<string, string> = {
   '/sh/': ' , shh , ',
   '/th/': ' , thuh , ',
   '/a/': ', ah, ',
+  '/a_short/': ', ah, ',
   '/e/': ', eh, ',
   '/i/': ', ih, ',
+  '/i_short/': ', ih, ',
   '/o/': ', ah, ',
   '/u/': ', uh, ',
   '/c/': ' , k-uh , ',
@@ -188,21 +190,25 @@ export function playAudio(
   const spokenText = textToSpeak.toLowerCase();
 
   const utterance = new SpeechSynthesisUtterance(spokenText);
-  utterance.rate = 0.9;
+  utterance.rate = 0.8;
   utterance.volume = 1.0;
   utterance.pitch = 1.1;
 
   // Retrieve voices and select a high-quality, consistent English voice
   const voices = window.speechSynthesis.getVoices();
-  const matchedVoice = voices.find(v => v.name.includes("Google US English")) ||
-                       voices.find(v => v.name.includes("Google UK English Female")) ||
-                       voices.find(v => v.name.includes("Samantha")) ||
-                       voices.find(v => v.lang === 'en-IN' || v.lang.startsWith('en-IN')) ||
-                       voices.find(v => v.lang.startsWith('en-')) ||
-                       voices[0];
-
-  if (matchedVoice) {
-    utterance.voice = matchedVoice;
+  // Look for Indian English specifically
+  const indianVoice = voices.find(voice => voice.lang === 'en-IN' || voice.lang === 'en_IN' || voice.name.includes('India'));
+  if (indianVoice) {
+    utterance.voice = indianVoice;
+  } else {
+    const matchedVoice = voices.find(v => v.name.includes("Google US English")) ||
+                         voices.find(v => v.name.includes("Google UK English Female")) ||
+                         voices.find(v => v.name.includes("Samantha")) ||
+                         voices.find(v => v.lang.startsWith('en-')) ||
+                         voices[0];
+    if (matchedVoice) {
+      utterance.voice = matchedVoice;
+    }
   }
 
   // Attach status callbacks

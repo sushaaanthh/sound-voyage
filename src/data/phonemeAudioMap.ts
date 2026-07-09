@@ -54,12 +54,14 @@ export const PHONEME_AUDIO_MAP: Record<string, string> = {
   '/y_ya/': 'ya',
 
   // Single Vowels & Monophthongs
-  '/a/': 'aa',
+  '/a/': 'ah',
+  '/a_short/': 'ah',
   '/e/': 'ee',
-  '/i/': 'ee',
+  '/i/': 'ih',
+  '/i_short/': 'ih',
   '/iː/': 'yee',
-  '/ɪ/': 'ee',
-  '/æ/': 'aa',
+  '/ɪ/': 'ih',
+  '/æ/': 'ah',
   '/ɑː/': 'ah',
   '/ɒ/': 'o',
   '/ɔː/': 'aw',

@@ -26,6 +26,30 @@ interface SorterLevel {
   words: SorterWord[];
 }
 
+// Global list of basic phonemes and syllables for distractor selection
+const ALL_AVAILABLE_PHONEMES = [
+  "/p/", "/b/", "/t/", "/d/", "/k/", "/f/", "/v/", "/s/", "/z/", "/h/",
+  "/m/", "/n/", "/l/", "/r/", "/a/", "/e/", "/i/", "/o/", "/u/", "/sh/",
+  "/ch/", "/th/", "/ee/", "/oo/", "/ue/", "/ae/", "/ie/", "/ah/", "/ow/",
+  "/ai/", "/oe/", "/c/", "/g/", "/w/", "/y/", "/j/", "but", "ter", "pla",
+  "stic", "ta", "ble", "dan", "cing", "dus", "ty", "dir", "fil", "mag",
+  "net", "pump", "kin", "dis", "tress", "ar", "gue", "hip", "po", "mon",
+  "key", "pur", "chase", "zip", "per", "pa", "cket", "fel", "low", "pen",
+  "cil", "win", "sit", "ting", "per", "son", "cal", "en", "dar", "im",
+  "press", "fun", "ny", "lo", "li", "pop", "fa", "mi", "lee", "ra",
+  "bit", "to", "ma", "bat", "te", "ry", "bus", "es", "fla", "min",
+  "go", "fly", "mu", "sic", "fone", "spon", "sor", "nade", "trans", "form",
+  "pho", "graph", "pu", "nish", "ment", "ad", "vance", "ni", "pro", "tec",
+  "tion", "re", "mem", "ber", "con", "fu", "sion", "tri", "bute", "pose",
+  "ly", "in", "cen", "tive", "app", "oint", "di", "vi", "si", "ble",
+  "tem", "ta", "at", "ten", "e", "le", "phant", "he", "cop", "va",
+  "ton", "um", "brel", "la", "ba", "na", "noc", "tur", "nal", "ca",
+  "fe", "ria", "cu", "la", "tor", "tel", "gent", "ce", "me", "ry",
+  "pos", "bra", "vo", "bu", "sim", "pli", "ci", "ty", "cau", "flow",
+  "er", "en", "er", "ge", "tic", "ver", "cer", "ti", "fi", "cate",
+  "lec", "cian", "li", "ro", "as", "so", "a", "gi", "for", "o", "be", "ent"
+];
+
 // Full 10 levels dataset
 const soundSorterLevelData: SorterLevel[] = [
   {
@@ -326,7 +350,7 @@ export default function SoundSorter() {
 
   // Question active board state
   const [placedParts, setPlacedParts] = useState<(string | null)[]>([]);
-  const [availableParts, setAvailableParts] = useState<{ id: number; text: string; isUsed: boolean }[]>([]);
+  const [availableSounds, setAvailableSounds] = useState<{ id: number; text: string; isUsed: boolean }[]>([]);
 
   const startTimeRef = useRef<number>(Date.now());
 
@@ -359,13 +383,32 @@ export default function SoundSorter() {
     setFeedbackStatus(null);
     setPlacedParts(Array(q.parts.length).fill(null));
     
-    // Shuffle the available parts with a unique id mapping
-    const mapped = q.parts.map((p, idx) => ({
+    // Assume correctPhonemes = q.parts
+    let options = [...q.parts];
+
+    // 1. Add Distractor
+    const possibleDistractors = ALL_AVAILABLE_PHONEMES.filter(p => {
+      if (q.type === 'syllables') return !p.startsWith('/') && !options.includes(p);
+      return p.startsWith('/') && !options.includes(p);
+    });
+    const distractorPool = possibleDistractors.length > 0
+      ? possibleDistractors
+      : ALL_AVAILABLE_PHONEMES.filter(p => !options.includes(p));
+    if (distractorPool.length > 0) {
+      const randomDistractor = distractorPool[Math.floor(Math.random() * distractorPool.length)];
+      options.push(randomDistractor);
+    }
+
+    // 2. Sort Alphabetically
+    options.sort((a, b) => a.localeCompare(b));
+
+    // Map to state structure with unique id
+    const mapped = options.map((p, idx) => ({
       id: idx,
       text: p,
       isUsed: false
     }));
-    setAvailableParts(shuffleArray(mapped));
+    setAvailableSounds(mapped);
 
     // Play target word audio automatically
     setTimeout(() => {
@@ -395,7 +438,7 @@ export default function SoundSorter() {
   const handlePartSelect = (partId: number) => {
     if (isTransitioning) return;
 
-    const targetPart = availableParts.find(p => p.id === partId);
+    const targetPart = availableSounds.find(p => p.id === partId);
     if (!targetPart || targetPart.isUsed) return;
 
     // Speak phoneme or syllable on click
@@ -411,7 +454,7 @@ export default function SoundSorter() {
     setPlacedParts(nextPlaced);
 
     // Mark as used in pool
-    setAvailableParts(prev =>
+    setAvailableSounds(prev =>
       prev.map(p => (p.id === partId ? { ...p, isUsed: true } : p))
     );
   };
@@ -429,7 +472,7 @@ export default function SoundSorter() {
     setPlacedParts(nextPlaced);
 
     // Restore to available pool (find first matching text that is marked used)
-    setAvailableParts(prev => {
+    setAvailableSounds(prev => {
       const idx = prev.findIndex(p => p.text === value && p.isUsed);
       if (idx !== -1) {
         const copy = [...prev];
@@ -648,8 +691,8 @@ export default function SoundSorter() {
                       className="w-full h-full flex flex-col items-center justify-center p-2 relative text-foreground font-poppins"
                     >
                       <PhonemeText
-                        phoneme={part}
-                        className="font-bold text-lg md:text-xl uppercase select-none leading-none"
+                        phoneme={part.toLowerCase()}
+                        className="font-bold text-lg md:text-xl lowercase select-none leading-none"
                       />
                       <div className="absolute top-1.5 right-1.5 p-0.5 rounded-full bg-[#FF6347]/10 text-[#FF6347] hover:bg-[#FF6347]/20 transition-colors">
                         <X className="w-3 h-3" />
@@ -670,7 +713,7 @@ export default function SoundSorter() {
                 Available Sounds
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                {availableParts.map(part => {
+                {availableSounds.map(part => {
                   return (
                     <motion.button
                       key={`part-${part.id}`}
@@ -699,8 +742,8 @@ export default function SoundSorter() {
                       )}
                       
                       <PhonemeText
-                        phoneme={part.text}
-                        className="font-extrabold text-lg md:text-xl uppercase select-none tracking-wide"
+                        phoneme={part.text.toLowerCase()}
+                        className="font-extrabold text-lg md:text-xl lowercase select-none tracking-wide"
                       />
                     </motion.button>
                   );
