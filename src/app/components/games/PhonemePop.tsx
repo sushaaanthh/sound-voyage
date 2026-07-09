@@ -45,6 +45,7 @@ export default function PhonemePop({}: PhonemePopProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioCache, setAudioCache] = useState<Record<string, HTMLAudioElement>>({});
   
   // Transition lock and clinical tracking states
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -121,28 +122,69 @@ export default function PhonemePop({}: PhonemePopProps) {
     return () => clearInterval(timer);
   }, []);
 
-  const playIndianAudio = (text: string, _source: string = 'main') => {
-    playAudio(text, {
-      onStart: () => {
-        setIsPlaying(true);
-      },
-      onEnd: () => {
-        setIsPlaying(false);
-      },
-      onError: () => {
-        setIsPlaying(false);
-      }
-    });
+  const playIndianAudio = (sound: string, _source: string = 'main') => {
+    if (audioCache[sound]) {
+      setIsPlaying(true);
+      const audio = audioCache[sound];
+      audio.currentTime = 0; // Reset to start
+      audio.onended = () => setIsPlaying(false);
+      audio.onerror = () => setIsPlaying(false);
+      audio.play();
+    } else {
+      console.warn("Audio not pre-fetched yet!");
+      playAudio(sound, {
+        onStart: () => setIsPlaying(true),
+        onEnd: () => setIsPlaying(false),
+        onError: () => setIsPlaying(false)
+      });
+    }
   };
 
-  // Cleanup speech synthesis on unmount
+  // Pre-fetch audio blobs for current question and options
   useEffect(() => {
-    return () => {
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
+    const fetchAudio = async () => {
+      const currentQ = currentQuestions[currentQuestionIndex];
+      if (!currentQ) return;
+
+      const newCache = { ...audioCache };
+      const soundsToFetch = [
+        currentQ.word,
+        currentQ.word1,
+        currentQ.word2,
+        currentQ.targetSound || activeLevelConfig.targetSound,
+        ...(currentQ.options ? currentQ.options.map(o => o.label) : [])
+      ].filter((s): s is string => Boolean(s));
+
+      for (const sound of soundsToFetch) {
+        if (!newCache[sound]) {
+          try {
+            // Replace with actual Supabase Edge Function call later
+            const response = await fetch('/api/tts', {
+              method: 'POST',
+              body: JSON.stringify({ text: sound })
+            });
+            if (response.ok) {
+              const blob = await response.blob();
+              const url = URL.createObjectURL(blob);
+              newCache[sound] = new Audio(url);
+            }
+          } catch (error) {
+            console.error(`Failed to pre-fetch audio for ${sound}`, error);
+          }
+        }
       }
+      setAudioCache(newCache);
     };
-  }, []);
+
+    if (currentQuestions.length > 0) {
+      fetchAudio();
+    }
+
+    // Cleanup function to revoke object URLs and avoid memory leaks
+    return () => {
+      Object.values(audioCache).forEach(audio => URL.revokeObjectURL(audio.src));
+    };
+  }, [currentQuestionIndex, currentQuestions]);
 
   if (currentQuestions.length === 0) {
     return (

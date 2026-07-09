@@ -351,12 +351,19 @@ export default function SoundSorter() {
   // Question active board state
   const [placedParts, setPlacedParts] = useState<(string | null)[]>([]);
   const [availableSounds, setAvailableSounds] = useState<{ id: number; text: string; isUsed: boolean }[]>([]);
+  const [audioCache, setAudioCache] = useState<Record<string, HTMLAudioElement>>({});
 
   const startTimeRef = useRef<number>(Date.now());
 
-  // Speak text using TTS
-  const speak = (text: string) => {
-    playAudio(text);
+  // Speak text using pre-fetched audio or fallback
+  const speak = (sound: string) => {
+    if (audioCache[sound]) {
+      audioCache[sound].currentTime = 0; // Reset to start
+      audioCache[sound].play();
+    } else {
+      console.warn("Audio not pre-fetched yet!");
+      playAudio(sound);
+    }
   };
 
   // Initialize Game Board for Level
@@ -425,14 +432,45 @@ export default function SoundSorter() {
     return () => clearInterval(timer);
   }, []);
 
-  // Cleanup Synthesis on unmount
+  // Pre-fetch audio for active question and available sounds
   useEffect(() => {
-    return () => {
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
+    const fetchAudio = async () => {
+      const currentQ = questions[currentIndex];
+      if (!currentQ) return;
+
+      const newCache = { ...audioCache };
+      const soundsToFetch = [...availableSounds.map(s => s.text), currentQ.word];
+
+      for (const sound of soundsToFetch) {
+        if (!newCache[sound]) {
+          try {
+            // Replace with actual Supabase Edge Function call later
+            const response = await fetch('/api/tts', {
+              method: 'POST',
+              body: JSON.stringify({ text: sound })
+            });
+            if (response.ok) {
+              const blob = await response.blob();
+              const url = URL.createObjectURL(blob);
+              newCache[sound] = new Audio(url);
+            }
+          } catch (error) {
+            console.error(`Failed to pre-fetch audio for ${sound}`, error);
+          }
+        }
       }
+      setAudioCache(newCache);
     };
-  }, []);
+
+    if (questions.length > 0 && availableSounds.length > 0) {
+      fetchAudio();
+    }
+
+    // Cleanup function to revoke object URLs and avoid memory leaks
+    return () => {
+      Object.values(audioCache).forEach(audio => URL.revokeObjectURL(audio.src));
+    };
+  }, [currentIndex, availableSounds]);
 
   // Handle clicking an available part to place in slot
   const handlePartSelect = (partId: number) => {
