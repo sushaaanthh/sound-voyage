@@ -11,6 +11,8 @@ export interface PhonemeQuestion {
   targetSound?: string; // Optional target sound override per question
   correctAnswer?: 'yes' | 'no'; // Used for binary mechanics
   options?: PhonemeQuestionOption[]; // Used for multiple-choice / select-all
+  correctPosition?: string | string[]; // Used for multi-position validation
+  position?: string | string[]; // Used for multi-position validation
 }
 
 export interface PhonemeLevel {

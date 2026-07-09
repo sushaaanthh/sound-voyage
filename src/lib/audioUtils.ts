@@ -1,4 +1,4 @@
-import { PHONEME_AUDIO_MAP } from '../data/phonemeAudioMap';
+import { PHONEME_AUDIO_MAP, getPhonemeAudioStr } from '../data/phonemeAudioMap';
 
 const phonemeMap: Record<string, string> = {
   // Slash format
@@ -172,7 +172,9 @@ export function playAudio(
     onStart?: () => void;
     onEnd?: () => void;
     onError?: (err: any) => void;
-  }
+    wordContext?: string;
+  },
+  wordContext?: string
 ): SpeechSynthesisUtterance | null {
   if (typeof window === 'undefined' || !window.speechSynthesis) {
     console.warn('Speech synthesis not supported in this browser.');
@@ -183,10 +185,11 @@ export function playAudio(
   // Cancel ongoing speech gracefully to handle rapid clicks
   window.speechSynthesis.cancel();
 
-  // Intercept text using PHONEME_AUDIO_MAP before speaking
+  // Intercept text using getPhonemeAudioStr before speaking
   const rawText = text.trim();
-  const exactSound = PHONEME_AUDIO_MAP[rawText] || PHONEME_AUDIO_MAP[text];
-  const textToSpeak = exactSound ? `, ${exactSound}, ` : translateText(text);
+  const targetWord = wordContext || options?.wordContext;
+  const exactSound = getPhonemeAudioStr(rawText, targetWord);
+  const textToSpeak = (exactSound && exactSound !== rawText && exactSound !== text) ? `, ${exactSound}, ` : translateText(text);
   const spokenText = textToSpeak.toLowerCase();
 
   const utterance = new SpeechSynthesisUtterance(spokenText);

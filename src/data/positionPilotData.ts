@@ -1,7 +1,8 @@
 export interface PositionPilotQuestion {
   targetSound: string;
   word: string;
-  position: 'START' | 'MIDDLE' | 'END';
+  position: 'START' | 'MIDDLE' | 'END' | string | string[];
+  correctPosition?: 'START' | 'MIDDLE' | 'END' | string | string[];
 }
 
 export interface PositionPilotLevel {
@@ -20,7 +21,7 @@ export const positionPilotData: PositionPilotLevel[] = [
       { targetSound: 'd', word: 'MIDDLE', position: 'MIDDLE' },
       { targetSound: 'f', word: 'FAST', position: 'START' },
       { targetSound: 'o', word: 'SHOP', position: 'MIDDLE' }, // Corrected phonetically from prompt text to match clinician underline
-      { targetSound: 'k', word: 'CAKE', position: 'END' },    // Corrected phonetically from prompt text to match clinician underline
+      { targetSound: 'k', word: 'CAKE', position: 'START', correctPosition: ['START', 'END'] },    // Corrected phonetically from prompt text to match clinician underline
       { targetSound: 's', word: 'SNAKE', position: 'START' },
       { targetSound: 'ee', word: 'DEEP', position: 'MIDDLE' }
     ]

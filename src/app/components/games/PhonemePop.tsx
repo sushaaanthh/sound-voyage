@@ -352,6 +352,32 @@ export default function PhonemePop({}: PhonemePopProps) {
     }, 2500);
   };
 
+  const evaluatePosition = (selectedPos: string) => {
+    if (isLocked) return;
+    setSelectedAnswer(selectedPos);
+    setIsTransitioning(true);
+
+    const posTarget = (currentQuestion as any).correctPosition ?? (currentQuestion as any).position;
+    const isCorrect = Array.isArray(posTarget)
+      ? posTarget.includes(selectedPos) || posTarget.map((p: string) => p.toLowerCase()).includes(selectedPos.toLowerCase()) || posTarget.map((p: string) => p.toUpperCase()).includes(selectedPos.toUpperCase())
+      : posTarget === selectedPos || posTarget?.toLowerCase() === selectedPos.toLowerCase() || posTarget?.toUpperCase() === selectedPos.toUpperCase();
+
+    const nextScore = isCorrect ? score + 1 : score;
+
+    if (isCorrect) {
+      setScore(nextScore);
+      setFeedbackStatus('correct');
+    } else {
+      setMissedWords((prev) => [...prev, currentQuestion.word || '']);
+      setFeedbackStatus('wrong');
+    }
+
+    setTimeout(() => {
+      setFeedbackStatus(null);
+      advanceQuestion(nextScore);
+    }, 2500);
+  };
+
   const getIcon = (iconName?: string, optionLabel?: string) => {
     if (iconName && iconName !== 'HelpCircle') {
       const IconComponent = (Icons as any)[iconName];
@@ -373,21 +399,17 @@ export default function PhonemePop({}: PhonemePopProps) {
     let base = activeLevelConfig.instruction;
     if (soundText !== 'varies' && soundText) {
       if (mechanic === 'binary-dual') {
-        base = `Do both words contain the ${soundText} sound?`;
+        const w1 = currentQuestion.word1?.toUpperCase() || '';
+        const w2 = currentQuestion.word2?.toUpperCase() || '';
+        base = `Do the words '${w1}' and '${w2}' both contain the ${soundText} sound?`;
       } else if (mechanic === 'binary-single') {
-        base = `Does this word contain the ${soundText} sound?`;
+        const w = currentQuestion.word?.toUpperCase() || '';
+        base = `Does the word '${w}' contain the ${soundText} sound?`;
       } else if (mechanic === 'multiple-choice') {
         base = `Select the word that contains the ${soundText} sound`;
       } else if (mechanic === 'select-all') {
         base = `Select all the words that contain the ${soundText} sound`;
       }
-    }
-    if (currentQuestion.word && !base.toLowerCase().includes('in the word')) {
-      const cleanBase = base.endsWith('?') ? base.slice(0, -1) : base;
-      base = `${cleanBase} in the word ${currentQuestion.word.toUpperCase()}${base.endsWith('?') ? '?' : ''}`;
-    } else if (currentQuestion.word1 && currentQuestion.word2 && !base.toLowerCase().includes('in the words')) {
-      const cleanBase = base.endsWith('?') ? base.slice(0, -1) : base;
-      base = `${cleanBase} in the words ${currentQuestion.word1.toUpperCase()} and ${currentQuestion.word2.toUpperCase()}${base.endsWith('?') ? '?' : ''}`;
     }
     return base;
   };
@@ -750,6 +772,40 @@ export default function PhonemePop({}: PhonemePopProps) {
                 >
                   Submit Answer
                 </button>
+              </div>
+            ) : mechanic === 'position' ? (
+              <div className="flex flex-col sm:flex-row gap-6 w-full max-w-3xl justify-center">
+                {(['START', 'MIDDLE', 'END'] as const).map((pos) => {
+                  const label = pos === 'START' ? 'BEGINNING' : pos;
+                  const isSelected = selectedAnswer === pos;
+                  let cardStyles = 'border-border bg-card hover:shadow-xl hover:scale-105 active:scale-95 text-foreground';
+                  if (selectedAnswer !== null) {
+                    const posTarget = (currentQuestion as any).correctPosition ?? (currentQuestion as any).position;
+                    const isPosCorrect = Array.isArray(posTarget)
+                      ? posTarget.includes(pos) || posTarget.map((p: string) => p.toUpperCase()).includes(pos) || (pos === 'START' && posTarget.map((p: string) => p.toUpperCase()).includes('BEGINNING')) || (pos === 'MIDDLE' && posTarget.map((p: string) => p.toUpperCase()).includes('MIDDLE')) || (pos === 'END' && posTarget.map((p: string) => p.toUpperCase()).includes('END'))
+                      : posTarget === pos || posTarget?.toUpperCase() === pos || (pos === 'START' && posTarget?.toUpperCase() === 'BEGINNING') || (pos === 'MIDDLE' && posTarget?.toUpperCase() === 'MIDDLE') || (pos === 'END' && posTarget?.toUpperCase() === 'END');
+                    if (isSelected) {
+                      cardStyles = isPosCorrect
+                        ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400'
+                        : 'border-red-500 bg-red-500/15 text-red-600 dark:text-red-400';
+                    } else if (isPosCorrect) {
+                      cardStyles = 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400';
+                    } else {
+                      cardStyles = 'border-border bg-card opacity-50 text-foreground';
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={pos}
+                      onClick={() => evaluatePosition(pos)}
+                      disabled={isLocked}
+                      className={`flex-1 p-8 rounded-[2rem] border-2 font-bold text-2xl transition-all duration-300 flex items-center justify-center shadow-lg ${cardStyles}`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-4xl">

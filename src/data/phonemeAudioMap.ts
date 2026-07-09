@@ -152,9 +152,29 @@ export const PHONEME_AUDIO_MAP: Record<string, string> = {
   '/ae/': 'ay',
   '/ie/': 'eye',
   '/ah/': 'ah',
-  '/ow/': 'ow',
   '/ai/': 'ay',
   '/oe/': 'oh'
+};
+
+export const WORD_PHONEME_OVERRIDES: Record<string, Record<string, string>> = {
+  'dog': {
+    '/o/': 'aw' // Will look for '/sounds/aw.mp3' or TTS equivalent instead of default 'o'
+  },
+  'open': {
+    '/o/': 'oh'
+  },
+  'orange': {
+    '/o/': 'o_short'
+  }
+};
+
+export const getPhonemeAudioStr = (phoneme: string, word?: string): string => {
+  // 1. Check if this specific word has an override for this phoneme
+  if (word && WORD_PHONEME_OVERRIDES[word.toLowerCase()]?.[phoneme]) {
+    return WORD_PHONEME_OVERRIDES[word.toLowerCase()][phoneme];
+  }
+  // 2. Fallback to the standard map
+  return PHONEME_AUDIO_MAP[phoneme] || phoneme;
 };
 
 export default PHONEME_AUDIO_MAP;

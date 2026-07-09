@@ -201,7 +201,21 @@ export default function PositionPilot() {
     setSelectedAnswer(value);
     setIsTransitioning(true);
 
-    const isCorrect = currentQuestion.position === value;
+    const posTarget = (currentQuestion as any).correctPosition ?? currentQuestion.position;
+    const isCorrect = Array.isArray(posTarget)
+      ? posTarget.some((p: string) => 
+          p === value || 
+          p.toUpperCase() === value.toUpperCase() || 
+          (value === 'START' && p.toUpperCase() === 'BEGINNING') || 
+          (value === 'MIDDLE' && p.toUpperCase() === 'MIDDLE') || 
+          (value === 'END' && p.toUpperCase() === 'END')
+        )
+      : posTarget === value || 
+        posTarget?.toUpperCase() === value.toUpperCase() || 
+        (value === 'START' && posTarget?.toUpperCase() === 'BEGINNING') || 
+        (value === 'MIDDLE' && posTarget?.toUpperCase() === 'MIDDLE') || 
+        (value === 'END' && posTarget?.toUpperCase() === 'END');
+
     const nextScore = isCorrect ? score + 1 : score;
 
     if (isCorrect) {
