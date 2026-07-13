@@ -13,7 +13,6 @@ import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
 import { getOptionIcon, getOptionIconComponent } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
 import { submitGameSession } from '../../../lib/telemetryUtils';
-import { getExceptionAudio } from '../../../data/audioExceptions';
 
 interface PhonemePopProps {
   levelData?: any; // kept for compatibility if needed, but we pull dynamically
@@ -95,7 +94,11 @@ export default function PhonemePop({}: PhonemePopProps) {
       if (q.word1 && q.word2 && prevMissed.includes(`${q.word1}-${q.word2}`)) return true;
       if (q.targetSound && prevMissed.includes(q.targetSound)) return true;
       if (q.options) {
-        return q.options.some(opt => opt.isCorrect && prevMissed.includes(opt.label));
+        return q.options.some(opt => {
+          const isCorrect = typeof opt === 'string' ? opt === q.correctAnswer : opt.isCorrect;
+          const label = typeof opt === 'string' ? opt : opt.label;
+          return isCorrect && prevMissed.includes(label);
+        });
       }
       return false;
     };
@@ -125,7 +128,7 @@ export default function PhonemePop({}: PhonemePopProps) {
 
   const playIndianAudio = (sound: string, _source: string = 'main', wordContext?: string) => {
     const targetWord = wordContext || currentQuestion?.word || '';
-    const finalSound = getExceptionAudio('PhonemePop', targetWord, sound);
+    const finalSound = sound;
 
     if (audioCache[finalSound] || audioCache[sound]) {
       setIsPlaying(true);
@@ -152,16 +155,15 @@ export default function PhonemePop({}: PhonemePopProps) {
       if (!currentQ) return;
 
       const newCache = { ...audioCache };
-      const targetWord = currentQ.word || '';
       const rawSoundsToFetch = [
         currentQ.word,
         currentQ.word1,
         currentQ.word2,
         currentQ.targetSound || activeLevelConfig.targetSound,
-        ...(currentQ.options ? currentQ.options.map(o => o.label) : [])
+        ...(currentQ.options ? currentQ.options.map(o => typeof o === 'string' ? o : o.label) : [])
       ].filter((s): s is string => Boolean(s));
 
-      const soundsToFetch = rawSoundsToFetch.map(s => getExceptionAudio('PhonemePop', targetWord, s));
+      const soundsToFetch = rawSoundsToFetch;
 
       for (const sound of soundsToFetch) {
         if (!newCache[sound]) {
@@ -295,10 +297,28 @@ export default function PhonemePop({}: PhonemePopProps) {
     }, 2500);
   };
 
-  const handleMultipleChoiceAnswer = (optionIndex: number, isCorrect: boolean) => {
-    if (isLocked) return;
-    setSelectedAnswer(optionIndex);
+  const handleSelection = (option: string) => {
+    if (isLocked || isTransitioning) return;
+    setSelectedAnswer(option);
+  };
+
+  const checkAnswer = () => {
+    if (isLocked || selectedAnswer === null || isTransitioning) return;
     setIsTransitioning(true);
+
+    let isCorrect = false;
+    let correctLabel = '';
+
+    if (currentQuestion.correctAnswer && typeof currentQuestion.correctAnswer === 'string') {
+      isCorrect = selectedAnswer === currentQuestion.correctAnswer;
+      correctLabel = currentQuestion.correctAnswer;
+    } else if (currentQuestion.options) {
+      const correctOpt = currentQuestion.options.find((o: any) => typeof o === 'object' && o.isCorrect);
+      if (correctOpt && typeof correctOpt === 'object') {
+        isCorrect = selectedAnswer === correctOpt.label || selectedAnswer === currentQuestion.options.indexOf(correctOpt);
+        correctLabel = correctOpt.label;
+      }
+    }
 
     const nextScore = isCorrect ? score + 1 : score;
 
@@ -306,8 +326,6 @@ export default function PhonemePop({}: PhonemePopProps) {
       setScore(nextScore);
       setFeedbackStatus('correct');
     } else {
-      // Record correct word they should have selected
-      const correctLabel = currentQuestion.options?.find(o => o.isCorrect)?.label || '';
       setMissedWords((prev) => [...prev, correctLabel]);
       setFeedbackStatus('wrong');
     }
@@ -317,6 +335,7 @@ export default function PhonemePop({}: PhonemePopProps) {
       advanceQuestion(nextScore);
     }, 2500);
   };
+
 
   const toggleSelection = (option: string) => {
     if (isLocked) return;
@@ -331,7 +350,9 @@ export default function PhonemePop({}: PhonemePopProps) {
     setIsTransitioning(true);
 
     const correctAnswersList = currentQuestion.correctAnswers || (currentQuestion.options
-      ? currentQuestion.options.filter(o => o.isCorrect).map(o => o.label)
+      ? currentQuestion.options
+          .filter(o => (typeof o === 'string' ? o === currentQuestion.correctAnswer : o.isCorrect))
+          .map(o => (typeof o === 'string' ? o : o.label))
       : []);
 
     const isCorrect = selectedAnswers.length === correctAnswersList.length && 
@@ -708,14 +729,16 @@ export default function PhonemePop({}: PhonemePopProps) {
                   </button>
                 </div>
               </div>
-            ) : (mechanic === 'select-all' || mechanic === 'multi-select' || activeLevelConfig.level === 7) ? (
+            ) : (mechanic === 'select-all' || mechanic === 'multi-select') ? (
               <div className="flex flex-col items-center w-full max-w-4xl">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full mb-8">
-                  {currentQuestion.options?.map((option, idx) => {
-                    const Icon = getIcon(option.icon, option.label);
-                    const isSelected = selectedAnswers.includes(option.label);
-                    const correctAnswersList = currentQuestion.correctAnswers || (currentQuestion.options ? currentQuestion.options.filter(o => o.isCorrect).map(o => o.label) : []);
-                    const isOptionCorrect = correctAnswersList.includes(option.label);
+                  {currentQuestion.options?.map((option: any, idx: number) => {
+                    const optionLabel = typeof option === 'string' ? option : option.label;
+                    const optionIcon = typeof option === 'string' ? undefined : option.icon;
+                    const Icon = getIcon(optionIcon, optionLabel);
+                    const isSelected = selectedAnswers.includes(optionLabel);
+                    const correctAnswersList = currentQuestion.correctAnswers || (currentQuestion.options ? currentQuestion.options.filter((o: any) => (typeof o === 'string' ? o === currentQuestion.correctAnswer : o.isCorrect)).map((o: any) => (typeof o === 'string' ? o : o.label)) : []);
+                    const isOptionCorrect = correctAnswersList.includes(optionLabel);
                     
                     let cardStyles = 'border-border bg-card hover:shadow-xl hover:scale-105 active:scale-95 text-foreground';
                     
@@ -736,14 +759,14 @@ export default function PhonemePop({}: PhonemePopProps) {
                     return (
                       <button
                         key={idx}
-                        onClick={() => toggleSelection(option.label)}
+                        onClick={() => toggleSelection(optionLabel)}
                         disabled={isLocked}
                         className={`p-8 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center relative disabled:cursor-not-allowed ${cardStyles}`}
                       >
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            playIndianAudio(option.label, `option-${idx}`, option.label);
+                            playIndianAudio(optionLabel, `option-${idx}`, optionLabel);
                           }}
                           disabled={isTransitioning || isPlaying}
                           className="absolute top-4 right-4 p-2 rounded-full hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -759,7 +782,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                           <Icon className="w-12 h-12" />
                         </div>
                         <h3 className="font-bold text-center text-xl uppercase flex items-center gap-2 justify-center">
-                          <span>{option.label}</span>
+                          <span>{optionLabel}</span>
                         </h3>
                       </button>
                     );
@@ -813,54 +836,74 @@ export default function PhonemePop({}: PhonemePopProps) {
                 })}
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-4xl">
-                {currentQuestion.options?.map((option, idx) => {
-                  const Icon = getIcon(option.icon, option.label);
-                  const isSelected = selectedAnswer === idx;
+              <div className="flex flex-col items-center w-full max-w-4xl">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full mb-8">
+                  {currentQuestion.options?.map((option: any, idx: number) => {
+                    const optionLabel = typeof option === 'string' ? option : option.label;
+                    const optionIcon = typeof option === 'string' ? undefined : option.icon;
+                    const Icon = getIcon(optionIcon, optionLabel);
+                    const isSelected = selectedAnswer === optionLabel || selectedAnswer === idx;
+                    const isOptionCorrect = typeof option === 'string'
+                      ? option === currentQuestion.correctAnswer
+                      : option.isCorrect;
 
-                  let cardStyles = 'border-border bg-card hover:shadow-xl hover:scale-105 active:scale-95 text-foreground';
-                  if (selectedAnswer !== null) {
-                    if (isSelected) {
-                      cardStyles = option.isCorrect
-                        ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400'
-                        : 'border-red-500 bg-red-500/15 text-red-600 dark:text-red-400';
-                    } else {
-                      cardStyles = option.isCorrect
-                        ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400'
-                        : 'border-border bg-card opacity-50 text-foreground';
+                    let cardStyles = 'border-border bg-card hover:shadow-xl hover:scale-105 active:scale-95 text-foreground';
+                    if (isTransitioning && selectedAnswer !== null) {
+                      if (isOptionCorrect) {
+                        cardStyles = 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400';
+                      } else if (isSelected) {
+                        cardStyles = 'border-red-500 bg-red-500/15 text-red-600 dark:text-red-400';
+                      } else {
+                        cardStyles = 'border-border bg-card opacity-50 text-foreground';
+                      }
+                    } else if (isSelected) {
+                      cardStyles = 'border-primary bg-primary/10 text-foreground scale-105';
                     }
-                  }
 
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => handleMultipleChoiceAnswer(idx, option.isCorrect)}
-                      disabled={isLocked}
-                      className={`p-8 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center relative disabled:cursor-not-allowed ${cardStyles}`}
-                    >
+                    return (
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          playIndianAudio(option.label, `option-${idx}`, option.label);
-                        }}
-                        disabled={isTransitioning || isPlaying}
-                        className="absolute top-4 right-4 p-2 rounded-full hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        aria-label="Listen to word"
+                        key={idx}
+                        onClick={() => handleSelection(optionLabel)}
+                        disabled={isLocked || isTransitioning}
+                        className={`p-8 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center relative disabled:cursor-not-allowed ${cardStyles}`}
                       >
-                        <Volume2 className="w-5 h-5 text-muted-foreground hover:text-primary" />
-                      </button>
-                      <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${selectedAnswer !== null && option.isCorrect
-                          ? 'bg-green-500/20 text-green-600 dark:text-green-400'
-                          : 'bg-primary/10 text-primary'
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            playIndianAudio(optionLabel, `option-${idx}`, optionLabel);
+                          }}
+                          disabled={isTransitioning || isPlaying}
+                          className="absolute top-4 right-4 p-2 rounded-full hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          aria-label="Listen to word"
+                        >
+                          <Volume2 className="w-5 h-5 text-muted-foreground hover:text-primary" />
+                        </button>
+                        <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
+                          (isTransitioning && selectedAnswer !== null && isOptionCorrect) || (!isTransitioning && isSelected)
+                            ? 'bg-primary/20 text-primary'
+                            : 'bg-primary/10 text-primary'
                         }`}>
-                        <Icon className="w-12 h-12" />
-                      </div>
-                      <h3 className="font-bold text-center text-xl uppercase flex items-center gap-2 justify-center">
-                        <span>{option.label}</span>
-                      </h3>
-                    </button>
-                  );
-                })}
+                          <Icon className="w-12 h-12" />
+                        </div>
+                        <h3 className="font-bold text-center text-xl uppercase flex items-center gap-2 justify-center">
+                          <span>{optionLabel}</span>
+                        </h3>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={checkAnswer}
+                  disabled={selectedAnswer === null || isTransitioning || isPlaying}
+                  className={`px-12 py-5 rounded-2xl font-bold text-xl text-white shadow-xl transition-all duration-300 ${
+                    selectedAnswer === null || isTransitioning || isPlaying
+                      ? 'bg-muted border border-border text-muted-foreground cursor-not-allowed opacity-50'
+                      : 'bg-[#FF6347] hover:bg-[#FF6347]/90 hover:scale-105 active:scale-95'
+                  }`}
+                >
+                  Submit Answer
+                </button>
               </div>
             )}
           </motion.div>

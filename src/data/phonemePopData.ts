@@ -9,9 +9,9 @@ export interface PhonemeQuestion {
   word1?: string;      // Used for binary-dual
   word2?: string;      // Used for binary-dual
   targetSound?: string; // Optional target sound override per question
-  correctAnswer?: 'yes' | 'no'; // Used for binary mechanics
+  correctAnswer?: 'yes' | 'no' | string; // Used for binary mechanics or single choice
   correctAnswers?: string[]; // Used for multi-select / Level 7 multi-select
-  options?: PhonemeQuestionOption[]; // Used for multiple-choice / select-all / multi-select
+  options?: (PhonemeQuestionOption | string)[]; // Used for multiple-choice / select-all / multi-select
   correctPosition?: string | string[]; // Used for multi-position validation
   position?: string | string[]; // Used for multi-position validation
 }
@@ -835,209 +835,29 @@ export const phonemePopData: PhonemeLevel[] = [
   {
     level: 7,
     targetSound: 'varies',
-    mechanic: 'multi-select',
-    instruction: 'Select all the pictures that end with the target sound',
+    mechanic: 'multiple-choice',
+    instruction: 'Select the picture that ends with the target sound',
     questions: [
-      {
-        targetSound: '/k/',
-        correctAnswers: ['desk'],
-        options: [
-          { label: 'car', isCorrect: false, icon: 'Car' },
-          { label: 'jacket', isCorrect: false, icon: 'FileText' },
-          { label: 'girl', isCorrect: false, icon: 'User' },
-          { label: 'desk', isCorrect: true, icon: 'Monitor' }
-        ]
-      },
-      {
-        targetSound: '/m/',
-        correctAnswers: ['drum'],
-        options: [
-          { label: 'milk', isCorrect: false, icon: 'Milk' },
-          { label: 'drum', isCorrect: true, icon: 'Music' },
-          { label: 'hand', isCorrect: false, icon: 'Hand' },
-          { label: 'sea', isCorrect: false, icon: 'Waves' }
-        ]
-      },
-      {
-        targetSound: '/ee/',
-        correctAnswers: ['bee'],
-        options: [
-          { label: 'bee', isCorrect: true, icon: 'Bug' },
-          { label: 'seal', isCorrect: false, icon: 'Smile' },
-          { label: 'eel', isCorrect: false, icon: 'Fish' },
-          { label: 'fire', isCorrect: false, icon: 'Flame' }
-        ]
-      },
-      {
-        targetSound: '/p/',
-        correctAnswers: ['lamp'],
-        options: [
-          { label: 'desk', isCorrect: false, icon: 'Monitor' },
-          { label: 'climb', isCorrect: false, icon: 'Activity' },
-          { label: 'lamp', isCorrect: true, icon: 'Lightbulb' },
-          { label: 'lamb', isCorrect: false, icon: 'Smile' }
-        ]
-      },
-      {
-        targetSound: '/m/',
-        correctAnswers: ['drum', 'summer'],
-        options: [
-          { label: 'drum', isCorrect: true, icon: 'Music' },
-          { label: 'summer', isCorrect: true, icon: 'Sun' },
-          { label: 'boat', isCorrect: false, icon: 'Compass' },
-          { label: 'hat', isCorrect: false, icon: 'Shirt' }
-        ]
-      },
-      {
-        targetSound: '/d/',
-        correctAnswers: ['sand'],
-        options: [
-          { label: 'desk', isCorrect: false, icon: 'Monitor' },
-          { label: 'feet', isCorrect: false, icon: 'Footprints' },
-          { label: 'sand', isCorrect: true, icon: 'Waves' },
-          { label: 'beach', isCorrect: false, icon: 'Compass' }
-        ]
-      },
-      {
-        targetSound: '/r/',
-        correctAnswers: ['mirror'],
-        options: [
-          { label: 'card', isCorrect: false, icon: 'CreditCard' },
-          { label: 'run', isCorrect: false, icon: 'Activity' },
-          { label: 'mirror', isCorrect: true, icon: 'Square' },
-          { label: 'gold', isCorrect: false, icon: 'Coins' }
-        ]
-      },
-      {
-        targetSound: '/t/',
-        correctAnswers: ['belt'],
-        options: [
-          { label: 'teach', isCorrect: false, icon: 'GraduationCap' },
-          { label: 'belt', isCorrect: true, icon: 'CheckSquare' },
-          { label: 'park', isCorrect: false, icon: 'Trees' },
-          { label: 'tap', isCorrect: false, icon: 'Droplet' }
-        ]
-      },
-      {
-        targetSound: '/s/',
-        correctAnswers: ['horse'],
-        options: [
-          { label: 'school', isCorrect: false, icon: 'Home' },
-          { label: 'horse', isCorrect: true, icon: 'Smile' },
-          { label: 'mouth', isCorrect: false, icon: 'Smile' },
-          { label: 'neck', isCorrect: false, icon: 'User' }
-        ]
-      },
-      {
-        targetSound: '/i/',
-        correctAnswers: ['monkey'],
-        options: [
-          { label: 'monkey', isCorrect: true, icon: 'Smile' },
-          { label: 'ink', isCorrect: false, icon: 'PenTool' },
-          { label: 'fish', isCorrect: false, icon: 'Fish' },
-          { label: 'bill', isCorrect: false, icon: 'FileText' }
-        ]
-      },
-      {
-        targetSound: '/n/',
-        correctAnswers: ['bin'],
-        options: [
-          { label: 'bin', isCorrect: true, icon: 'Trash2' },
-          { label: 'lake', isCorrect: false, icon: 'Waves' },
-          { label: 'night', isCorrect: false, icon: 'Moon' },
-          { label: 'sea', isCorrect: false, icon: 'Compass' }
-        ]
-      },
-      {
-        targetSound: '/g/',
-        correctAnswers: ['fig'],
-        options: [
-          { label: 'hand', isCorrect: false, icon: 'Hand' },
-          { label: 'fig', isCorrect: true, icon: 'Apple' },
-          { label: 'bark', isCorrect: false, icon: 'TreePine' },
-          { label: 'glass', isCorrect: false, icon: 'CupSoda' }
-        ]
-      },
-      {
-        targetSound: '/n/',
-        correctAnswers: ['green'],
-        options: [
-          { label: 'green', isCorrect: true, icon: 'Palette' },
-          { label: 'blue', isCorrect: false, icon: 'Palette' },
-          { label: 'red', isCorrect: false, icon: 'Palette' },
-          { label: 'black', isCorrect: false, icon: 'Palette' }
-        ]
-      },
-      {
-        targetSound: '/b/',
-        correctAnswers: ['lamb'],
-        options: [
-          { label: 'book', isCorrect: false, icon: 'BookOpen' },
-          { label: 'lamb', isCorrect: true, icon: 'Smile' },
-          { label: 'plum', isCorrect: false, icon: 'Apple' },
-          { label: 'brick', isCorrect: false, icon: 'Grid' }
-        ]
-      },
-      {
-        targetSound: '/d/',
-        correctAnswers: ['hand'],
-        options: [
-          { label: 'black', isCorrect: false, icon: 'Palette' },
-          { label: 'desk', isCorrect: false, icon: 'Monitor' },
-          { label: 'hand', isCorrect: true, icon: 'Hand' },
-          { label: 'dog', isCorrect: false, icon: 'Dog' }
-        ]
-      },
-      {
-        targetSound: '/l/',
-        correctAnswers: ['hill'],
-        options: [
-          { label: 'blink', isCorrect: false, icon: 'Eye' },
-          { label: 'leg', isCorrect: false, icon: 'Activity' },
-          { label: 'land', isCorrect: false, icon: 'Globe' },
-          { label: 'hill', isCorrect: true, icon: 'Mountain' }
-        ]
-      },
-      {
-        targetSound: '/f/',
-        correctAnswers: ['leaf'],
-        options: [
-          { label: 'leaf', isCorrect: true, icon: 'Leaf' },
-          { label: 'fly', isCorrect: false, icon: 'Bird' },
-          { label: 'sun', isCorrect: false, icon: 'Sun' },
-          { label: 'film', isCorrect: false, icon: 'Film' }
-        ]
-      },
-      {
-        targetSound: '/k/',
-        correctAnswers: ['truck'],
-        options: [
-          { label: 'kid', isCorrect: false, icon: 'User' },
-          { label: 'truck', isCorrect: true, icon: 'Truck' },
-          { label: 'cape', isCorrect: false, icon: 'Shirt' },
-          { label: 'cry', isCorrect: false, icon: 'Frown' }
-        ]
-      },
-      {
-        targetSound: '/m/',
-        correctAnswers: ['mum'],
-        options: [
-          { label: 'hug', isCorrect: false, icon: 'Heart' },
-          { label: 'hut', isCorrect: false, icon: 'Home' },
-          { label: 'cup', isCorrect: false, icon: 'CupSoda' },
-          { label: 'mum', isCorrect: true, icon: 'User' }
-        ]
-      },
-      {
-        targetSound: '/t/',
-        correctAnswers: ['bat'],
-        options: [
-          { label: 'teeth', isCorrect: false, icon: 'Smile' },
-          { label: 'bat', isCorrect: true, icon: 'Activity' },
-          { label: 'train', isCorrect: false, icon: 'Train' },
-          { label: 'kettle', isCorrect: false, icon: 'Coffee' }
-        ]
-      }
+      { targetSound: '/k/', options: ['car', 'jacket', 'girl', 'desk'], correctAnswer: 'desk' },
+      { targetSound: '/m/', options: ['milk', 'drum', 'hand', 'sea'], correctAnswer: 'drum' },
+      { targetSound: '/ee/', options: ['bee', 'seal', 'eel', 'fire'], correctAnswer: 'bee' },
+      { targetSound: '/p/', options: ['desk', 'climb', 'lamp', 'lamb'], correctAnswer: 'lamp' },
+      { targetSound: '/b/', options: ['web', 'wall', 'feel', 'hut'], correctAnswer: 'web' },
+      { targetSound: '/d/', options: ['desk', 'feet', 'sand', 'beach'], correctAnswer: 'sand' },
+      { targetSound: '/r/', options: ['card', 'run', 'mirror', 'gold'], correctAnswer: 'mirror' },
+      { targetSound: '/t/', options: ['teach', 'belt', 'park', 'tap'], correctAnswer: 'belt' },
+      { targetSound: '/s/', options: ['school', 'horse', 'mouth', 'neck'], correctAnswer: 'horse' },
+      { targetSound: '/i/', options: ['monkey', 'ink', 'fish', 'bill'], correctAnswer: 'monkey' },
+      { targetSound: '/n/', options: ['bin', 'lake', 'night', 'sea'], correctAnswer: 'bin' },
+      { targetSound: '/g/', options: ['hand', 'fig', 'bark', 'glass'], correctAnswer: 'fig' },
+      { targetSound: '/n/', options: ['green', 'blue', 'red', 'black'], correctAnswer: 'green' },
+      { targetSound: '/b/', options: ['book', 'lamb', 'plum', 'brick'], correctAnswer: 'lamb' },
+      { targetSound: '/d/', options: ['black', 'desk', 'hand', 'dog'], correctAnswer: 'hand' },
+      { targetSound: '/l/', options: ['blink', 'leg', 'land', 'hill'], correctAnswer: 'hill' },
+      { targetSound: '/f/', options: ['leaf', 'fly', 'sun', 'film'], correctAnswer: 'leaf' },
+      { targetSound: '/k/', options: ['kid', 'truck', 'cape', 'cry'], correctAnswer: 'truck' },
+      { targetSound: '/m/', options: ['hug', 'hut', 'cup', 'mum'], correctAnswer: 'mum' },
+      { targetSound: '/t/', options: ['teeth', 'bat', 'train', 'kettle'], correctAnswer: 'bat' }
     ]
   },
   {

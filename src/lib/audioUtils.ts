@@ -1,5 +1,4 @@
 import { PHONEME_AUDIO_MAP, getPhonemeAudioStr } from '../data/phonemeAudioMap';
-import { getExceptionAudio } from '../data/audioExceptions';
 
 const phonemeMap: Record<string, string> = {
   // Slash format
@@ -186,12 +185,11 @@ export function playAudio(
   // Cancel ongoing speech gracefully to handle rapid clicks
   window.speechSynthesis.cancel();
 
-  // Intercept text using getExceptionAudio and getPhonemeAudioStr before speaking
+  // Intercept text using getPhonemeAudioStr before speaking
   const rawText = text.trim();
   const targetWord = wordContext || options?.wordContext || '';
-  const exceptionAudio = getExceptionAudio('PhonemePop', targetWord, rawText);
-  const exactSound = getPhonemeAudioStr(exceptionAudio, targetWord);
-  const textToSpeak = (exactSound && exactSound !== rawText && exactSound !== exceptionAudio && exactSound !== text) ? `, ${exactSound}, ` : translateText(exceptionAudio);
+  const exactSound = getPhonemeAudioStr(rawText, targetWord);
+  const textToSpeak = (exactSound && exactSound !== rawText && exactSound !== text) ? `, ${exactSound}, ` : translateText(rawText);
   const spokenText = textToSpeak.toLowerCase();
 
   const utterance = new SpeechSynthesisUtterance(spokenText);
