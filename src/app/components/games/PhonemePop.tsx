@@ -13,6 +13,7 @@ import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
 import { getOptionIcon, getOptionIconComponent } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
 import { submitGameSession } from '../../../lib/telemetryUtils';
+import { getExceptionAudio } from '../../../data/audioExceptions';
 
 interface PhonemePopProps {
   levelData?: any; // kept for compatibility if needed, but we pull dynamically
@@ -61,8 +62,8 @@ export default function PhonemePop({}: PhonemePopProps) {
   // selectedAnswer is string for binary ('yes'|'no'), number for multiple-choice (index), or -1/non-null for submitted select-all
   const [selectedAnswer, setSelectedAnswer] = useState<string | number | null>(null);
   
-  // For select-all mechanic
-  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
+  // For select-all / multi-select mechanic
+  const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
 
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [showQuitModal, setShowQuitModal] = useState(false);
@@ -122,21 +123,25 @@ export default function PhonemePop({}: PhonemePopProps) {
     return () => clearInterval(timer);
   }, []);
 
-  const playIndianAudio = (sound: string, _source: string = 'main') => {
-    if (audioCache[sound]) {
+  const playIndianAudio = (sound: string, _source: string = 'main', wordContext?: string) => {
+    const targetWord = wordContext || currentQuestion?.word || '';
+    const finalSound = getExceptionAudio('PhonemePop', targetWord, sound);
+
+    if (audioCache[finalSound] || audioCache[sound]) {
       setIsPlaying(true);
-      const audio = audioCache[sound];
+      const audio = audioCache[finalSound] || audioCache[sound];
       audio.currentTime = 0; // Reset to start
       audio.onended = () => setIsPlaying(false);
       audio.onerror = () => setIsPlaying(false);
       audio.play();
     } else {
       console.warn("Audio not pre-fetched yet!");
-      playAudio(sound, {
+      playAudio(finalSound, {
         onStart: () => setIsPlaying(true),
         onEnd: () => setIsPlaying(false),
-        onError: () => setIsPlaying(false)
-      });
+        onError: () => setIsPlaying(false),
+        wordContext: targetWord
+      }, targetWord);
     }
   };
 
@@ -147,13 +152,16 @@ export default function PhonemePop({}: PhonemePopProps) {
       if (!currentQ) return;
 
       const newCache = { ...audioCache };
-      const soundsToFetch = [
+      const targetWord = currentQ.word || '';
+      const rawSoundsToFetch = [
         currentQ.word,
         currentQ.word1,
         currentQ.word2,
         currentQ.targetSound || activeLevelConfig.targetSound,
         ...(currentQ.options ? currentQ.options.map(o => o.label) : [])
       ].filter((s): s is string => Boolean(s));
+
+      const soundsToFetch = rawSoundsToFetch.map(s => getExceptionAudio('PhonemePop', targetWord, s));
 
       for (const sound of soundsToFetch) {
         if (!newCache[sound]) {
@@ -210,7 +218,7 @@ export default function PhonemePop({}: PhonemePopProps) {
       textToSpeak = currentQuestion.targetSound || activeLevelConfig.targetSound || '';
     }
     
-    playIndianAudio(textToSpeak, 'main');
+    playIndianAudio(textToSpeak, 'main', currentQuestion.word);
   };
 
   const formatTime = (seconds: number) => {
@@ -310,38 +318,33 @@ export default function PhonemePop({}: PhonemePopProps) {
     }, 2500);
   };
 
-  const toggleSelectAllOption = (idx: number) => {
-    if (isLocked) return; // block toggling during lock
+  const toggleSelection = (option: string) => {
+    if (isLocked) return;
     setSelectedAnswers(prev => 
-      prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+      prev.includes(option) ? prev.filter(item => item !== option) : [...prev, option]
     );
   };
 
-  const handleSelectAllSubmit = () => {
+  const evaluateMultiSelect = () => {
     if (isLocked) return;
     setSelectedAnswer(-1);
     setIsTransitioning(true);
 
-    const correctIndices = currentQuestion.options
-      ? currentQuestion.options.map((opt, idx) => (opt.isCorrect ? idx : -1)).filter(idx => idx !== -1)
-      : [];
+    const correctAnswersList = currentQuestion.correctAnswers || (currentQuestion.options
+      ? currentQuestion.options.filter(o => o.isCorrect).map(o => o.label)
+      : []);
 
-    const isExactlyCorrect =
-      selectedAnswers.length === correctIndices.length &&
-      selectedAnswers.every(val => correctIndices.includes(val));
+    const isCorrect = selectedAnswers.length === correctAnswersList.length && 
+                      selectedAnswers.every(ans => correctAnswersList.includes(ans));
 
-    const nextScore = isExactlyCorrect ? score + 1 : score;
+    const nextScore = isCorrect ? score + 1 : score;
 
-    if (isExactlyCorrect) {
+    if (isCorrect) {
       setScore(nextScore);
       setFeedbackStatus('correct');
     } else {
-      // Record missed sound group
       const targetSoundText = currentQuestion.targetSound || activeLevelConfig.targetSound;
-      const correctLabels = currentQuestion.options
-        ? currentQuestion.options.filter(o => o.isCorrect).map(o => o.label).join(', ')
-        : '';
-      const missedLabel = `${targetSoundText}: ${correctLabels}`;
+      const missedLabel = `${targetSoundText}: ${correctAnswersList.join(', ')}`;
       setMissedWords((prev) => [...prev, missedLabel]);
       setFeedbackStatus('wrong');
     }
@@ -705,18 +708,20 @@ export default function PhonemePop({}: PhonemePopProps) {
                   </button>
                 </div>
               </div>
-            ) : mechanic === 'select-all' ? (
+            ) : (mechanic === 'select-all' || mechanic === 'multi-select' || activeLevelConfig.level === 7) ? (
               <div className="flex flex-col items-center w-full max-w-4xl">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full mb-8">
                   {currentQuestion.options?.map((option, idx) => {
                     const Icon = getIcon(option.icon, option.label);
-                    const isSelected = selectedAnswers.includes(idx);
+                    const isSelected = selectedAnswers.includes(option.label);
+                    const correctAnswersList = currentQuestion.correctAnswers || (currentQuestion.options ? currentQuestion.options.filter(o => o.isCorrect).map(o => o.label) : []);
+                    const isOptionCorrect = correctAnswersList.includes(option.label);
                     
                     let cardStyles = 'border-border bg-card hover:shadow-xl hover:scale-105 active:scale-95 text-foreground';
                     
                     if (selectedAnswer !== null) {
                       // After submit feedback mode
-                      if (option.isCorrect) {
+                      if (isOptionCorrect) {
                         cardStyles = 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400';
                       } else if (isSelected) {
                         cardStyles = 'border-red-500 bg-red-500/15 text-red-600 dark:text-red-400';
@@ -731,14 +736,14 @@ export default function PhonemePop({}: PhonemePopProps) {
                     return (
                       <button
                         key={idx}
-                        onClick={() => toggleSelectAllOption(idx)}
+                        onClick={() => toggleSelection(option.label)}
                         disabled={isLocked}
                         className={`p-8 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center relative disabled:cursor-not-allowed ${cardStyles}`}
                       >
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            playIndianAudio(option.label, `option-${idx}`);
+                            playIndianAudio(option.label, `option-${idx}`, option.label);
                           }}
                           disabled={isTransitioning || isPlaying}
                           className="absolute top-4 right-4 p-2 rounded-full hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -747,7 +752,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                           <Volume2 className="w-5 h-5 text-muted-foreground hover:text-primary" />
                         </button>
                         <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
-                          (selectedAnswer !== null && option.isCorrect) || (selectedAnswer === null && isSelected)
+                          (selectedAnswer !== null && isOptionCorrect) || (selectedAnswer === null && isSelected)
                             ? 'bg-primary/20 text-primary'
                             : 'bg-primary/10 text-primary'
                         }`}>
@@ -762,7 +767,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                 </div>
 
                 <button
-                  onClick={handleSelectAllSubmit}
+                  onClick={evaluateMultiSelect}
                   disabled={selectedAnswers.length === 0 || selectedAnswer !== null || isTransitioning || isPlaying}
                   className={`px-12 py-5 rounded-2xl font-bold text-xl text-white shadow-xl transition-all duration-300 ${
                     selectedAnswers.length === 0 || selectedAnswer !== null || isTransitioning || isPlaying
@@ -836,7 +841,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          playIndianAudio(option.label, `option-${idx}`);
+                          playIndianAudio(option.label, `option-${idx}`, option.label);
                         }}
                         disabled={isTransitioning || isPlaying}
                         className="absolute top-4 right-4 p-2 rounded-full hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

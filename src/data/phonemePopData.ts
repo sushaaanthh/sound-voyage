@@ -10,7 +10,8 @@ export interface PhonemeQuestion {
   word2?: string;      // Used for binary-dual
   targetSound?: string; // Optional target sound override per question
   correctAnswer?: 'yes' | 'no'; // Used for binary mechanics
-  options?: PhonemeQuestionOption[]; // Used for multiple-choice / select-all
+  correctAnswers?: string[]; // Used for multi-select / Level 7 multi-select
+  options?: PhonemeQuestionOption[]; // Used for multiple-choice / select-all / multi-select
   correctPosition?: string | string[]; // Used for multi-position validation
   position?: string | string[]; // Used for multi-position validation
 }
@@ -18,7 +19,7 @@ export interface PhonemeQuestion {
 export interface PhonemeLevel {
   level: number;
   targetSound: string;
-  mechanic: 'binary-single' | 'binary-dual' | 'multiple-choice' | 'select-all' | 'position';
+  mechanic: 'binary-single' | 'binary-dual' | 'multiple-choice' | 'select-all' | 'multi-select' | 'position';
   instruction: string;
   questions: PhonemeQuestion[];
 }
@@ -834,11 +835,12 @@ export const phonemePopData: PhonemeLevel[] = [
   {
     level: 7,
     targetSound: 'varies',
-    mechanic: 'multiple-choice',
-    instruction: 'Select the picture that ends with the target sound',
+    mechanic: 'multi-select',
+    instruction: 'Select all the pictures that end with the target sound',
     questions: [
       {
         targetSound: '/k/',
+        correctAnswers: ['desk'],
         options: [
           { label: 'car', isCorrect: false, icon: 'Car' },
           { label: 'jacket', isCorrect: false, icon: 'FileText' },
@@ -848,6 +850,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/m/',
+        correctAnswers: ['drum'],
         options: [
           { label: 'milk', isCorrect: false, icon: 'Milk' },
           { label: 'drum', isCorrect: true, icon: 'Music' },
@@ -857,6 +860,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/ee/',
+        correctAnswers: ['bee'],
         options: [
           { label: 'bee', isCorrect: true, icon: 'Bug' },
           { label: 'seal', isCorrect: false, icon: 'Smile' },
@@ -866,6 +870,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/p/',
+        correctAnswers: ['lamp'],
         options: [
           { label: 'desk', isCorrect: false, icon: 'Monitor' },
           { label: 'climb', isCorrect: false, icon: 'Activity' },
@@ -874,16 +879,18 @@ export const phonemePopData: PhonemeLevel[] = [
         ]
       },
       {
-        targetSound: '/w/',
+        targetSound: '/m/',
+        correctAnswers: ['drum', 'summer'],
         options: [
-          { label: 'window', isCorrect: true, icon: 'Square' },
-          { label: 'wall', isCorrect: false, icon: 'Grid' },
-          { label: 'feel', isCorrect: false, icon: 'Heart' },
-          { label: 'hut', isCorrect: false, icon: 'Home' }
+          { label: 'drum', isCorrect: true, icon: 'Music' },
+          { label: 'summer', isCorrect: true, icon: 'Sun' },
+          { label: 'boat', isCorrect: false, icon: 'Compass' },
+          { label: 'hat', isCorrect: false, icon: 'Shirt' }
         ]
       },
       {
         targetSound: '/d/',
+        correctAnswers: ['sand'],
         options: [
           { label: 'desk', isCorrect: false, icon: 'Monitor' },
           { label: 'feet', isCorrect: false, icon: 'Footprints' },
@@ -893,6 +900,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/r/',
+        correctAnswers: ['mirror'],
         options: [
           { label: 'card', isCorrect: false, icon: 'CreditCard' },
           { label: 'run', isCorrect: false, icon: 'Activity' },
@@ -902,6 +910,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/t/',
+        correctAnswers: ['belt'],
         options: [
           { label: 'teach', isCorrect: false, icon: 'GraduationCap' },
           { label: 'belt', isCorrect: true, icon: 'CheckSquare' },
@@ -911,6 +920,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/s/',
+        correctAnswers: ['horse'],
         options: [
           { label: 'school', isCorrect: false, icon: 'Home' },
           { label: 'horse', isCorrect: true, icon: 'Smile' },
@@ -920,6 +930,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/i/',
+        correctAnswers: ['monkey'],
         options: [
           { label: 'monkey', isCorrect: true, icon: 'Smile' },
           { label: 'ink', isCorrect: false, icon: 'PenTool' },
@@ -929,6 +940,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/n/',
+        correctAnswers: ['bin'],
         options: [
           { label: 'bin', isCorrect: true, icon: 'Trash2' },
           { label: 'lake', isCorrect: false, icon: 'Waves' },
@@ -938,6 +950,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/g/',
+        correctAnswers: ['fig'],
         options: [
           { label: 'hand', isCorrect: false, icon: 'Hand' },
           { label: 'fig', isCorrect: true, icon: 'Apple' },
@@ -947,6 +960,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/n/',
+        correctAnswers: ['green'],
         options: [
           { label: 'green', isCorrect: true, icon: 'Palette' },
           { label: 'blue', isCorrect: false, icon: 'Palette' },
@@ -956,6 +970,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/b/',
+        correctAnswers: ['lamb'],
         options: [
           { label: 'book', isCorrect: false, icon: 'BookOpen' },
           { label: 'lamb', isCorrect: true, icon: 'Smile' },
@@ -965,6 +980,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/d/',
+        correctAnswers: ['hand'],
         options: [
           { label: 'black', isCorrect: false, icon: 'Palette' },
           { label: 'desk', isCorrect: false, icon: 'Monitor' },
@@ -974,6 +990,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/l/',
+        correctAnswers: ['hill'],
         options: [
           { label: 'blink', isCorrect: false, icon: 'Eye' },
           { label: 'leg', isCorrect: false, icon: 'Activity' },
@@ -983,6 +1000,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/f/',
+        correctAnswers: ['leaf'],
         options: [
           { label: 'leaf', isCorrect: true, icon: 'Leaf' },
           { label: 'fly', isCorrect: false, icon: 'Bird' },
@@ -992,6 +1010,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/k/',
+        correctAnswers: ['truck'],
         options: [
           { label: 'kid', isCorrect: false, icon: 'User' },
           { label: 'truck', isCorrect: true, icon: 'Truck' },
@@ -1001,6 +1020,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/m/',
+        correctAnswers: ['mum'],
         options: [
           { label: 'hug', isCorrect: false, icon: 'Heart' },
           { label: 'hut', isCorrect: false, icon: 'Home' },
@@ -1010,6 +1030,7 @@ export const phonemePopData: PhonemeLevel[] = [
       },
       {
         targetSound: '/t/',
+        correctAnswers: ['bat'],
         options: [
           { label: 'teeth', isCorrect: false, icon: 'Smile' },
           { label: 'bat', isCorrect: true, icon: 'Activity' },
