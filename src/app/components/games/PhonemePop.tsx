@@ -13,6 +13,7 @@ import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
 import { getOptionIcon, getOptionIconComponent } from '../OptionIconMapper';
 import { playAudio } from '../../../lib/audioUtils';
 import { submitGameSession } from '../../../lib/telemetryUtils';
+import { useAudioCache } from '../../../hooks/useAudioCache';
 
 interface PhonemePopProps {
   levelData?: any; // kept for compatibility if needed, but we pull dynamically
@@ -45,7 +46,17 @@ export default function PhonemePop({}: PhonemePopProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audioCache, setAudioCache] = useState<Record<string, HTMLAudioElement>>({});
+  
+  const currentQuestion = currentQuestions[currentQuestionIndex];
+  const soundsToCache = [
+    currentQuestion?.word,
+    currentQuestion?.word1,
+    currentQuestion?.word2,
+    currentQuestion?.targetSound || activeLevelConfig.targetSound,
+    ...(currentQuestion?.options ? currentQuestion.options.map(o => typeof o === 'string' ? o : o.label) : [])
+  ].filter((s): s is string => Boolean(s));
+
+  const { audioCache, playSound: playCachedSound, isReady: _isReady } = useAudioCache(soundsToCache);
   
   // Transition lock and clinical tracking states
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -58,8 +69,8 @@ export default function PhonemePop({}: PhonemePopProps) {
     setFeedbackStatus(null);
   }, [currentQuestionIndex, levelNum]);
   
-  // selectedAnswer is string for binary ('yes'|'no'), number for multiple-choice (index), or -1/non-null for submitted select-all
-  const [selectedAnswer, setSelectedAnswer] = useState<string | number | null>(null);
+  // selectedAnswer is string for binary ('yes'|'no'), position ('START'|'MIDDLE'|'END'), option label ('desk'), or 'submitted'
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   
   // For select-all / multi-select mechanic
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
@@ -139,6 +150,7 @@ export default function PhonemePop({}: PhonemePopProps) {
       audio.play();
     } else {
       console.warn("Audio not pre-fetched yet!");
+      playCachedSound(finalSound);
       playAudio(finalSound, {
         onStart: () => setIsPlaying(true),
         onEnd: () => setIsPlaying(false),
@@ -147,54 +159,6 @@ export default function PhonemePop({}: PhonemePopProps) {
       }, targetWord);
     }
   };
-
-  // Pre-fetch audio blobs for current question and options
-  useEffect(() => {
-    const fetchAudio = async () => {
-      const currentQ = currentQuestions[currentQuestionIndex];
-      if (!currentQ) return;
-
-      const newCache = { ...audioCache };
-      const rawSoundsToFetch = [
-        currentQ.word,
-        currentQ.word1,
-        currentQ.word2,
-        currentQ.targetSound || activeLevelConfig.targetSound,
-        ...(currentQ.options ? currentQ.options.map(o => typeof o === 'string' ? o : o.label) : [])
-      ].filter((s): s is string => Boolean(s));
-
-      const soundsToFetch = rawSoundsToFetch;
-
-      for (const sound of soundsToFetch) {
-        if (!newCache[sound]) {
-          try {
-            // Replace with actual Supabase Edge Function call later
-            const response = await fetch('/api/tts', {
-              method: 'POST',
-              body: JSON.stringify({ text: sound })
-            });
-            if (response.ok) {
-              const blob = await response.blob();
-              const url = URL.createObjectURL(blob);
-              newCache[sound] = new Audio(url);
-            }
-          } catch (error) {
-            console.error(`Failed to pre-fetch audio for ${sound}`, error);
-          }
-        }
-      }
-      setAudioCache(newCache);
-    };
-
-    if (currentQuestions.length > 0) {
-      fetchAudio();
-    }
-
-    // Cleanup function to revoke object URLs and avoid memory leaks
-    return () => {
-      Object.values(audioCache).forEach(audio => URL.revokeObjectURL(audio.src));
-    };
-  }, [currentQuestionIndex, currentQuestions]);
 
   if (currentQuestions.length === 0) {
     return (
@@ -205,7 +169,6 @@ export default function PhonemePop({}: PhonemePopProps) {
     );
   }
 
-  const currentQuestion = currentQuestions[currentQuestionIndex];
   const totalQuestions = currentQuestions.length;
   const progressPercent = (currentQuestionIndex / totalQuestions) * 100;
 
@@ -298,12 +261,12 @@ export default function PhonemePop({}: PhonemePopProps) {
   };
 
   const handleSelection = (option: string) => {
-    if (isLocked || isTransitioning) return;
+    if (isTransitioning || feedbackStatus !== null) return;
     setSelectedAnswer(option);
   };
 
-  const checkAnswer = () => {
-    if (isLocked || selectedAnswer === null || isTransitioning) return;
+  const handleSubmit = () => {
+    if (!selectedAnswer || isTransitioning || feedbackStatus !== null) return;
     setIsTransitioning(true);
 
     let isCorrect = false;
@@ -315,7 +278,7 @@ export default function PhonemePop({}: PhonemePopProps) {
     } else if (currentQuestion.options) {
       const correctOpt = currentQuestion.options.find((o: any) => typeof o === 'object' && o.isCorrect);
       if (correctOpt && typeof correctOpt === 'object') {
-        isCorrect = selectedAnswer === correctOpt.label || selectedAnswer === currentQuestion.options.indexOf(correctOpt);
+        isCorrect = selectedAnswer === correctOpt.label;
         correctLabel = correctOpt.label;
       }
     }
@@ -332,6 +295,7 @@ export default function PhonemePop({}: PhonemePopProps) {
 
     setTimeout(() => {
       setFeedbackStatus(null);
+      setSelectedAnswer(null);
       advanceQuestion(nextScore);
     }, 2500);
   };
@@ -346,7 +310,7 @@ export default function PhonemePop({}: PhonemePopProps) {
 
   const evaluateMultiSelect = () => {
     if (isLocked) return;
-    setSelectedAnswer(-1);
+    setSelectedAnswer('submitted');
     setIsTransitioning(true);
 
     const correctAnswersList = currentQuestion.correctAnswers || (currentQuestion.options
@@ -842,7 +806,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                     const optionLabel = typeof option === 'string' ? option : option.label;
                     const optionIcon = typeof option === 'string' ? undefined : option.icon;
                     const Icon = getIcon(optionIcon, optionLabel);
-                    const isSelected = selectedAnswer === optionLabel || selectedAnswer === idx;
+                    const isSelected = selectedAnswer === optionLabel;
                     const isOptionCorrect = typeof option === 'string'
                       ? option === currentQuestion.correctAnswer
                       : option.isCorrect;
@@ -864,7 +828,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                       <button
                         key={idx}
                         onClick={() => handleSelection(optionLabel)}
-                        disabled={isLocked || isTransitioning}
+                        disabled={isTransitioning || feedbackStatus !== null}
                         className={`p-8 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center relative disabled:cursor-not-allowed ${cardStyles}`}
                       >
                         <button
@@ -894,10 +858,10 @@ export default function PhonemePop({}: PhonemePopProps) {
                 </div>
 
                 <button
-                  onClick={checkAnswer}
-                  disabled={selectedAnswer === null || isTransitioning || isPlaying}
+                  onClick={handleSubmit}
+                  disabled={!selectedAnswer || isTransitioning || feedbackStatus !== null}
                   className={`px-12 py-5 rounded-2xl font-bold text-xl text-white shadow-xl transition-all duration-300 ${
-                    selectedAnswer === null || isTransitioning || isPlaying
+                    !selectedAnswer || isTransitioning || feedbackStatus !== null
                       ? 'bg-muted border border-border text-muted-foreground cursor-not-allowed opacity-50'
                       : 'bg-[#FF6347] hover:bg-[#FF6347]/90 hover:scale-105 active:scale-95'
                   }`}

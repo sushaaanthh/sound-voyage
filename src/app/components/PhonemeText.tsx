@@ -1,5 +1,5 @@
 import React from 'react';
-import { PHONEME_AUDIO_MAP, getPhonemeAudioStr } from '../../data/phonemeAudioMap';
+import { getPhonemeAudioStr } from '../../data/phonemeAudioMap';
 
 export interface PhonemeTextProps extends React.HTMLAttributes<HTMLSpanElement> {
   phoneme: string;
