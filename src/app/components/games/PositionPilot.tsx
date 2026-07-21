@@ -148,7 +148,7 @@ export default function PositionPilot() {
   const getQuestionAudioText = () => {
     if (!currentQuestion) return '';
     const phonemeAudio = getPhonemeAudioStr(`/${currentQuestion.targetSound}/`, currentQuestion.word) || currentQuestion.targetSound;
-    return `Where do you hear the ${phonemeAudio} sound, in the word ${currentQuestion.word}?`;
+    return `Where do you hear the ${phonemeAudio} sound, in the word '${currentQuestion.word.toUpperCase()}'?`;
   };
 
   const playSound = () => {
