@@ -21,7 +21,7 @@ const phonemeMap: Record<string, string> = {
   '/w/': ', wuh, ',
   '/y/': ', yuh, ',
   '/z/': ', zzz, ',
-  '/sh/': ' , shh , ',
+  '/sh/': ' , sha , ',
   '/th/': ' , thuh , ',
   '/a/': ', ah, ',
   '/a_short/': ', ah, ',
@@ -61,7 +61,7 @@ const phonemeMap: Record<string, string> = {
   'w': ', wuh, ',
   'y': ', yuh, ',
   'z': ', zzz, ',
-  'sh': ' , shh , ',
+  'sh': ' , sha , ',
   'th': ' , thuh , ',
   'a': ', ah, ',
   'e': ', eh, ',
@@ -190,7 +190,11 @@ export function playAudio(
   const targetWord = wordContext || options?.wordContext || '';
   const exactSound = getPhonemeAudioStr(rawText, targetWord);
   const textToSpeak = (exactSound && exactSound !== rawText && exactSound !== text) ? `, ${exactSound}, ` : translateText(rawText);
-  const spokenText = textToSpeak.toLowerCase();
+  
+  // Global override interceptor
+  // Matches "/sh/" case-insensitively and replaces with "sha"
+  const sanitizedText = textToSpeak.replace(/\/sh\//gi, 'sha');
+  const spokenText = sanitizedText.toLowerCase();
 
   const utterance = new SpeechSynthesisUtterance(spokenText);
   utterance.rate = 0.8;

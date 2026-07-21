@@ -2,11 +2,14 @@ export const fetchHFAudio = async (text: string, retries = 3): Promise<string | 
   const API_URL = "https://api-inference.huggingface.co/models/espnet/kan-bayashi_ljspeech_vits";
   const API_KEY = import.meta.env.VITE_HF_API_KEY;
 
+  // Global override interceptor
+  const sanitizedText = text.replace(/\/sh\//gi, 'sha');
+
   try {
     const response = await fetch(API_URL, {
       headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
       method: "POST",
-      body: JSON.stringify({ inputs: text }),
+      body: JSON.stringify({ inputs: sanitizedText }),
     });
 
     // Handle waking up the model

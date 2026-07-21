@@ -143,7 +143,7 @@ export const PHONEME_AUDIO_MAP: Record<string, string> = {
   '/ts/': 'ts',
 
   // Additional ASCII / app-specific phoneme representations used in games
-  '/sh/': 'sh',
+  '/sh/': 'sha',
   '/ch/': 'ch',
   '/th/': 'th',
   '/ee/': 'yee',

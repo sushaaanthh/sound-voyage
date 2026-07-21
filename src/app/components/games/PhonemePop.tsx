@@ -236,7 +236,9 @@ export default function PhonemePop({}: PhonemePopProps) {
     setSelectedAnswer(answer);
     setIsTransitioning(true);
 
-    const isCorrect = currentQuestion.correctAnswer === answer;
+    const isCorrect = typeof currentQuestion.correctAnswer === 'string' 
+      ? currentQuestion.correctAnswer.toLowerCase() === answer
+      : currentQuestion.correctAnswer === answer;
     const nextScore = isCorrect ? score + 1 : score;
 
     if (isCorrect) {
@@ -378,7 +380,9 @@ export default function PhonemePop({}: PhonemePopProps) {
   };
 
   const isCorrectBinary = (ans: 'yes' | 'no') => {
-    return currentQuestion.correctAnswer === ans;
+    return typeof currentQuestion.correctAnswer === 'string' 
+      ? currentQuestion.correctAnswer.toLowerCase() === ans
+      : currentQuestion.correctAnswer === ans;
   };
 
   // Determine instruction title dynamically based on level config
@@ -394,7 +398,11 @@ export default function PhonemePop({}: PhonemePopProps) {
         const w = currentQuestion.word?.toUpperCase() || '';
         base = `Does the word '${w}' contain the ${soundText} sound?`;
       } else if (mechanic === 'multiple-choice') {
-        base = `Select the word that contains the ${soundText} sound`;
+        if (levelNum === 7) {
+          base = `Select the word that ends with the ${soundText} sound`;
+        } else {
+          base = `Select the word that contains the ${soundText} sound`;
+        }
       } else if (mechanic === 'select-all') {
         base = `Select all the words that contain the ${soundText} sound`;
       }
