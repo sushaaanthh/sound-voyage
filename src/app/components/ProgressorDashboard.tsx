@@ -405,7 +405,7 @@ export default function ProgressorDashboard() {
                   <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                     {!earnedBadges || earnedBadges.length === 0 ? (
                       <div className="text-center py-6 text-xs sm:text-sm text-muted-foreground">
-                        Complete Level 10 of any game to earn a badge!
+                        Complete all the levels of a game to earn its Mastery Badge!
                       </div>
                     ) : (
                       earnedBadges.map((badgeId) => {

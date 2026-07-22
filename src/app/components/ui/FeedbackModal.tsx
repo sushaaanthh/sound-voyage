@@ -20,7 +20,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ status }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -25 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className={`w-[400px] p-10 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center text-center bg-white border ${
+            className={`w-[400px] p-10 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center text-center bg-white dark:bg-slate-800 border border-transparent dark:border-slate-700 ${
               isCorrect ? 'border-green-100 dark:border-green-900/30' : 'border-red-50 dark:border-red-900/30'
             }`}
           >
@@ -42,7 +42,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ status }) => {
               ></div>
 
               {/* Inner Icon Circle (Pure white with a crisp shadow) */}
-              <div className="relative z-10 w-[4.5rem] h-[4.5rem] bg-white dark:bg-gray-800 rounded-full shadow-sm flex items-center justify-center">
+              <div className="relative z-10 w-[4.5rem] h-[4.5rem] bg-white dark:bg-slate-700 rounded-full shadow-sm flex items-center justify-center">
                 {isCorrect ? (
                   <Check className="w-8 h-8 text-green-500 stroke-[3.5]" />
                 ) : (
@@ -74,11 +74,11 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ status }) => {
             </div>
 
             {/* Typography */}
-            <h3 className="text-[26px] font-bold text-gray-900 dark:text-gray-100 mb-2 tracking-tight font-poppins">
+            <h3 className="text-[26px] font-bold text-slate-900 dark:text-white mb-2 tracking-tight font-poppins">
               {isCorrect ? 'Correct Answer!' : 'Keep Trying!'}
             </h3>
 
-            <p className="text-[15px] font-medium text-gray-500 dark:text-gray-400 max-w-[240px] leading-relaxed">
+            <p className="text-[15px] font-medium text-slate-500 dark:text-slate-300 max-w-[240px] leading-relaxed">
               {isCorrect
                 ? "Great job! You've got it right. Keep up the awesome work!"
                 : "You're making progress. A little more practice and you'll get it!"}
