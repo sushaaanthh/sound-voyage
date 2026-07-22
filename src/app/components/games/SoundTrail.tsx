@@ -570,31 +570,30 @@ export default function SoundTrail() {
                 })}
               </svg>
 
-              {/* Trail Interactive Nodes — z-10 with solid bg so SVG lines never bleed through */}
+              {/* Trail Interactive Nodes */}
               {nodes.map((node) => {
+                const isActive = node.index === currentStepIndex;
                 const isHighlighted = highlightNodeIndex === node.index;
                 const isReached = userSequence.includes(node.index);
-                const isCurrent = node.index === currentStepIndex;
+                
+                // Base dimensions and layout
+                const baseClasses = 'relative z-10 flex flex-col items-center justify-center rounded-full transition-all duration-300 font-poppins select-none cursor-pointer w-20 h-20 md:w-24 md:h-24 border-[3px]';
 
-                // z-index: highlighted nodes float highest, others sit above SVG layer
-                let borderStyles = 'border-border bg-card text-muted-foreground';
-                let glowStyles = '';
-
-                if (isHighlighted) {
-                  borderStyles = 'border-[#FF6347] bg-[#FF6347] text-white font-extrabold scale-110';
-                  glowStyles = 'shadow-[0_0_25px_#FF6347]';
-                } else if (isCurrent) {
-                  borderStyles = 'border-dashed border-[#FF6347] bg-card text-[#FF6347] dark:text-[#FF6347] font-extrabold';
-                  glowStyles = 'shadow-[0_0_10px_rgba(255,99,71,0.2)] animate-pulse';
+                // Determine container styling
+                let containerClasses = '';
+                if (isActive || isHighlighted) {
+                  containerClasses = 'bg-red-500 border-red-500 scale-125 shadow-lg shadow-red-500/50';
                 } else if (isReached) {
-                  borderStyles = 'border-[#FF6347] bg-card text-[#FF6347] dark:text-[#FF6347] font-bold';
+                  containerClasses = 'bg-card border-red-500 text-red-500 dark:text-red-500';
+                } else {
+                  containerClasses = 'bg-white border-gray-200 dark:bg-slate-800 dark:border-slate-700 shadow-sm';
                 }
 
-                // Reveal logic:
+                // Reveal logic
                 const isRevealed = isTrailRevealed || node.index <= currentStepIndex;
                 const nodeLabel = isRevealed ? node.word.toUpperCase() : '???';
 
-                // Adjust font size for long words so they don't overflow the circle
+                // Adjust font size for long words
                 const wordFontClass = node.word.length > 5
                   ? 'text-[10px] md:text-xs'
                   : 'text-sm md:text-base';
@@ -608,32 +607,27 @@ export default function SoundTrail() {
                       left: `${node.x}%`,
                       top: `${node.y}%`,
                       transform: 'translate(-50%, -50%)',
-                      zIndex: isHighlighted ? 30 : 10,
+                      zIndex: isActive || isHighlighted ? 30 : 10,
                     }}
-                    className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-3 flex flex-col items-center justify-center shadow-lg transition-all duration-300 font-poppins relative select-none cursor-pointer bg-card ${borderStyles} ${glowStyles}`}
+                    className={`${baseClasses} ${containerClasses}`}
                   >
                     {/* Index Label */}
-                    <span className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${isHighlighted ? 'text-white/80' : 'text-muted-foreground'}`}>
+                    <span className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${isActive || isHighlighted ? 'text-red-100' : 'text-gray-400 dark:text-slate-500'}`}>
                       Node {node.index + 1}
                     </span>
 
-                    {/* Word / Masked Label with high-contrast text when revealed */}
+                    {/* Word / Masked Label */}
                     <span
                       className={`font-bold ${wordFontClass} tracking-wide uppercase text-center px-1 leading-tight break-words ${
-                        isHighlighted
+                        isActive || isHighlighted
                           ? 'text-white'
                           : isRevealed
-                            ? 'text-slate-800 dark:text-slate-100'
-                            : 'text-gray-400 dark:text-gray-500'
+                            ? 'text-slate-800 dark:text-gray-200'
+                            : 'text-slate-400 dark:text-slate-500'
                       }`}
                     >
                       {nodeLabel}
                     </span>
-
-                    {/* Pulse Rings for Active highlights */}
-                    {isHighlighted && (
-                      <span className="absolute inset-0 rounded-full border border-[#FF6347] animate-ping opacity-75 pointer-events-none" />
-                    )}
                   </motion.button>
                 );
               })}
