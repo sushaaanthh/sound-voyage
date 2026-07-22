@@ -2,7 +2,7 @@ import { PHONEME_AUDIO_MAP, getPhonemeAudioStr } from '../data/phonemeAudioMap';
 
 const phonemeMap: Record<string, string> = {
   // Slash format
-  '/k/': ' , k-uh , ',
+  '/k/': ' , ka , ',
   '/ch/': ' , chuh , ',
   '/p/': ' , p-uh , ',
   '/s/': ' , sss , ',
@@ -42,7 +42,7 @@ const phonemeMap: Record<string, string> = {
   '/oe/': ' , oh , ',
   
   // Normal format
-  'k': ' , k-uh , ',
+  'k': ' , ka , ',
   'ch': ' , chuh , ',
   'p': ' , p-uh , ',
   's': ' , sss , ',

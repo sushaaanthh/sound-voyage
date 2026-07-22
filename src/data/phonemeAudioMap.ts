@@ -10,7 +10,7 @@ export const PHONEME_AUDIO_MAP: Record<string, string> = {
   '/b/': 'buh',
   '/t/': 'tuh',
   '/d/': 'duh',
-  '/k/': 'kuh',
+  '/k/': 'ka',
   '/f/': 'fuh',
   '/v/': 'vuh',
   '/θ/': 'th',
