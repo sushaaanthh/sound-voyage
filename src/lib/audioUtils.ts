@@ -1,26 +1,72 @@
 import { PHONEME_AUDIO_MAP, getPhonemeAudioStr } from '../data/phonemeAudioMap';
 
+export const PHONEME_PRONUNCIATION_MAP: Record<string, string> = {
+  // Two-consonant clusters
+  '/bl/': 'bla', '/br/': 'bra', '/cl/': 'cla', '/cr/': 'cra', '/dr/': 'dra',
+  '/fl/': 'fla', '/fr/': 'fra', '/gl/': 'gla', '/gr/': 'gra', '/pl/': 'pla',
+  '/pr/': 'pra', '/sl/': 'sla', '/sm/': 'sma', '/sn/': 'sna', '/sp/': 'spa',
+  '/st/': 'sta', '/sk/': 'ska', '/sw/': 'swa', '/tr/': 'tra', '/tw/': 'twa',
+  '/dw/': 'dwuh', '/kw/': 'kwuh', '/gw/': 'gwuh', '/ʃr/': 'shruh', '/θr/': 'thruh',
+  '/sf/': 'sfuh', '/sv/': 'svuh',
+
+  // Three-consonant clusters
+  '/spl/': 'spluh', '/spr/': 'spruh', '/str/': 'struh', '/skr/': 'skruh',
+  '/skw/': 'skwuh', '/skl/': 'skluh',
+
+  // Common ending clusters
+  '/mp/': 'mp', '/nd/': 'nd', '/nt/': 'nt', '/ŋk/': 'nk', '/ŋg/': 'ngg',
+  '/ld/': 'ld', '/lf/': 'lf', '/lk/': 'lk', '/lp/': 'lp', '/lt/': 'lt',
+  '/rd/': 'rd', '/rk/': 'rk', '/rm/': 'rm', '/rn/': 'rn', '/rp/': 'rp',
+  '/rt/': 'rt', '/ft/': 'ft', '/kt/': 'kt', '/ks/': 'ksa', '/ps/': 'psa',
+  '/ts/': 'tsa',
+
+  // Consonants
+  '/p/': 'pa', '/b/': 'buh', '/t/': 'ta', '/d/': 'da', '/k/': 'ka',
+  '/g/': 'gah', '/f/': 'fa', '/v/': 'va', '/θ/': 'th', '/ð/': 'th',
+  '/s/': 'sa', '/z/': 'za', '/ʃ/': 'sha', '/sh/': 'sha', '/ʒ/': 'zha',
+  '/h/': 'huh', '/ch/': 'cha', '/dʒ/': 'ja', '/j/': 'ja', '/m/': 'ma',
+  '/n/': 'na', '/ŋ/': 'ng', '/l/': 'la', '/r/': 'ra', '/y/': 'yuh',
+  '/w/': 'wah',
+
+  // Monophthongs
+  '/iː/': 'ee', '/ɪ/': 'ih', '/e/': 'eh', '/æ/': 'aa', '/ɑː/': 'ah',
+  '/ɒ/': 'o', '/ɔː/': 'aw', '/ʊ/': 'uu', '/uː/': 'oo', '/ʌ/': 'uh',
+  '/ɜː/': 'er', '/ə/': 'uh',
+
+  // Diphthongs
+  '/eɪ/': 'ay', '/aɪ/': 'eye', '/ɔɪ/': 'oy', '/aʊ/': 'ow', '/əʊ/': 'oh',
+  '/oʊ/': 'oh', '/ɪə/': 'eer', '/eə/': 'air', '/ʊə/': 'oor',
+
+  // Variant Keys for Conditional Sounds
+  '/c_hard/': 'kuh', '/c_soft/': 'suh', '/g_hard/': 'guh', '/g_soft/': 'juh',
+  '/i_ai/': 'ai', '/i_ee/': 'ee', '/j_juh/': 'juh', '/j_yuh/': 'yuh',
+  '/o_aww/': 'aww', '/o_oo/': 'oo', '/o_oh/': 'oh', '/q_kuh/': 'kuh',
+  '/q_kyuh/': 'kyuh', '/u_yuu/': 'yuu', '/u_uh/': 'uh', '/u_oo/': 'oo',
+  '/w_wuh/': 'wuh', '/w_vuh/': 'vuh', '/x_ksuh/': 'ksuh', '/x_zuh/': 'zuh',
+  '/x_kzuh/': 'kzuh', '/y_yuh/': 'yuh', '/y_ya/': 'ya'
+};
+
 const phonemeMap: Record<string, string> = {
   // Slash format
   '/k/': ' , ka , ',
-  '/ch/': ' , chuh , ',
-  '/p/': ' , p-uh , ',
-  '/s/': ' , sss , ',
-  '/m/': ' , mmm , ',
-  '/b/': ' , b-uh , ',
-  '/d/': ' , d-uh , ',
-  '/f/': ', fff, ',
-  '/g/': ' , g-uh , ',
-  '/h/': ', huh, ',
-  '/j/': ', juh, ',
-  '/l/': ' , ull , ',
-  '/n/': ', nnn, ',
-  '/r/': ', rrr, ',
-  '/t/': ' , t-uh , ',
-  '/v/': ', vvv, ',
-  '/w/': ', wuh, ',
-  '/y/': ', yuh, ',
-  '/z/': ', zzz, ',
+  '/ch/': ' , cha , ',
+  '/p/': ' , pa , ',
+  '/s/': ' , sa , ',
+  '/m/': ' , ma , ',
+  '/b/': ' , ba , ',
+  '/d/': ' , da , ',
+  '/f/': ', fa, ',
+  '/g/': ' , ga , ',
+  '/h/': ', ha, ',
+  '/j/': ', ja, ',
+  '/l/': ' , la , ',
+  '/n/': ', na, ',
+  '/r/': ', ra, ',
+  '/t/': ' , ta , ',
+  '/v/': ', va, ',
+  '/w/': ', wa, ',
+  '/y/': ', ya, ',
+  '/z/': ', zha, ',
   '/sh/': ' , sha , ',
   '/th/': ' , thuh , ',
   '/a/': ', ah, ',
@@ -40,7 +86,7 @@ const phonemeMap: Record<string, string> = {
   '/ow/': ' , ow , ',
   '/ai/': ' , ay , ',
   '/oe/': ' , oh , ',
-  
+
   // Normal format
   'k': ' , ka , ',
   'ch': ' , chuh , ',
@@ -99,9 +145,9 @@ export const initVoiceLock = () => {
   if (indianVoices.length > 0) {
     // 2. iOS specifically uses "Rishi" for male and "Veena" for female. 
     // Try to explicitly grab Veena, or fallback to the first non-Rishi Indian voice.
-    lockedVoice = indianVoices.find(v => v.name.includes('Veena')) || 
-                  indianVoices.find(v => !v.name.includes('Rishi')) || 
-                  indianVoices[0];
+    lockedVoice = indianVoices.find(v => v.name.includes('Veena')) ||
+      indianVoices.find(v => !v.name.includes('Rishi')) ||
+      indianVoices[0];
   } else {
     // Fallback: If no en-IN is installed, grab a generic female English voice
     const englishVoices = voices.filter(v => v.lang.startsWith('en'));
@@ -122,7 +168,7 @@ if (typeof window !== 'undefined' && window.speechSynthesis) {
 export function translateText(text: string): string {
   const trimmed = text.trim();
   const normalized = trimmed.toLowerCase();
-  
+
   // 0. Intercept exact phoneme notation from PHONEME_AUDIO_MAP with prosodic pauses
   if (PHONEME_AUDIO_MAP[trimmed]) {
     return `, ${PHONEME_AUDIO_MAP[trimmed]}, `;
@@ -130,12 +176,12 @@ export function translateText(text: string): string {
   if (PHONEME_AUDIO_MAP[text]) {
     return `, ${PHONEME_AUDIO_MAP[text]}, `;
   }
-  
+
   // 1. Direct match check (trim outer commas/spaces for isolated option words)
   if (phonemeMap[normalized]) {
     return phonemeMap[normalized].replace(/^[\s,]+|[\s,]+$/g, '');
   }
-  
+
   // 2. Slash-wrapped core checks (trim outer commas/spaces for isolated option words)
   if (normalized.startsWith('/') && normalized.endsWith('/')) {
     const core = normalized.slice(1, -1);
@@ -210,15 +256,22 @@ export function playAudio(
   // Cancel ongoing speech gracefully to handle rapid clicks
   window.speechSynthesis.cancel();
 
-  // Intercept text using getPhonemeAudioStr before speaking
-  const rawText = text.trim();
-  const targetWord = wordContext || options?.wordContext || '';
-  const exactSound = getPhonemeAudioStr(rawText, targetWord);
-  const textToSpeak = (exactSound && exactSound !== rawText && exactSound !== text) ? `, ${exactSound}, ` : translateText(rawText);
-  
-  // Global override interceptor
-  // Matches "/sh/" case-insensitively and replaces with "sha"
-  const sanitizedText = textToSpeak.replace(/\/sh\//gi, 'sha');
+  // Check the comprehensive dictionary first
+  // Trims any accidental whitespace and checks for a direct match
+  const lookupKey = text.trim();
+  const directMatch = PHONEME_PRONUNCIATION_MAP[lookupKey] || PHONEME_PRONUNCIATION_MAP[lookupKey.toLowerCase()];
+
+  let sanitizedText: string;
+  if (directMatch) {
+    sanitizedText = directMatch;
+  } else {
+    const targetWord = wordContext || options?.wordContext || '';
+    const exactSound = getPhonemeAudioStr(lookupKey, targetWord);
+    sanitizedText = (exactSound && exactSound !== lookupKey && exactSound !== text)
+      ? `, ${exactSound}, `
+      : translateText(lookupKey);
+  }
+
   const spokenText = sanitizedText.toLowerCase();
 
   const utterance = new SpeechSynthesisUtterance(spokenText);
