@@ -85,9 +85,34 @@ const phonemeMap: Record<string, string> = {
   'll': ' , ull , '
 };
 
-// Warm up the speech synthesis engine to force browser to load voices immediately on mount
+let lockedVoice: SpeechSynthesisVoice | null = null;
+
+export const initVoiceLock = () => {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) return;
+
+  // 1. Filter for Indian English voices
+  const indianVoices = voices.filter(v => v.lang === 'en-IN' || v.lang === 'en_IN');
+
+  if (indianVoices.length > 0) {
+    // 2. iOS specifically uses "Rishi" for male and "Veena" for female. 
+    // Try to explicitly grab Veena, or fallback to the first non-Rishi Indian voice.
+    lockedVoice = indianVoices.find(v => v.name.includes('Veena')) || 
+                  indianVoices.find(v => !v.name.includes('Rishi')) || 
+                  indianVoices[0];
+  } else {
+    // Fallback: If no en-IN is installed, grab a generic female English voice
+    const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+    lockedVoice = englishVoices.find(v => v.name.includes('Samantha') || v.name.includes('Female')) || englishVoices[0];
+  }
+};
+
+// iOS Safari requires this event listener because voices load asynchronously
 if (typeof window !== 'undefined' && window.speechSynthesis) {
-  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = initVoiceLock;
+  initVoiceLock(); // Call immediately in case they are already loaded
 }
 
 /**
@@ -197,26 +222,18 @@ export function playAudio(
   const spokenText = sanitizedText.toLowerCase();
 
   const utterance = new SpeechSynthesisUtterance(spokenText);
-  utterance.rate = 0.8;
+  utterance.rate = 0.9;
   utterance.volume = 1.0;
   utterance.pitch = 1.1;
 
-  // Retrieve voices and select a high-quality, consistent English voice
-  const voices = window.speechSynthesis.getVoices();
-  // Look for Indian English specifically
-  const indianVoice = voices.find(voice => voice.lang === 'en-IN' || voice.lang === 'en_IN' || voice.name.includes('India'));
-  if (indianVoice) {
-    utterance.voice = indianVoice;
-  } else {
-    const matchedVoice = voices.find(v => v.name.includes("Google US English")) ||
-                         voices.find(v => v.name.includes("Google UK English Female")) ||
-                         voices.find(v => v.name.includes("Samantha")) ||
-                         voices.find(v => v.lang.startsWith('en-')) ||
-                         voices[0];
-    if (matchedVoice) {
-      utterance.voice = matchedVoice;
-    }
+  // Apply the Voice Lock
+  if (!lockedVoice) {
+    initVoiceLock();
   }
+  if (lockedVoice) {
+    utterance.voice = lockedVoice;
+  }
+  utterance.lang = 'en-IN'; // Failsafe for OS overrides
 
   // Attach status callbacks
   if (options?.onStart) utterance.onstart = options.onStart;
