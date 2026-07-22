@@ -107,6 +107,15 @@ export default function ProgressorDashboard() {
   const safeCompletedLevels = Array.isArray(completedLevels) ? completedLevels : [];
   const safeAssignedLevels = Array.isArray(assignedLevels) ? assignedLevels : [];
 
+  const [hasUnseenBadges, setHasUnseenBadges] = useState(false);
+
+  useEffect(() => {
+    const viewedCount = parseInt(localStorage.getItem('viewedBadgesCount') || '0', 10);
+    if (earnedBadges && earnedBadges.length > viewedCount) {
+      setHasUnseenBadges(true);
+    }
+  }, [earnedBadges]);
+
   const [selectedGame, setSelectedGame] = useState<string | null>(() => {
     return location.state?.selectedGame || null;
   });
@@ -384,6 +393,8 @@ export default function ProgressorDashboard() {
             <div className="relative" ref={badgePopoverRef}>
               <button
                 onClick={() => {
+                  localStorage.setItem('viewedBadgesCount', (earnedBadges || []).length.toString());
+                  setHasUnseenBadges(false);
                   setShowBadges(!showBadges);
                   setShowNotifications(false);
                 }}
@@ -392,7 +403,7 @@ export default function ProgressorDashboard() {
                 title="Your Badges"
               >
                 <Award className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
-                {earnedBadges && earnedBadges.length > 0 && (
+                {hasUnseenBadges && (
                   <span className="absolute top-2 right-2 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-yellow-400 rounded-full ring-2 ring-card" />
                 )}
               </button>

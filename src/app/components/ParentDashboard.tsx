@@ -377,7 +377,7 @@ export default function ParentDashboard() {
                 <Award className="w-6 h-6 text-yellow-500 flex-shrink-0" />
                 <span className="text-sm font-bold text-yellow-800 dark:text-yellow-300 mr-1">Mastery Badges:</span>
                 <div className="flex items-center gap-2 flex-wrap">
-                  {selectedChild.earned_badges.map((badge: string) => {
+                  {[...selectedChild.earned_badges].reverse().map((badge: string) => {
                     const badgeGameId = badge.replace('-master', '');
                     const badgeGameName = GAMES.find(g => g.id === badgeGameId)?.name || badgeGameId;
                     return (

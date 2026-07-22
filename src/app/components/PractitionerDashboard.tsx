@@ -884,7 +884,7 @@ export default function PractitionerDashboard() {
                       <p className="text-sm text-muted-foreground italic py-2">No mastery badges earned yet.</p>
                     ) : (
                       <div className="flex items-center gap-2 flex-wrap">
-                        {selectedProgressor.earnedBadges.map((badge) => {
+                        {[...selectedProgressor.earnedBadges].reverse().map((badge) => {
                           const badgeGameId = badge.replace('-master', '');
                           const badgeGameName = GAMES.find(g => g.id === badgeGameId)?.name || badgeGameId;
                           const GameIcon = GAMES.find(g => g.id === badgeGameId)?.icon;

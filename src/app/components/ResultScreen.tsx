@@ -22,7 +22,7 @@ const GAME_MAX_LEVELS: Record<string, number> = {
 export default function ResultScreen() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { saveGameResult, awardBadgeToUser } = useGameSession();
+  const { saveGameResult, awardBadgeToUser, earnedBadges } = useGameSession();
 
   const state = location.state || {};
   const score = typeof state.score === 'number' ? state.score : 0;
@@ -275,14 +275,18 @@ export default function ResultScreen() {
             </div>
 
             <h1 className="text-3xl font-extrabold text-foreground mb-2 tracking-tight">
-              Voyage Complete!
+              {earnedBadges?.includes(`${gameId}-master`) ? 'Simply Awesome!' : 'Voyage Complete!'}
             </h1>
             <p className="text-yellow-500 font-bold uppercase tracking-wider text-sm mb-4">
               {gameName} Champion
             </p>
 
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              Amazing job! You have successfully mastered all 10 levels of <strong>{gameName}</strong>. You've earned the title of Master Navigator!
+              {earnedBadges?.includes(`${gameId}-master`) ? (
+                <>You've already mastered this game before, but you just conquered it again! Incredible work.</>
+              ) : (
+                <>Amazing job! You have successfully mastered all {GAME_MAX_LEVELS[gameId] || 10} levels of <strong>{gameName}</strong>. You've earned the title of Master Navigator!</>
+              )}
             </p>
 
             {/* Stats Summary Inside Modal */}
