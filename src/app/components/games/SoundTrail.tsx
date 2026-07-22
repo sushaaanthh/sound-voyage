@@ -350,21 +350,22 @@ export default function SoundTrail() {
   };
 
   const calculateFinalScores = () => {
-    const totalCorrectTaps = totalQuestions; 
-    const totalAttempts = totalCorrectTaps + wrongTaps;
+    // Subtract 2.5% per wrong tap, floor at 0
+    const rawAccuracy = Math.max(0, 100 - (wrongTaps * 2.5));
 
-    // Calculate Accuracy as a percentage out of 100
-    const accuracyPercentage = Math.round((totalCorrectTaps / totalAttempts) * 100);
+    // Subtract 0.25 points per wrong tap, floor at 0
+    const rawScore = Math.max(0, 10 - (wrongTaps * 0.25));
 
-    // Calculate Score as a decimal from 1.0 to 10.0 based on accuracy
-    const decimalScore = (accuracyPercentage / 10).toFixed(1);
+    // Format numbers: drops unnecessary trailing zeros (e.g., 10.0 becomes 10, but 9.75 remains 9.75)
+    const accuracyPercentage = Number(rawAccuracy.toFixed(1));
+    const decimalScore = Number(rawScore.toFixed(2));
 
     return { accuracyPercentage, decimalScore };
   };
 
   const completeLevel = async () => {
     const { accuracyPercentage, decimalScore } = calculateFinalScores();
-    const numericDecimalScore = parseFloat(decimalScore);
+    // decimalScore is already a Number with trailing zeros stripped (e.g. 10, not 10.0)
 
     const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
     const mins = Math.floor(elapsedSeconds / 60);
@@ -377,7 +378,7 @@ export default function SoundTrail() {
       progressorId: progressorId || 'demo',
       gameId: 'sound-trail',
       level: levelNum,
-      score: numericDecimalScore,
+      score: decimalScore,
       totalQuestions: totalQuestions,
       accuracy: accuracyPercentage,
       timeTaken: formattedTime
@@ -386,7 +387,7 @@ export default function SoundTrail() {
     // Direct result page navigation logs it in session database table
     navigate('/result', {
       state: {
-        score: numericDecimalScore,
+        score: decimalScore,
         decimalScore: decimalScore,
         accuracyPercentage: accuracyPercentage,
         accuracy: accuracyPercentage,
