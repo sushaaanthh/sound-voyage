@@ -549,17 +549,17 @@ export default function PractitionerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-x-hidden">
       {/* Sidebar */}
-      <div className="w-72 bg-sidebar border-r border-sidebar-border p-6 relative">
-        <div className="absolute top-6 right-6">
+      <div className="w-full md:w-72 bg-sidebar border-b md:border-b-0 md:border-r border-sidebar-border p-4 md:p-6 relative flex-shrink-0">
+        <div className="absolute top-4 right-4 md:top-6 md:right-6">
           <ThemeToggle />
         </div>
 
-        <div className="mb-12 flex items-center gap-3">
+        <div className="mb-6 md:mb-12 flex items-center gap-3 pr-12 md:pr-0">
           <button
             onClick={() => setIsProfileModalOpen(true)}
-            className="w-12 h-12 rounded-full border border-border overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-border overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
             aria-label="Open profile modal"
           >
             {userData?.avatar_url ? (
@@ -570,64 +570,64 @@ export default function PractitionerDashboard() {
               />
             ) : (
               <div className="w-full h-full bg-[#FF6347]/10 flex items-center justify-center text-[#FF6347]">
-                <User className="w-6 h-6" />
+                <User className="w-5 h-5 md:w-6 md:h-6" />
               </div>
             )}
           </button>
           <div>
-            <h1 className="text-xl font-extrabold text-foreground tracking-tight font-sans leading-tight" style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}>Practitioner Dashboard</h1>
+            <h1 className="text-lg md:text-xl font-extrabold text-foreground tracking-tight font-sans leading-tight" style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}>Practitioner Dashboard</h1>
           </div>
         </div>
 
-        <nav className="space-y-3">
+        <nav className="grid grid-cols-2 gap-2 md:block md:space-y-3">
           <button
             onClick={() => setActiveView('progressors')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${activeView === 'progressors'
+            className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-[1.25rem] md:rounded-[1.5rem] text-xs md:text-base transition-all hover:scale-105 active:scale-95 ${activeView === 'progressors'
                 ? 'bg-primary text-primary-foreground shadow-lg font-bold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent'
               }`}
           >
-            <Users className="w-5 h-5" />
-            Progressor Registry
+            <Users className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+            <span className="truncate">Progressor Registry</span>
           </button>
 
           <button
             onClick={() => setActiveView('analytics')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${activeView === 'analytics'
+            className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-[1.25rem] md:rounded-[1.5rem] text-xs md:text-base transition-all hover:scale-105 active:scale-95 ${activeView === 'analytics'
                 ? 'bg-primary text-primary-foreground shadow-lg font-bold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent'
               }`}
           >
-            <BarChart3 className="w-5 h-5" />
-            Analytics
+            <BarChart3 className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+            <span className="truncate">Analytics</span>
           </button>
 
           <button
             onClick={() => setActiveView('tasks')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${activeView === 'tasks'
+            className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-[1.25rem] md:rounded-[1.5rem] text-xs md:text-base transition-all hover:scale-105 active:scale-95 ${activeView === 'tasks'
                 ? 'bg-primary text-primary-foreground shadow-lg font-bold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent'
               }`}
           >
-            <TrendingUp className="w-5 h-5" />
-            Task Assignments
+            <TrendingUp className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+            <span className="truncate">Task Assignments</span>
           </button>
 
           <button
             onClick={() => setActiveView('notifications')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] transition-all hover:scale-105 active:scale-95 ${activeView === 'notifications'
+            className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-[1.25rem] md:rounded-[1.5rem] text-xs md:text-base transition-all hover:scale-105 active:scale-95 ${activeView === 'notifications'
                 ? 'bg-primary text-primary-foreground shadow-lg font-bold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent'
               }`}
           >
-            <Bell className="w-5 h-5" />
-            Notifications
+            <Bell className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+            <span className="truncate">Notifications</span>
           </button>
         </nav>
 
         <button
           onClick={() => setShowLogoutModal(true)}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] text-sidebar-foreground hover:bg-sidebar-accent hover:scale-105 active:scale-95 transition-all mt-auto absolute bottom-6 cursor-pointer"
+          className="w-full flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-[1.5rem] text-sidebar-foreground hover:bg-sidebar-accent hover:scale-105 active:scale-95 transition-all mt-4 md:mt-auto md:absolute md:bottom-6 cursor-pointer text-sm md:text-base"
         >
           <LogOut className="w-5 h-5" />
           Logout
@@ -635,15 +635,15 @@ export default function PractitionerDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-4 md:p-8 min-w-0 overflow-x-hidden">
         {/* Progressor Registry View */}
         {activeView === 'progressors' && (
           <div>
-            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-foreground">Progressor Registry</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-extrabold text-foreground">Progressor Registry</h1>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 px-6 py-3 rounded-[2rem] bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 font-bold"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-[2rem] bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 font-bold"
               >
                 <Plus className="w-5 h-5" />
                 Create New Progressor
@@ -667,13 +667,13 @@ export default function PractitionerDashboard() {
               {filteredProgressors.map((progressor) => (
                 <div
                   key={progressor.id}
-                  className="bg-card p-6 rounded-[2rem] border border-border hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
+                  className="bg-card p-4 md:p-6 rounded-[2rem] border border-border hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
                   onClick={() => setSelectedProgressor(progressor)}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-foreground">{progressor.name}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="min-w-0 break-words">
+                      <h3 className="text-foreground font-bold text-lg">{progressor.name}</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground mt-1 break-words">
                         ID: {progressor.id} • Age: {progressor.age} • Last Session:{' '}
                         {progressor.recentSession ? (
                           <span className="text-foreground font-medium">
@@ -687,13 +687,13 @@ export default function PractitionerDashboard() {
                         )}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 w-full sm:w-auto justify-end flex-shrink-0">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleOpenDetails(progressor);
                         }}
-                        className="px-4 py-2 rounded-[1rem] bg-primary/10 text-primary hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 font-bold font-sans"
+                        className="px-4 py-2 rounded-[1rem] bg-primary/10 text-primary hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 font-bold font-sans text-sm"
                         style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}
                       >
                         View Details
@@ -828,50 +828,50 @@ export default function PractitionerDashboard() {
                   </div>
 
                   {/* Summary Cards */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-card p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
-                        <History className="w-6 h-6" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div className="bg-card p-4 md:p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                        <History className="w-5 h-5 md:w-6 md:h-6" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-foreground">{totalSessionsCount}</p>
-                        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Total Sessions</p>
+                        <p className="text-xl md:text-2xl font-bold text-foreground">{totalSessionsCount}</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Total Sessions</p>
                       </div>
                     </div>
 
-                    <div className="bg-card p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
-                      <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0 text-green-500">
-                        <CheckCircle2 className="w-6 h-6" />
+                    <div className="bg-card p-4 md:p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0 text-green-500">
+                        <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-foreground">{avgAccuracy}%</p>
-                        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Avg Accuracy</p>
+                        <p className="text-xl md:text-2xl font-bold text-foreground">{avgAccuracy}%</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Avg Accuracy</p>
                       </div>
                     </div>
 
-                    <div className="bg-card p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
-                      <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-500">
-                        <Award className="w-6 h-6" />
+                    <div className="bg-card p-4 md:p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-500">
+                        <Award className="w-5 h-5 md:w-6 md:h-6" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-foreground">{avgScore}</p>
-                        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Avg Score</p>
+                        <p className="text-xl md:text-2xl font-bold text-foreground">{avgScore}</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Avg Score</p>
                       </div>
                     </div>
 
-                    <div className="bg-card p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
-                      <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 text-amber-500">
-                        <Clock className="w-6 h-6" />
+                    <div className="bg-card p-4 md:p-6 rounded-[1.5rem] border border-border flex items-center gap-4 shadow-sm">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 text-amber-500">
+                        <Clock className="w-5 h-5 md:w-6 md:h-6" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-foreground">{avgDuration}</p>
-                        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Avg Duration</p>
+                        <p className="text-xl md:text-2xl font-bold text-foreground">{avgDuration}</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground font-semibold uppercase tracking-wider font-sans">Avg Duration</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Performance Telemetry Charts */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     {/* Chart 1: Accuracy Trend */}
                     <div className="bg-card p-6 rounded-[2rem] border border-border flex flex-col justify-between shadow-sm">
                       <div className="mb-4">
@@ -1376,14 +1376,14 @@ export default function PractitionerDashboard() {
 
       {/* View Details Modal */}
       {showDetailsModal && selectedDetailsProgressor && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-in fade-in">
-          <div className="bg-card rounded-[2rem] p-8 max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in duration-300 border border-border overflow-hidden">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-6 animate-in fade-in">
+          <div className="bg-card rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in duration-300 border border-border overflow-hidden">
             <div className="flex items-center justify-between mb-4 flex-shrink-0">
-              <div>
-                <h2 className="text-2xl font-semibold text-foreground font-sans" style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}>
+              <div className="min-w-0 pr-4">
+                <h2 className="text-xl sm:text-2xl font-semibold text-foreground font-sans truncate" style={{ fontFamily: "'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif" }}>
                   Details: {selectedDetailsProgressor.name}
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-mono">
                   Progressor ID: {selectedDetailsProgressor.id}
                 </p>
               </div>
@@ -1394,17 +1394,17 @@ export default function PractitionerDashboard() {
                   setSessions([]);
                   setDetailsActiveTab('progression');
                 }}
-                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 text-foreground"
+                className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 text-foreground flex-shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-6 mb-6 border-b border-border pb-1 flex-shrink-0">
+            <div className="flex gap-4 sm:gap-6 mb-4 sm:mb-6 border-b border-border pb-1 flex-shrink-0 overflow-x-auto whitespace-nowrap scrollbar-none">
               <button
                 onClick={() => setDetailsActiveTab('progression')}
-                className={`pb-2 px-1 text-sm font-bold transition-all relative ${
+                className={`pb-2 px-1 text-xs sm:text-sm font-bold transition-all relative flex-shrink-0 ${
                   detailsActiveTab === 'progression'
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-muted-foreground hover:text-foreground'
@@ -1414,7 +1414,7 @@ export default function PractitionerDashboard() {
               </button>
               <button
                 onClick={() => setDetailsActiveTab('history')}
-                className={`pb-2 px-1 text-sm font-bold transition-all relative ${
+                className={`pb-2 px-1 text-xs sm:text-sm font-bold transition-all relative flex-shrink-0 ${
                   detailsActiveTab === 'history'
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-muted-foreground hover:text-foreground'
@@ -1424,7 +1424,7 @@ export default function PractitionerDashboard() {
               </button>
               <button
                 onClick={() => setDetailsActiveTab('settings')}
-                className={`pb-2 px-1 text-sm font-bold transition-all relative ${
+                className={`pb-2 px-1 text-xs sm:text-sm font-bold transition-all relative flex-shrink-0 ${
                   detailsActiveTab === 'settings'
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-muted-foreground hover:text-foreground'

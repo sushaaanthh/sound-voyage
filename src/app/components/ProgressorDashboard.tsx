@@ -341,14 +341,14 @@ export default function ProgressorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Header */}
-      <div className="bg-card border-b border-border px-8 py-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="bg-card border-b border-border px-4 md:px-8 py-4 md:py-6">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={() => setIsProfileModalOpen(true)}
-              className="w-12 h-12 rounded-full border border-border overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-border overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 active:scale-95 transition-all flex-shrink-0 cursor-pointer"
               aria-label="Open profile modal"
             >
               {userData?.avatar_url ? (
@@ -359,17 +359,17 @@ export default function ProgressorDashboard() {
                 />
               ) : (
                 <div className="w-full h-full bg-[#FF6347]/10 flex items-center justify-center text-[#FF6347]">
-                  <User className="w-6 h-6" />
+                  <User className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
               )}
             </button>
             <div>
-              <h1 className="mb-1 text-foreground">Ready for your Voyage?</h1>
-              <p className="text-muted-foreground">Choose a game to start playing</p>
+              <h1 className="mb-0.5 text-lg sm:text-xl font-bold text-foreground">Ready for your Voyage?</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">Choose a game to start playing</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-border/50">
             <ThemeToggle />
 
             <div className="relative" ref={popoverRef}>
@@ -381,23 +381,23 @@ export default function ProgressorDashboard() {
                     markAllRead();
                   }
                 }}
-                className="p-4 rounded-[2rem] bg-card shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 border border-border relative flex items-center justify-center text-foreground"
+                className="p-3 sm:p-4 rounded-[1.5rem] sm:rounded-[2rem] bg-card shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 border border-border relative flex items-center justify-center text-foreground"
                 aria-label="Notifications"
               >
-                <Bell className="w-6 h-6" />
+                <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
                 {hasUnread && (
-                  <span className="absolute top-2 right-2 w-3.5 h-3.5 bg-[#FF6347] rounded-full ring-2 ring-card" />
+                  <span className="absolute top-2 right-2 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-[#FF6347] rounded-full ring-2 ring-card" />
                 )}
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-3 w-80 bg-card border border-border rounded-[2rem] shadow-2xl p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-3 w-72 sm:w-80 bg-card border border-border rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl p-4 sm:p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-                    <h3 className="text-foreground font-bold">Practitioner Assignments</h3>
+                    <h3 className="text-foreground font-bold text-sm sm:text-base">Practitioner Assignments</h3>
                   </div>
                   <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                     {notifications.length === 0 ? (
-                      <div className="text-center py-6 text-sm text-muted-foreground">
+                      <div className="text-center py-6 text-xs sm:text-sm text-muted-foreground">
                         No new notifications
                       </div>
                     ) : (
@@ -405,7 +405,7 @@ export default function ProgressorDashboard() {
                         <button
                           key={notif.key}
                           onClick={() => handleNotificationClick(notif)}
-                          className={`w-full text-left p-3 rounded-[1.25rem] text-sm transition-all border block hover:scale-[1.02] active:scale-95 cursor-pointer ${
+                          className={`w-full text-left p-3 rounded-[1.25rem] text-xs sm:text-sm transition-all border block hover:scale-[1.02] active:scale-95 cursor-pointer ${
                             notif.read
                               ? 'bg-secondary/40 border-transparent text-muted-foreground hover:bg-secondary/60'
                               : 'bg-primary/10 border-primary/20 text-foreground font-medium hover:bg-primary/15'
@@ -422,35 +422,35 @@ export default function ProgressorDashboard() {
 
             <button
               onClick={() => setShowLogoutModal(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all border border-border text-foreground font-bold cursor-pointer"
+              className="flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-[1.25rem] sm:rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all border border-border text-foreground font-bold text-xs sm:text-sm cursor-pointer"
             >
-              <LogOut className="w-5 h-5" />
-              Logout
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Logout</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-12">
         {!selectedGame ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
             {GAMES.map((game, index) => {
               const Icon = game.icon;
               return (
                 <button
                   key={game.id}
                   onClick={() => setSelectedGame(game.id)}
-                  className="group bg-card rounded-[2rem] border border-border p-8 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 text-left overflow-hidden relative animate-in fade-in slide-in-from-bottom-4"
+                  className="group bg-card rounded-[1.5rem] sm:rounded-[2rem] border border-border p-6 md:p-8 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 text-left overflow-hidden relative animate-in fade-in slide-in-from-bottom-4"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
                   <div className="relative z-10">
-                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <Icon className="w-10 h-10 text-primary" />
+                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Icon className="w-8 h-8 md:w-10 md:h-10 text-primary" />
                     </div>
-                    <h2 className="mb-2 text-foreground">{game.name}</h2>
-                    <p className="text-sm text-muted-foreground">{game.description}</p>
+                    <h2 className="mb-2 text-lg md:text-xl text-foreground font-bold">{game.name}</h2>
+                    <p className="text-xs md:text-sm text-muted-foreground">{game.description}</p>
                   </div>
                 </button>
               );
@@ -460,32 +460,32 @@ export default function ProgressorDashboard() {
           <div>
             <button
               onClick={() => setSelectedGame(null)}
-              className="mb-8 px-6 py-3 rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 border border-border text-foreground"
+              className="mb-6 md:mb-8 px-5 md:px-6 py-2.5 md:py-3 rounded-[1.25rem] md:rounded-[1.5rem] bg-secondary hover:bg-muted hover:scale-105 active:scale-95 transition-all duration-300 border border-border text-foreground text-sm font-bold"
             >
-              Back to Games
+              ← Back to Games
             </button>
 
-            <div className="bg-card rounded-[2rem] border border-border p-8">
-              <div className="flex items-center gap-6 mb-8">
+            <div className="bg-card rounded-[1.5rem] sm:rounded-[2rem] border border-border p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 mb-6 md:mb-8">
                 {(() => {
                   const game = GAMES.find((g) => g.id === selectedGame);
                   const Icon = game?.icon;
                   return (
                     <>
-                      <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center">
-                        {Icon && <Icon className="w-16 h-16 text-primary" />}
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        {Icon && <Icon className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-primary" />}
                       </div>
                       <div>
-                        <h1 className="mb-2 text-foreground">{game?.name}</h1>
-                        <p className="text-muted-foreground">{game?.description}</p>
+                        <h1 className="mb-1 text-xl sm:text-2xl md:text-3xl font-extrabold text-foreground">{game?.name}</h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{game?.description}</p>
                       </div>
                     </>
                   );
                 })()}
               </div>
 
-              <h3 className="mb-6 text-foreground">Select a Level</h3>
-              <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
+              <h3 className="mb-4 sm:mb-6 text-base sm:text-lg font-bold text-foreground">Select a Level</h3>
+              <div className="grid grid-cols-5 md:grid-cols-10 gap-2 sm:gap-4">
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
                   const isAssigned = safeAssignedLevels.includes(`${selectedGame}-${level}`);
                   const isUnlocked = isLevelUnlocked(selectedGame, level);
@@ -495,23 +495,23 @@ export default function ProgressorDashboard() {
                     <button
                       key={level}
                       onClick={() => handleLevelClick(selectedGame, level)}
-                      className={`aspect-square rounded-[1.5rem] transition-all duration-300 shadow-lg relative flex flex-col items-center justify-center p-2 border ${
+                      className={`aspect-square rounded-[1rem] sm:rounded-[1.5rem] transition-all duration-300 shadow-md sm:shadow-lg relative flex flex-col items-center justify-center p-1 sm:p-2 border ${
                         isUnlocked
                           ? isCompleted
                             ? 'bg-primary/20 border-primary text-primary hover:scale-110'
                             : 'bg-primary text-primary-foreground hover:scale-110 hover:shadow-2xl active:scale-95 border-primary'
                           : 'bg-secondary border-border text-muted-foreground opacity-50 cursor-pointer'
-                      } ${isAssigned && isUnlocked ? 'ring-4 ring-primary/50' : ''}`}
+                      } ${isAssigned && isUnlocked ? 'ring-2 sm:ring-4 ring-primary/50' : ''}`}
                     >
-                      <div className="flex items-center justify-center gap-1.5">
-                        <span className="text-2xl font-bold">{level}</span>
-                        {!isUnlocked && <Lock className="w-4 h-4 text-muted-foreground" />}
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-base sm:text-2xl font-bold">{level}</span>
+                        {!isUnlocked && <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />}
                       </div>
                       {isCompleted && (
-                        <span className="text-[10px] text-primary font-semibold mt-1">Done</span>
+                        <span className="text-[8px] sm:text-[10px] text-primary font-semibold mt-0.5">Done</span>
                       )}
                       {level >= 3 && !isUnlocked && (
-                        <span className="text-[8px] text-muted-foreground font-medium mt-1 text-center leading-tight px-1">Practitioner Req.</span>
+                        <span className="text-[7px] sm:text-[8px] text-muted-foreground font-medium mt-0.5 text-center leading-tight px-0.5 hidden sm:block">Req.</span>
                       )}
                     </button>
                   );
@@ -533,9 +533,9 @@ export default function ProgressorDashboard() {
                 })}
               </div>
 
-              <div className="mt-8 p-6 rounded-[1.5rem] bg-primary/10 border border-primary/20 flex items-center gap-2">
-                <Target className="w-5 h-5 text-primary" />
-                <p className="text-sm text-primary">
+              <div className="mt-6 md:mt-8 p-4 sm:p-6 rounded-[1.25rem] sm:rounded-[1.5rem] bg-primary/10 border border-primary/20 flex items-center gap-2 sm:gap-3">
+                <Target className="w-5 h-5 text-primary flex-shrink-0" />
+                <p className="text-xs sm:text-sm text-primary font-medium">
                   Tip: Levels with a ring around them are assigned by your practitioner!
                 </p>
               </div>
