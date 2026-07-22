@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
-import { LogOut, Lock, Target, Map as MapIcon, Route, Shuffle, PackageSearch, LucideIcon, Bell, User } from 'lucide-react';
+import { LogOut, Lock, Target, Map as MapIcon, Route, Shuffle, PackageSearch, LucideIcon, Bell, User, Award } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
 import { supabase } from '../../lib/supabase';
@@ -103,7 +103,7 @@ export default function ProgressorDashboard() {
     checkOwnership();
   }, [progressorId, navigate]);
 
-  const { completedLevels, assignedLevels, setProgressor, updateSession } = useGameSession();
+  const { completedLevels, assignedLevels, earnedBadges, setProgressor, updateSession } = useGameSession();
   const safeCompletedLevels = Array.isArray(completedLevels) ? completedLevels : [];
   const safeAssignedLevels = Array.isArray(assignedLevels) ? assignedLevels : [];
 
@@ -129,9 +129,11 @@ export default function ProgressorDashboard() {
   };
 
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showBadges, setShowBadges] = useState(false);
   const [notifications, setNotifications] = useState<Array<{ id: number; key: string; text: string; read: boolean; gameId: string; levelNum: number }>>([]);
 
   const popoverRef = useRef<HTMLDivElement>(null);
+  const badgePopoverRef = useRef<HTMLDivElement>(null);
 
   const hasUnread = notifications.some(n => !n.read);
 
@@ -154,6 +156,9 @@ export default function ProgressorDashboard() {
       if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
         setShowNotifications(false);
       }
+      if (badgePopoverRef.current && !badgePopoverRef.current.contains(event.target as Node)) {
+        setShowBadges(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -169,7 +174,7 @@ export default function ProgressorDashboard() {
       try {
         const { data, error } = await supabase
           .from('progressors')
-          .select('id, name, age, assigned_email, completed_levels, assigned_levels, avatar_url')
+          .select('id, name, age, assigned_email, completed_levels, assigned_levels, avatar_url, earned_badges')
           .eq('id', progressorId)
           .maybeSingle();
 
@@ -178,7 +183,8 @@ export default function ProgressorDashboard() {
             progressorId,
             data.name || '',
             data.completed_levels || [],
-            data.assigned_levels || []
+            data.assigned_levels || [],
+            data.earned_badges || []
           );
           setUserData({
             id: data.id,
@@ -215,12 +221,14 @@ export default function ProgressorDashboard() {
             completed_levels?: any[];
             assigned_levels?: any[];
             avatar_url?: string | null;
+            earned_badges?: any[];
           };
           updateSession(
             progressorId,
             newData.name || '',
             newData.completed_levels || [],
-            newData.assigned_levels || []
+            newData.assigned_levels || [],
+            newData.earned_badges || []
           );
           setUserData({
             id: newData.id,
@@ -372,11 +380,60 @@ export default function ProgressorDashboard() {
           <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-border/50">
             <ThemeToggle />
 
+            {/* Badges Popover */}
+            <div className="relative" ref={badgePopoverRef}>
+              <button
+                onClick={() => {
+                  setShowBadges(!showBadges);
+                  setShowNotifications(false);
+                }}
+                className="p-3 sm:p-4 rounded-[1.5rem] sm:rounded-[2rem] bg-card shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 border border-border relative flex items-center justify-center text-foreground cursor-pointer"
+                aria-label="Badges"
+                title="Your Badges"
+              >
+                <Award className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+                {earnedBadges && earnedBadges.length > 0 && (
+                  <span className="absolute top-2 right-2 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-yellow-400 rounded-full ring-2 ring-card" />
+                )}
+              </button>
+
+              {showBadges && (
+                <div className="absolute right-0 mt-3 w-72 sm:w-80 bg-card border border-border rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl p-4 sm:p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
+                    <h3 className="text-foreground font-bold text-sm sm:text-base">Master Badges</h3>
+                  </div>
+                  <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                    {!earnedBadges || earnedBadges.length === 0 ? (
+                      <div className="text-center py-6 text-xs sm:text-sm text-muted-foreground">
+                        Complete Level 10 of any game to earn a badge!
+                      </div>
+                    ) : (
+                      earnedBadges.map((badgeId) => {
+                        const gameId = badgeId.replace('-master', '');
+                        const gameName = GAMES.find(g => g.id === gameId)?.name || gameId;
+                        return (
+                          <div
+                            key={badgeId}
+                            className="w-full flex items-center gap-3 p-3 rounded-[1.25rem] text-xs sm:text-sm transition-all border block bg-yellow-500/10 border-yellow-500/20 text-foreground font-medium"
+                          >
+                            <Award className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+                            <span>{gameName} Master</span>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Notifications Popover */}
             <div className="relative" ref={popoverRef}>
               <button
                 onClick={() => {
                   const nextShow = !showNotifications;
                   setShowNotifications(nextShow);
+                  setShowBadges(false);
                   if (nextShow) {
                     markAllRead();
                   }

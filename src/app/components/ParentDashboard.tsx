@@ -15,6 +15,7 @@ interface Progressor {
   assigned_levels: string[];
   last_session?: string;
   parent_id?: string;
+  earned_badges: string[];
 }
 
 interface GameSession {
@@ -108,6 +109,7 @@ export default function ParentDashboard() {
           age: p.age || 0,
           completed_levels: Array.isArray(p.completed_levels) ? p.completed_levels.map(String) : [],
           assigned_levels: Array.isArray(p.assigned_levels) ? p.assigned_levels.map(String) : [],
+          earned_badges: Array.isArray(p.earned_badges) ? p.earned_badges.map(String) : [],
           last_session: p.last_session || undefined,
           parent_id: p.parent_id
         }));
@@ -381,9 +383,18 @@ export default function ParentDashboard() {
                 {GAMES.map(game => {
                   const highestLvl = getHighestUnlockedLevel(game.id, selectedChild.completed_levels, selectedChild.assigned_levels);
                   const completedForGame = selectedChild.completed_levels.filter(l => l.startsWith(game.id)).length;
+                  const hasEarnedBadge = selectedChild.earned_badges.includes(`${game.id}-master`);
+                  
                   return (
-                    <div key={game.id} className="p-4 sm:p-5 rounded-2xl bg-secondary/20 border border-border/60 flex flex-col justify-between">
-                      <div>
+                    <div key={game.id} className="relative p-4 sm:p-5 rounded-2xl bg-secondary/20 border border-border/60 flex flex-col justify-between overflow-hidden">
+                      {/* Badge Indicator */}
+                      {hasEarnedBadge && (
+                        <div className="absolute top-2 right-2 text-yellow-500 bg-yellow-500/10 p-1.5 rounded-full" title="Master Badge Earned!">
+                          <Award className="w-5 h-5 fill-yellow-500" />
+                        </div>
+                      )}
+                      
+                      <div className="pr-6">
                         <h4 className="font-bold text-foreground text-sm truncate">{game.name}</h4>
                         <p className="text-xs text-muted-foreground mt-1">Unlocked up to</p>
                         <p className="text-lg sm:text-xl font-extrabold text-primary mt-1">Level {highestLvl}</p>

@@ -9,7 +9,7 @@ import { useGameSession } from '../context/GameSessionContext';
 export default function ResultScreen() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { saveGameResult } = useGameSession();
+  const { saveGameResult, awardBadgeToUser } = useGameSession();
 
   const state = location.state || {};
   const score = typeof state.score === 'number' ? state.score : 0;
@@ -71,6 +71,9 @@ export default function ResultScreen() {
   useEffect(() => {
     let modalTimeout: any = null;
     if (level === 10 && accuracy >= 60) {
+      // Award Master Badge
+      awardBadgeToUser(gameId);
+
       toast.success(`Grand Voyage Completed!`, {
         description: `You completed Level 10 of ${gameName} with flying colors!`,
         duration: 5000,

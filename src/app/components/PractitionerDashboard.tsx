@@ -21,6 +21,7 @@ interface Progressor {
   parentName?: string;
   completedLevels: string[];
   assignedLevels: string[];
+  earnedBadges: string[];
 }
 
 interface GameSession {
@@ -177,7 +178,8 @@ export default function PractitionerDashboard() {
               lastSession: lastSessionText,
               recentSession: recentSessionObj,
               completedLevels: Array.isArray(p.completed_levels) ? p.completed_levels.map(String) : [],
-              assignedLevels: Array.isArray(p.assigned_levels) ? p.assigned_levels.map(String) : []
+              assignedLevels: Array.isArray(p.assigned_levels) ? p.assigned_levels.map(String) : [],
+              earnedBadges: Array.isArray(p.earned_badges) ? p.earned_badges.map(String) : []
             };
           }));
         }
@@ -329,7 +331,8 @@ export default function PractitionerDashboard() {
         parentName: parentName || '',
         lastSession: 'No sessions yet',
         completedLevels: [],
-        assignedLevels: []
+        assignedLevels: [],
+        earnedBadges: []
       };
 
       setProgressors(prev => [...prev, newProgressor]);
@@ -1451,10 +1454,18 @@ export default function PractitionerDashboard() {
                         const Icon = game.icon;
                         const completed = selectedDetailsProgressor.completedLevels || [];
                         const gameCompletedCount = completed.filter(l => l.startsWith(`${game.id}-`)).length;
+                        const hasEarnedBadge = selectedDetailsProgressor.earnedBadges?.includes(`${game.id}-master`);
 
                         return (
-                          <div key={game.id} className="bg-secondary/15 rounded-[1.5rem] p-6 border border-border">
-                            <div className="flex items-center justify-between mb-4">
+                          <div key={game.id} className="relative bg-secondary/15 rounded-[1.5rem] p-6 border border-border overflow-hidden">
+                            {/* Badge Indicator */}
+                            {hasEarnedBadge && (
+                              <div className="absolute top-4 right-4 text-yellow-500 bg-yellow-500/10 p-1.5 rounded-full" title="Master Badge Earned!">
+                                <Award className="w-5 h-5 fill-yellow-500" />
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between mb-4 pr-8">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                                   <Icon className="w-6 h-6 text-primary" />
