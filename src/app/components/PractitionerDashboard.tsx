@@ -873,6 +873,33 @@ export default function PractitionerDashboard() {
                     </div>
                   </div>
 
+                  {/* Mastery Achievements */}
+                  <div className="bg-card p-4 md:p-6 rounded-[2rem] border border-border shadow-sm">
+                    <h4 className="text-foreground font-bold font-sans flex items-center gap-2 mb-1">
+                      <Award className="w-5 h-5 text-yellow-500" />
+                      Mastery Achievements
+                    </h4>
+                    <p className="text-xs text-muted-foreground mb-4">Games where all levels have been completed</p>
+                    {(!selectedProgressor.earnedBadges || selectedProgressor.earnedBadges.length === 0) ? (
+                      <p className="text-sm text-muted-foreground italic py-2">No mastery badges earned yet.</p>
+                    ) : (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {selectedProgressor.earnedBadges.map((badge) => {
+                          const badgeGameId = badge.replace('-master', '');
+                          const badgeGameName = GAMES.find(g => g.id === badgeGameId)?.name || badgeGameId;
+                          const GameIcon = GAMES.find(g => g.id === badgeGameId)?.icon;
+                          return (
+                            <div key={badge} title={`${badgeGameName} Master`} className="flex items-center gap-2 px-4 py-2.5 bg-yellow-500/10 rounded-[1.25rem] border border-yellow-500/20">
+                              {GameIcon && <GameIcon className="w-4 h-4 text-yellow-500" />}
+                              <Award className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                              <span className="text-xs font-bold text-foreground">{badgeGameName} Master</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Performance Telemetry Charts */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     {/* Chart 1: Accuracy Trend */}

@@ -371,7 +371,26 @@ export default function ParentDashboard() {
               </div>
             </div>
 
-            {/* Highest Unlocked Levels Grid */}
+            {/* Earned Mastery Badges */}
+            {selectedChild.earned_badges && selectedChild.earned_badges.length > 0 && (
+              <div className="flex items-center gap-3 mb-6 md:mb-10 p-4 sm:p-5 bg-yellow-50 dark:bg-yellow-500/10 rounded-[1.5rem] sm:rounded-[2rem] border border-yellow-200 dark:border-yellow-500/20 shadow-sm">
+                <Award className="w-6 h-6 text-yellow-500 flex-shrink-0" />
+                <span className="text-sm font-bold text-yellow-800 dark:text-yellow-300 mr-1">Mastery Badges:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {selectedChild.earned_badges.map((badge: string) => {
+                    const badgeGameId = badge.replace('-master', '');
+                    const badgeGameName = GAMES.find(g => g.id === badgeGameId)?.name || badgeGameId;
+                    return (
+                      <div key={badge} title={`${badgeGameName} Master`} className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400/20 dark:bg-yellow-500/20 rounded-full border border-yellow-300 dark:border-yellow-500/30">
+                        <Award className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <span className="text-xs font-bold text-yellow-800 dark:text-yellow-300">{badgeGameName}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="bg-card rounded-[1.5rem] sm:rounded-[2rem] border border-border p-4 sm:p-6 md:p-8 mb-6 md:mb-10 shadow-sm">
               <h3 className="text-foreground font-bold text-base sm:text-lg mb-1 flex items-center gap-2">
                 <Award className="w-5 h-5 text-primary flex-shrink-0" />

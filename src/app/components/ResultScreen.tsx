@@ -5,6 +5,19 @@ import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 import { ThemeToggle } from './ThemeToggle';
 import { useGameSession } from '../context/GameSessionContext';
+import { phonemePopData } from '../../data/phonemePopData';
+import { positionPilotData } from '../../data/positionPilotData';
+import { soundTrailData } from '../../data/soundTrailData';
+import { soundSyncData } from '../../data/soundSyncData';
+
+// Dynamic max levels per game (derived from data array lengths)
+const GAME_MAX_LEVELS: Record<string, number> = {
+  'phoneme-pop': phonemePopData.length,
+  'position-pilot': positionPilotData.length,
+  'sound-trail': soundTrailData.length,
+  'sound-synk': soundSyncData.length,
+  'sound-sorter': 10, // Data is inline in SoundSorter.tsx
+};
 
 export default function ResultScreen() {
   const location = useLocation();
@@ -67,15 +80,17 @@ export default function ResultScreen() {
     saveGameResult(gameId, level, score, accuracy, timeTaken, totalQuestions);
   }, []);
 
-  // Show celebratory toasts on mount if completed Level 10
+  // Show celebratory toasts on mount if completed the final level
   useEffect(() => {
     let modalTimeout: any = null;
-    if (level === 10 && accuracy >= 60) {
+    const maxLevelsForGame = GAME_MAX_LEVELS[gameId] || 10;
+
+    if (level === maxLevelsForGame && accuracy >= 60) {
       // Award Master Badge
       awardBadgeToUser(gameId);
 
       toast.success(`Grand Voyage Completed!`, {
-        description: `You completed Level 10 of ${gameName} with flying colors!`,
+        description: `You completed all ${maxLevelsForGame} levels of ${gameName} with flying colors!`,
         duration: 5000,
       });
       setTimeout(() => {

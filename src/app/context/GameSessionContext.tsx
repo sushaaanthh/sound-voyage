@@ -149,10 +149,25 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const activeId = progressorId || 'demo';
     const badgeId = `${gameId}-master`;
     
-    if (earnedBadges.includes(badgeId)) return;
-
     try {
-      const updatedBadges = [...earnedBadges, badgeId];
+      let currentBadges = [...earnedBadges];
+
+      // Fetch latest badges from Supabase to avoid overwriting from stale local state
+      if (activeId !== 'demo') {
+        const { data, error } = await supabase
+          .from('progressors')
+          .select('earned_badges')
+          .eq('id', activeId)
+          .single();
+
+        if (!error && data) {
+          currentBadges = data.earned_badges || [];
+        }
+      }
+
+      if (currentBadges.includes(badgeId)) return;
+
+      const updatedBadges = [...currentBadges, badgeId];
       setEarnedBadges(updatedBadges);
       sessionStorage.setItem('voyage_earned_badges', JSON.stringify(updatedBadges));
 
