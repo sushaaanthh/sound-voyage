@@ -24,7 +24,14 @@ export default function ResultScreen() {
   const level = typeof state.level === 'number' ? state.level : 1;
   const progressorId = typeof state.progressorId === 'string' ? state.progressorId : 'demo';
 
-  const accuracy = Math.round((score / totalQuestions) * 100);
+  const accuracy = typeof state.accuracyPercentage === 'number'
+    ? state.accuracyPercentage
+    : (typeof state.accuracy === 'number'
+        ? state.accuracy
+        : Math.round((score / totalQuestions) * 100));
+  const decimalScore = typeof state.decimalScore === 'string' || typeof state.decimalScore === 'number'
+    ? String(state.decimalScore)
+    : (accuracy / 10).toFixed(1);
   const missedWords = Array.isArray(state.missedWords) ? state.missedWords : [];
 
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);
@@ -177,7 +184,7 @@ export default function ResultScreen() {
                 <Trophy className="w-5 h-5 text-[#FF6347]" />
               </div>
               <p className="text-3xl mb-1 text-foreground font-extrabold">
-                {score}/{totalQuestions}
+                {state.decimalScore !== undefined ? `${decimalScore}/10` : `${score}/${totalQuestions}`}
               </p>
               <p className="text-sm text-muted-foreground">Score</p>
             </div>
@@ -264,7 +271,9 @@ export default function ResultScreen() {
             <div className="bg-muted/50 rounded-2xl p-4 mb-6 border border-border flex justify-around text-sm">
               <div>
                 <p className="text-xs text-muted-foreground uppercase font-semibold">Final Score</p>
-                <p className="text-lg font-bold text-foreground">{score}/{totalQuestions}</p>
+                <p className="text-lg font-bold text-foreground">
+                  {state.decimalScore !== undefined ? `${decimalScore}/10` : `${score}/${totalQuestions}`}
+                </p>
               </div>
               <div className="border-r border-border h-8 my-auto" />
               <div>

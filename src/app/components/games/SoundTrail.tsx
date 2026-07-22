@@ -99,9 +99,13 @@ export default function SoundTrail() {
   const currentLevelConfig: SoundTrailLevel =
     soundTrailData.find((l) => l.level === levelNum) || soundTrailData[0];
 
-  const totalRounds = 5;
+  // Load only the first 3 questions of the level trail
+  const currentLevelData = currentLevelConfig.chains.slice(0, 3);
+  const totalQuestions = currentLevelData.length; // Will be 2 or 3
+
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
+  const [wrongTaps, setWrongTaps] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [showQuitModal, setShowQuitModal] = useState(false);
   const [feedbackStatus, setFeedbackStatus] = useState<'correct' | 'wrong' | null>(null);
@@ -221,8 +225,8 @@ export default function SoundTrail() {
     setIsPlayingSequence(false);
   };
 
-  // Setup round nodes and select a random chain from pool
-  const startNewRound = () => {
+  // Setup round nodes and select chain from currentLevelData
+  const startNewRound = (roundIdx: number = currentRound) => {
     setIsTransitioning(false);
     setFeedbackStatus(null);
     setUserSequence([0]); // Start at the first node
@@ -230,11 +234,8 @@ export default function SoundTrail() {
     setRoundHasMistake(false);
     setIsTrailRevealed(false);
     
-    const chainsPool = currentLevelConfig.chains;
-    
-    // Select a random chain from the pool
-    const randomChainIndex = Math.floor(Math.random() * chainsPool.length);
-    const selectedChain = chainsPool[randomChainIndex];
+    // Pick chain from currentLevelData by index
+    const selectedChain = currentLevelData[roundIdx] || currentLevelData[0];
     setCurrentChain(selectedChain);
 
     // Map words to grid coordinates
@@ -251,9 +252,10 @@ export default function SoundTrail() {
   // Trigger round setup on load or config change
   useEffect(() => {
     setCurrentRound(0);
+    setWrongTaps(0);
     setScore(0);
     setMissedWords([]);
-    startNewRound();
+    startNewRound(0);
   }, [levelStr, currentLevelConfig]);
 
   // Autoplay current step transition when active step index changes
@@ -311,12 +313,13 @@ export default function SoundTrail() {
 
         setTimeout(async () => {
           setFeedbackStatus(null);
-          if (currentRound < totalRounds - 1) {
-            setCurrentRound(currentRound + 1);
-            startNewRound();
+          if (currentRound < totalQuestions - 1) {
+            const nextRound = currentRound + 1;
+            setCurrentRound(nextRound);
+            startNewRound(nextRound);
           } else {
             // Level is completed!
-            await completeLevel(nextScore);
+            await completeLevel();
           }
         }, 2500);
       } else {
@@ -324,8 +327,9 @@ export default function SoundTrail() {
         setCurrentStepIndex(nextStep);
       }
     } else {
-      // Incorrect position selected
+      // Incorrect position selected: increment wrongTaps
       playWrongBuzzer();
+      setWrongTaps((prev) => prev + 1);
       setRoundHasMistake(true);
       
       // Log the incorrect word transition target
@@ -345,8 +349,23 @@ export default function SoundTrail() {
     }
   };
 
-  const completeLevel = async (finalScore: number) => {
-    const accuracy = Math.round((finalScore / totalRounds) * 100);
+  const calculateFinalScores = () => {
+    const totalCorrectTaps = totalQuestions; 
+    const totalAttempts = totalCorrectTaps + wrongTaps;
+
+    // Calculate Accuracy as a percentage out of 100
+    const accuracyPercentage = Math.round((totalCorrectTaps / totalAttempts) * 100);
+
+    // Calculate Score as a decimal from 1.0 to 10.0 based on accuracy
+    const decimalScore = (accuracyPercentage / 10).toFixed(1);
+
+    return { accuracyPercentage, decimalScore };
+  };
+
+  const completeLevel = async () => {
+    const { accuracyPercentage, decimalScore } = calculateFinalScores();
+    const numericDecimalScore = parseFloat(decimalScore);
+
     const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
     const mins = Math.floor(elapsedSeconds / 60);
     const secs = elapsedSeconds % 60;
@@ -358,18 +377,21 @@ export default function SoundTrail() {
       progressorId: progressorId || 'demo',
       gameId: 'sound-trail',
       level: levelNum,
-      score: finalScore,
-      totalQuestions: totalRounds,
-      accuracy: accuracy,
+      score: numericDecimalScore,
+      totalQuestions: totalQuestions,
+      accuracy: accuracyPercentage,
       timeTaken: formattedTime
     });
 
     // Direct result page navigation logs it in session database table
     navigate('/result', {
       state: {
-        score: finalScore,
-        totalQuestions: totalRounds,
-        total: totalRounds,
+        score: numericDecimalScore,
+        decimalScore: decimalScore,
+        accuracyPercentage: accuracyPercentage,
+        accuracy: accuracyPercentage,
+        totalQuestions: totalQuestions,
+        total: totalQuestions,
         timeTaken: formattedTime,
         timeElapsed: elapsedSeconds,
         gameId,
@@ -412,7 +434,7 @@ export default function SoundTrail() {
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground font-sans">Round</p>
-              <p className="font-medium">{currentRound + 1}/{totalRounds}</p>
+              <p className="font-medium">{currentRound + 1}/{totalQuestions}</p>
             </div>
             <ThemeToggle />
           </div>
@@ -423,7 +445,7 @@ export default function SoundTrail() {
       <div className="bg-muted h-2 w-full">
         <div
           className="h-full bg-[#FF6347] transition-all duration-300"
-          style={{ width: `${(currentRound / totalRounds) * 100}%` }}
+          style={{ width: `${(currentRound / totalQuestions) * 100}%` }}
         />
       </div>
 
