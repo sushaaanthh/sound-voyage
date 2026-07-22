@@ -524,8 +524,8 @@ export default function SoundTrail() {
               {/* Background gradient grid glow */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.08),transparent_60%)] pointer-events-none" />
               
-              {/* SVG Line Connections */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+              {/* SVG Line Connections — z-0 ensures lines render behind all nodes */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none">
                 {/* Background Full Connection Path */}
                 {nodes.map((node, idx) => {
                   if (idx === nodes.length - 1) return null;
@@ -570,28 +570,34 @@ export default function SoundTrail() {
                 })}
               </svg>
 
-              {/* Trail Interactive Nodes */}
+              {/* Trail Interactive Nodes — z-10 with solid bg so SVG lines never bleed through */}
               {nodes.map((node) => {
                 const isHighlighted = highlightNodeIndex === node.index;
                 const isReached = userSequence.includes(node.index);
                 const isCurrent = node.index === currentStepIndex;
 
-                let borderStyles = 'border-border bg-card/40 opacity-40 text-muted-foreground';
+                // z-index: highlighted nodes float highest, others sit above SVG layer
+                let borderStyles = 'border-border bg-card text-muted-foreground';
                 let glowStyles = '';
 
                 if (isHighlighted) {
-                  borderStyles = 'border-[#FF6347] bg-[#FF6347] text-white font-extrabold scale-110 opacity-100 z-20';
+                  borderStyles = 'border-[#FF6347] bg-[#FF6347] text-white font-extrabold scale-110';
                   glowStyles = 'shadow-[0_0_25px_#FF6347]';
                 } else if (isCurrent) {
-                  borderStyles = 'border-dashed border-[#FF6347] bg-[#FF6347]/10 text-[#FF6347] dark:text-[#FF6347] font-extrabold opacity-100 z-10';
+                  borderStyles = 'border-dashed border-[#FF6347] bg-card text-[#FF6347] dark:text-[#FF6347] font-extrabold';
                   glowStyles = 'shadow-[0_0_10px_rgba(255,99,71,0.2)] animate-pulse';
                 } else if (isReached) {
-                  borderStyles = 'border-[#FF6347] bg-[#FF6347]/20 text-[#FF6347] dark:text-[#FF6347] font-bold opacity-100';
+                  borderStyles = 'border-[#FF6347] bg-card text-[#FF6347] dark:text-[#FF6347] font-bold';
                 }
 
-                // If working memory mode is active, hide words that are not the active node or not yet reached
-                // (Force user to rely on memory for past nodes, except active)
-                const showLabel = !isWorkingMemoryMode || isCurrent || isHighlighted;
+                // Reveal logic:
+                const isRevealed = isTrailRevealed || node.index <= currentStepIndex;
+                const nodeLabel = isRevealed ? node.word.toUpperCase() : '???';
+
+                // Adjust font size for long words so they don't overflow the circle
+                const wordFontClass = node.word.length > 5
+                  ? 'text-[10px] md:text-xs'
+                  : 'text-sm md:text-base';
 
                 return (
                   <motion.button
@@ -602,21 +608,31 @@ export default function SoundTrail() {
                       left: `${node.x}%`,
                       top: `${node.y}%`,
                       transform: 'translate(-50%, -50%)',
+                      zIndex: isHighlighted ? 30 : 10,
                     }}
-                    className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-3 flex flex-col items-center justify-center shadow-lg transition-all duration-300 font-poppins relative select-none z-10 cursor-pointer ${borderStyles} ${glowStyles}`}
+                    className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-3 flex flex-col items-center justify-center shadow-lg transition-all duration-300 font-poppins relative select-none cursor-pointer bg-card ${borderStyles} ${glowStyles}`}
                   >
                     {/* Index Label */}
                     <span className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${isHighlighted ? 'text-white/80' : 'text-muted-foreground'}`}>
                       Node {node.index + 1}
                     </span>
-                    {/* Masked / Revealed Node Label */}
-                    <span className="text-sm md:text-base font-extrabold tracking-wide uppercase text-center px-1 break-words">
-                      {showLabel && isTrailRevealed ? node.word : (showLabel ? `Node ${node.index + 1}` : '???')}
+
+                    {/* Word / Masked Label with high-contrast text when revealed */}
+                    <span
+                      className={`font-bold ${wordFontClass} tracking-wide uppercase text-center px-1 leading-tight break-words ${
+                        isHighlighted
+                          ? 'text-white'
+                          : isRevealed
+                            ? 'text-slate-800 dark:text-slate-100'
+                            : 'text-gray-400 dark:text-gray-500'
+                      }`}
+                    >
+                      {nodeLabel}
                     </span>
-                    
+
                     {/* Pulse Rings for Active highlights */}
                     {isHighlighted && (
-                      <span className="absolute inset-0 rounded-full border border-[#FF6347] animate-ping opacity-75" />
+                      <span className="absolute inset-0 rounded-full border border-[#FF6347] animate-ping opacity-75 pointer-events-none" />
                     )}
                   </motion.button>
                 );
