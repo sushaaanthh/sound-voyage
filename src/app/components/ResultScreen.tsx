@@ -188,8 +188,8 @@ export default function ResultScreen() {
             {subtitle}
           </p>
 
-          <div className="grid grid-cols-3 gap-6 mb-12">
-            <div className="p-6 rounded-[1.5rem] bg-background border border-border animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '200ms' }}>
+          <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 w-full mb-12">
+            <div className="flex-1 w-full p-6 rounded-[1.5rem] bg-background border border-border animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '200ms' }}>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Target className="w-5 h-5 text-[#FF6347]" />
               </div>
@@ -197,7 +197,7 @@ export default function ResultScreen() {
               <p className="text-sm text-muted-foreground">Accuracy</p>
             </div>
 
-            <div className="p-6 rounded-[1.5rem] bg-background border border-border animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '300ms' }}>
+            <div className="flex-1 w-full p-6 rounded-[1.5rem] bg-background border border-border animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '300ms' }}>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Trophy className="w-5 h-5 text-[#FF6347]" />
               </div>
@@ -207,7 +207,7 @@ export default function ResultScreen() {
               <p className="text-sm text-muted-foreground">Score</p>
             </div>
 
-            <div className="p-6 rounded-[1.5rem] bg-background border border-border animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '400ms' }}>
+            <div className="flex-1 w-full p-6 rounded-[1.5rem] bg-background border border-border animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '400ms' }}>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Clock className="w-5 h-5 text-[#FF6347]" />
               </div>
@@ -216,7 +216,7 @@ export default function ResultScreen() {
             </div>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col-reverse md:flex-row gap-4 w-full">
             <button
               onClick={() => {
                 if (accuracy >= 60) {
@@ -229,7 +229,7 @@ export default function ResultScreen() {
                   });
                 }
               }}
-              className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-[2rem] border border-border bg-background hover:bg-secondary hover:scale-105 active:scale-95 transition-all duration-300 text-foreground font-bold"
+              className="w-full md:w-1/2 flex items-center justify-center gap-2 px-8 py-4 rounded-[2rem] border border-border bg-background hover:bg-secondary hover:scale-105 active:scale-95 transition-all duration-300 text-foreground font-bold"
             >
               <RotateCcw className="w-5 h-5 text-[#FF6347]" />
               Try Again
@@ -238,7 +238,7 @@ export default function ResultScreen() {
             {accuracy >= 60 && (
               <button
                 onClick={handleContinue}
-                className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-[2rem] bg-[#FF6347] hover:bg-[#FF6347]/90 hover:scale-105 active:scale-95 transition-all duration-300 text-white font-bold"
+                className="w-full md:w-1/2 flex items-center justify-center gap-2 px-8 py-4 rounded-[2rem] bg-[#FF6347] hover:bg-[#FF6347]/90 hover:scale-105 active:scale-95 transition-all duration-300 text-white font-bold"
               >
                 Continue
                 <ArrowRight className="w-5 h-5" />

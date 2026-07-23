@@ -409,9 +409,9 @@ export default function ProgressorDashboard() {
               </button>
 
               {showBadges && (
-                <div className="absolute right-0 mt-3 w-72 sm:w-80 bg-card border border-border rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl p-4 sm:p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-3 w-64 md:w-80 bg-card border border-border rounded-[1.5rem] md:rounded-[2rem] shadow-2xl p-4 md:p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-                    <h3 className="text-foreground font-bold text-sm sm:text-base">Master Badges</h3>
+                    <h3 className="text-foreground font-bold text-sm md:text-base">Master Badges</h3>
                   </div>
                   <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                     {!earnedBadges || earnedBadges.length === 0 ? (
@@ -459,9 +459,9 @@ export default function ProgressorDashboard() {
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-3 w-72 sm:w-80 bg-card border border-border rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl p-4 sm:p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-3 w-64 md:w-80 bg-card border border-border rounded-[1.5rem] md:rounded-[2rem] shadow-2xl p-4 md:p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-                    <h3 className="text-foreground font-bold text-sm sm:text-base">Practitioner Assignments</h3>
+                    <h3 className="text-foreground font-bold text-sm md:text-base">Practitioner Assignments</h3>
                   </div>
                   <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                     {notifications.length === 0 ? (
