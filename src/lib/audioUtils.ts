@@ -139,20 +139,40 @@ export const initVoiceLock = () => {
   const voices = window.speechSynthesis.getVoices();
   if (voices.length === 0) return;
 
-  // 1. Filter for Indian English voices
-  const indianVoices = voices.filter(v => v.lang === 'en-IN' || v.lang === 'en_IN');
+  // 1. Get all English voices
+  const englishVoices = voices.filter(v => v.lang.startsWith('en'));
 
-  if (indianVoices.length > 0) {
-    // 2. iOS specifically uses "Rishi" for male and "Veena" for female. 
-    // Try to explicitly grab Veena, or fallback to the first non-Rishi Indian voice.
-    lockedVoice = indianVoices.find(v => v.name.includes('Veena')) ||
-      indianVoices.find(v => !v.name.includes('Rishi')) ||
-      indianVoices[0];
-  } else {
-    // Fallback: If no en-IN is installed, grab a generic female English voice
-    const englishVoices = voices.filter(v => v.lang.startsWith('en'));
-    lockedVoice = englishVoices.find(v => v.name.includes('Samantha') || v.name.includes('Female')) || englishVoices[0];
+  // 2. Get Indian English voices specifically
+  const indianVoices = englishVoices.filter(v => v.lang === 'en-IN' || v.lang === 'en_IN');
+
+  // 3. Aggressive Female Voice Hunt (Ban "Rishi")
+  // Check for Veena (Apple), Isha (Microsoft), Sangeeta (Google)
+  let selectedVoice = indianVoices.find(v => 
+    !v.name.toLowerCase().includes('rishi') && 
+    (v.name.toLowerCase().includes('veena') || v.name.toLowerCase().includes('isha') || v.name.toLowerCase().includes('sangeeta'))
+  );
+
+  // 4. Fallback 1: Any Indian English voice that is NOT Rishi
+  if (!selectedVoice) {
+    selectedVoice = indianVoices.find(v => !v.name.toLowerCase().includes('rishi'));
   }
+
+  // 5. Fallback 2: Any standard English Female voice (Samantha, Karen, Google UK Female, etc.)
+  if (!selectedVoice) {
+    selectedVoice = englishVoices.find(v => 
+      v.name.toLowerCase().includes('samantha') || 
+      v.name.toLowerCase().includes('female') ||
+      v.name.toLowerCase().includes('karen') ||
+      v.name.toLowerCase().includes('victoria')
+    );
+  }
+
+  // 6. Absolute Last Resort: Just give me the first voice that isn't Rishi
+  if (!selectedVoice) {
+    selectedVoice = englishVoices.find(v => !v.name.toLowerCase().includes('rishi')) || voices[0];
+  }
+
+  lockedVoice = selectedVoice || null;
 };
 
 // iOS Safari requires this event listener because voices load asynchronously
