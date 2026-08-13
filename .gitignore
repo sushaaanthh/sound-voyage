@@ -6,3 +6,6 @@ dist/
 .vscode/
 .idea/
 .DS_Store
+
+# Local architectural protocol — not for version control
+PROJECT_CONTEXT.md
