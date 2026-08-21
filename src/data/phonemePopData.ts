@@ -404,7 +404,7 @@ export const phonemePopData: PhonemeLevel[] = [
         targetSound: '/o/',
         options: [
           { label: 'hot', isCorrect: true, icon: 'Flame' },
-          { label: 'boat', isCorrect: false, icon: 'Ship' },
+          { label: 'pot', isCorrect: true, icon: 'Soup' },
           { label: 'cry', isCorrect: false, icon: 'Frown' },
           { label: 'stop', isCorrect: true, icon: 'Octagon' }
         ]

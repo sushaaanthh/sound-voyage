@@ -417,10 +417,12 @@ export default function SoundSorter() {
     }));
     setAvailableSounds(mapped);
 
-    // Play target word audio automatically
-    setTimeout(() => {
-      speak(q.word);
-    }, 500);
+    // Play target word audio automatically for Audio-Only mode
+    if (levelNum >= 6) {
+      setTimeout(() => {
+        speak(q.word);
+      }, 500);
+    }
   };
 
   // Live Timer
@@ -701,7 +703,7 @@ export default function SoundSorter() {
               </div>
               <div className="text-left">
                 <h4 className="font-black text-xl tracking-wide uppercase text-[#FF6347] font-poppins">
-                  LISTEN TO WORD
+                  {levelNum <= 5 ? currentQ.word : '???'}
                 </h4>
                 <p className="text-xs text-muted-foreground font-sans mt-0.5">
                   Click to hear the blending target

@@ -25,7 +25,7 @@ export const PHONEME_PRONUNCIATION_MAP: Record<string, string> = {
   '/g/': 'gah', '/f/': 'fa', '/v/': 'va', '/θ/': 'th', '/ð/': 'th',
   '/s/': 'sa', '/z/': 'za', '/ʃ/': 'sha', '/sh/': 'sha', '/ʒ/': 'zha',
   '/h/': 'huh', '/ch/': 'cha', '/dʒ/': 'ja', '/j/': 'ja', '/m/': 'ma',
-  '/n/': 'na', '/ŋ/': 'ng', '/l/': 'la', '/r/': 'ra', '/y/': 'yuh',
+  '/n/': 'na', '/ŋ/': 'ng', '/l/': 'la', '/r/': 'ruh', '/y/': 'yuh',
   '/w/': 'wah',
 
   // Monophthongs
@@ -43,7 +43,13 @@ export const PHONEME_PRONUNCIATION_MAP: Record<string, string> = {
   '/o_aww/': 'aww', '/o_oo/': 'oo', '/o_oh/': 'oh', '/q_kuh/': 'kuh',
   '/q_kyuh/': 'kyuh', '/u_yuu/': 'yuu', '/u_uh/': 'uh', '/u_oo/': 'oo',
   '/w_wuh/': 'wuh', '/w_vuh/': 'vuh', '/x_ksuh/': 'ksuh', '/x_zuh/': 'zuh',
-  '/x_kzuh/': 'kzuh', '/y_yuh/': 'yuh', '/y_ya/': 'ya'
+  '/x_kzuh/': 'kzuh', '/y_yuh/': 'yuh', '/y_ya/': 'ya',
+
+  // Short words override to prevent spelling out
+  'in': 'inn',
+  'up': 'upp',
+  'on': 'onn',
+  'at': 'att'
 };
 
 const phonemeMap: Record<string, string> = {
