@@ -443,14 +443,34 @@ export default function SoundSorter() {
       const newCache = { ...audioCache };
       const soundsToFetch = [...availableSounds.map(s => s.text), currentQ.word];
 
+      const key = import.meta.env.VITE_AZURE_SPEECH_KEY;
+      const region = import.meta.env.VITE_AZURE_SPEECH_REGION;
+
+      if (!key || !region) {
+        console.error('Azure TTS credentials missing. Set VITE_AZURE_SPEECH_KEY and VITE_AZURE_SPEECH_REGION.');
+        return;
+      }
+
       for (const sound of soundsToFetch) {
         if (!newCache[sound]) {
           try {
-            // Replace with actual Supabase Edge Function call later
-            const response = await fetch('/api/tts', {
+            const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-IN">
+              <voice name="en-IN-NeerjaNeural">
+                ${sound}
+              </voice>
+            </speak>`;
+
+            const response = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
               method: 'POST',
-              body: JSON.stringify({ text: sound })
+              headers: {
+                'Ocp-Apim-Subscription-Key': key,
+                'Content-Type': 'application/ssml+xml',
+                'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3',
+                'User-Agent': 'SoundVoyageApp',
+              },
+              body: ssml,
             });
+
             if (response.ok) {
               const blob = await response.blob();
               const url = URL.createObjectURL(blob);
