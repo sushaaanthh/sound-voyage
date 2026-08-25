@@ -64,6 +64,7 @@ export const PHONEME_AUDIO_MAP: Record<string, string> = {
   '/æ/': 'ah',
   '/ɑː/': 'ah',
   '/ɒ/': 'o',
+  '/o/': 'o',
   '/ɔː/': 'aw',
   '/ʊ/': 'uu',
   '/uː/': 'oo',

@@ -7,7 +7,7 @@ import QuitGameModal from '../ui/QuitGameModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { soundSyncData } from '../../../data/soundSyncData';
 import { getOptionIcon } from '../OptionIconMapper';
-import { playAudio } from '../../../lib/audioUtils';
+import { playAzureAudio } from '../../../lib/audioUtils';
 import { submitGameSession } from '../../../lib/telemetryUtils';
 
 const playCorrectBell = () => {
@@ -27,8 +27,8 @@ const playCorrectBell = () => {
       osc1.type = 'sine';
       osc1.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
       osc1.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
-      gain1.gain.setValueAtTime(0.85, ctx.currentTime);
-      gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.55);
+      gain1.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
       osc1.connect(gain1);
       gain1.connect(masterGain);
       osc1.start();
@@ -40,8 +40,8 @@ const playCorrectBell = () => {
       osc2.type = 'triangle';
       osc2.frequency.setValueAtTime(1174.66, ctx.currentTime); // D6
       osc2.frequency.exponentialRampToValueAtTime(1318.51, ctx.currentTime + 0.12); // E6
-      gain2.gain.setValueAtTime(0.65, ctx.currentTime);
-      gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+      gain2.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
       osc2.connect(gain2);
       gain2.connect(masterGain);
       osc2.start();
@@ -68,8 +68,8 @@ const playWrongBuzzer = () => {
       const gain1 = ctx.createGain();
       osc1.type = 'sawtooth';
       osc1.frequency.setValueAtTime(140, ctx.currentTime);
-      gain1.gain.setValueAtTime(0.75, ctx.currentTime);
-      gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      gain1.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
       osc1.connect(gain1);
       gain1.connect(masterGain);
       osc1.start();
@@ -80,8 +80,8 @@ const playWrongBuzzer = () => {
       const gain2 = ctx.createGain();
       osc2.type = 'square';
       osc2.frequency.setValueAtTime(155, ctx.currentTime);
-      gain2.gain.setValueAtTime(0.55, ctx.currentTime);
-      gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      gain2.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
       osc2.connect(gain2);
       gain2.connect(masterGain);
       osc2.start();
@@ -136,17 +136,7 @@ export default function SoundSync() {
 
   // Speaks text
   const speakText = (text: string): Promise<void> => {
-    return new Promise((resolve) => {
-      playAudio(text, {
-        onStart: () => {},
-        onEnd: () => {
-          resolve();
-        },
-        onError: () => {
-          resolve();
-        }
-      });
-    });
+    return playAzureAudio(text);
   };
 
   // Initialize the game grid
@@ -206,9 +196,6 @@ export default function SoundSync() {
   // Cleanup synthesis on unmount
   useEffect(() => {
     return () => {
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
     };
   }, []);
 

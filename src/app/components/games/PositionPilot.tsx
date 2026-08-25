@@ -10,7 +10,7 @@ import { FeedbackModal } from '../ui/FeedbackModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { positionPilotData, PositionPilotQuestion } from '../../../data/positionPilotData';
 import { getOptionIcon } from '../OptionIconMapper';
-import { playAudio } from '../../../lib/audioUtils';
+import { playAzureAudio } from '../../../lib/audioUtils';
 import { submitGameSession } from '../../../lib/telemetryUtils';
 import { getPhonemeAudioStr } from '../../../data/phonemeAudioMap';
 
@@ -107,28 +107,20 @@ export default function PositionPilot() {
     return () => clearInterval(timer);
   }, []);
 
-  // Native Text-to-Speech engine supporting en-IN
-  const playIndianAudio = (text: string, wordContext?: string) => {
-    playAudio(text, {
-      onStart: () => {
-        setIsPlaying(true);
-      },
-      onEnd: () => {
-        setIsPlaying(false);
-      },
-      onError: () => {
-        setIsPlaying(false);
-      },
-      wordContext
-    }, wordContext);
+  const playIndianAudio = async (text: string) => {
+    setIsPlaying(true);
+    try {
+      await playAzureAudio(text);
+    } catch {
+      // ignore playback errors
+    } finally {
+      setIsPlaying(false);
+    }
   };
 
   // Cleanup speech synthesis on unmount
   useEffect(() => {
     return () => {
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
     };
   }, []);
 
@@ -153,7 +145,7 @@ export default function PositionPilot() {
 
   const playSound = () => {
     if (!currentQuestion || isTransitioning) return;
-    playIndianAudio(currentQuestion.word, currentQuestion.word);
+    playIndianAudio(currentQuestion.word);
   };
 
   const formatTime = (seconds: number) => {
@@ -311,7 +303,7 @@ export default function PositionPilot() {
                   !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                <AudioWaveMask variant="main" onClick={() => playIndianAudio(getQuestionAudioText(), currentQuestion.word)} />
+                <AudioWaveMask variant="main" onClick={() => playIndianAudio(getQuestionAudioText())} />
               </div>
 
               {/* Unified Toggle Button */}
@@ -320,7 +312,7 @@ export default function PositionPilot() {
                   const nextState = !isQuestionRevealed;
                   setIsQuestionRevealed(nextState);
                   if (!nextState) {
-                    playIndianAudio(getQuestionAudioText(), currentQuestion.word);
+                    playIndianAudio(getQuestionAudioText());
                   }
                 }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-secondary transition-colors z-20 cursor-pointer"

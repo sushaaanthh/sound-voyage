@@ -11,7 +11,7 @@ import { FeedbackModal } from '../ui/FeedbackModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
 import { getOptionIcon, getOptionIconComponent } from '../OptionIconMapper';
-import { playAudio } from '../../../lib/audioUtils';
+import { playAzureAudio } from '../../../lib/audioUtils';
 import { submitGameSession } from '../../../lib/telemetryUtils';
 import { useAudioCache } from '../../../hooks/useAudioCache';
 
@@ -56,7 +56,7 @@ export default function PhonemePop({}: PhonemePopProps) {
     ...(currentQuestion?.options ? currentQuestion.options.map(o => typeof o === 'string' ? o : o.label) : [])
   ].filter((s): s is string => Boolean(s));
 
-  const { audioCache, playSound: playCachedSound, isReady: _isReady } = useAudioCache(soundsToCache);
+  const { audioCache, isReady: _isReady } = useAudioCache(soundsToCache);
   
   // Transition lock and clinical tracking states
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -139,24 +139,18 @@ export default function PhonemePop({}: PhonemePopProps) {
 
   const playIndianAudio = (sound: string, _source: string = 'main', wordContext?: string) => {
     const targetWord = wordContext || currentQuestion?.word || '';
-    const finalSound = sound;
 
-    if (audioCache[finalSound] || audioCache[sound]) {
+    if (audioCache[sound] || audioCache[targetWord]) {
       setIsPlaying(true);
-      const audio = audioCache[finalSound] || audioCache[sound];
-      audio.currentTime = 0; // Reset to start
+      const audio = audioCache[sound] || audioCache[targetWord];
+      audio.currentTime = 0;
       audio.onended = () => setIsPlaying(false);
       audio.onerror = () => setIsPlaying(false);
       audio.play();
     } else {
       console.warn("Audio not pre-fetched yet!");
-      playCachedSound(finalSound);
-      playAudio(finalSound, {
-        onStart: () => setIsPlaying(true),
-        onEnd: () => setIsPlaying(false),
-        onError: () => setIsPlaying(false),
-        wordContext: targetWord
-      }, targetWord);
+      setIsPlaying(true);
+      playAzureAudio(sound).finally(() => setIsPlaying(false));
     }
   };
 

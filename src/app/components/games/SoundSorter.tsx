@@ -8,7 +8,7 @@ import { PhonemeText } from '../PhonemeText';
 import QuitGameModal from '../ui/QuitGameModal';
 import { FeedbackModal } from '../ui/FeedbackModal';
 import { useGameSession } from '../../context/GameSessionContext';
-import { playAudio } from '../../../lib/audioUtils';
+import { playAzureAudio } from '../../../lib/audioUtils';
 import { submitGameSession } from '../../../lib/telemetryUtils';
 
 // Data types
@@ -362,7 +362,7 @@ export default function SoundSorter() {
       audioCache[sound].play();
     } else {
       console.warn("Audio not pre-fetched yet!");
-      playAudio(sound);
+      playAzureAudio(sound);
     }
   };
 
