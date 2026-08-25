@@ -12,7 +12,7 @@ import { playAudio } from '../../../lib/audioUtils';
 
 const playCorrectBell = () => {
   const audio = new Audio('/sounds/correct-bell.mp3');
-  audio.volume = 1.0;
+  audio.volume = 0.05;
   audio.play().catch(() => {
     try {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -51,7 +51,7 @@ const playCorrectBell = () => {
 
 const playWrongBuzzer = () => {
   const audio = new Audio('/sounds/wrong-buzzer.mp3');
-  audio.volume = 1.0;
+  audio.volume = 0.05;
   audio.play().catch(() => {
     try {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();

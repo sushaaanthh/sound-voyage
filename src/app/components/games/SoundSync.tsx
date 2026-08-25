@@ -12,7 +12,7 @@ import { submitGameSession } from '../../../lib/telemetryUtils';
 
 const playCorrectBell = () => {
   const audio = new Audio('/sounds/correct-bell.mp3');
-  audio.volume = 0.25;
+  audio.volume = 0.05;
   audio.play().catch(() => {
     try {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -54,7 +54,7 @@ const playCorrectBell = () => {
 
 const playWrongBuzzer = () => {
   const audio = new Audio('/sounds/wrong-buzzer.mp3');
-  audio.volume = 0.25;
+  audio.volume = 0.05;
   audio.play().catch(() => {
     try {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
