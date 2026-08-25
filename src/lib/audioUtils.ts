@@ -322,3 +322,25 @@ export function playAudio(
   window.speechSynthesis.speak(utterance);
   return utterance;
 }
+
+export function playAzureAudio(text: string, isPhoneme: boolean = false): void {
+  if (typeof window === 'undefined') return;
+
+  fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, isPhoneme }),
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('TTS request failed');
+      return res.blob();
+    })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.onended = () => URL.revokeObjectURL(url);
+      audio.onerror = () => URL.revokeObjectURL(url);
+      audio.play();
+    })
+    .catch(err => console.error('Azure TTS playback failed:', err));
+}
