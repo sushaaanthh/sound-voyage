@@ -145,7 +145,9 @@ async function fetchDirectFromAzure(
 ): Promise<string> {
   const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-IN">
       <voice name="en-IN-NeerjaNeural">
-        ${isPhoneme ? `<phoneme alphabet="ipa" ph="${text}">${text}</phoneme>` : text}
+        <prosody rate="85%">
+          ${isPhoneme ? `<phoneme alphabet="ipa" ph="${text}">${text}</phoneme>` : text}
+        </prosody>
       </voice>
     </speak>`;
 
