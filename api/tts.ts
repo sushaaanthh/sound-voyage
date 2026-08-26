@@ -8,31 +8,33 @@ export default async function handler(req: any, res: any) {
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
 
   const { text, isPhoneme } = req.body;
   const region = process.env.AZURE_SPEECH_REGION;
   const key = process.env.AZURE_SPEECH_KEY;
 
-  if (!text) {
-    return res.status(400).json({ error: 'Missing text in request body' });
+  if (!text || typeof text !== 'string') {
+    console.error('[TTS] Missing or invalid text in request body');
+    return res.status(400).json({ error: 'Missing or invalid text in request body' });
   }
 
   if (!region || !key) {
-    console.error('Missing Azure Speech credentials on server');
+    console.error('[TTS] Missing Azure Speech credentials on server');
     return res.status(500).json({ error: 'Azure Speech credentials are not configured on the server' });
   }
 
   const endpoint = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
 
-  const ssml = `
-    <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-IN">
-      <voice name="en-IN-NeerjaNeural">
-        ${isPhoneme ? `<phoneme alphabet="ipa" ph="${text}">${text}</phoneme>` : text}
-      </voice>
-    </speak>
-  `;
+  const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-IN">
+    <voice name="en-IN-NeerjaNeural">
+      ${isPhoneme ? `<phoneme alphabet="ipa" ph="${text}">${text}</phoneme>` : text}
+    </voice>
+  </speak>`;
 
   try {
     const response = await fetch(endpoint, {
@@ -48,8 +50,8 @@ export default async function handler(req: any, res: any) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Azure TTS error:', response.status, errorText);
-      return res.status(502).json({ error: 'Audio generation failed', status: response.status });
+      console.error('[TTS] Azure TTS error:', response.status, errorText);
+      return res.status(502).json({ error: 'Audio generation failed', status: response.status, details: errorText });
     }
 
     const arrayBuffer = await response.arrayBuffer();
@@ -57,10 +59,9 @@ export default async function handler(req: any, res: any) {
 
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.setHeader('Access-Control-Allow-Origin', '*');
     res.send(buffer);
   } catch (error) {
-    console.error('Azure TTS execution failed:', error);
+    console.error('[TTS] Azure TTS execution failed:', error);
     res.status(500).json({ error: 'Audio generation failed' });
   }
 }
