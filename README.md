@@ -17,7 +17,7 @@ Sound Voyage is a web-based cognitive assessment tool built for Samvidh Psych Se
 
 ### For Children (Progressors)
 - Five distinct phonological games, each with progressive difficulty levels
-- Real-time audio feedback using a layered TTS pipeline (HuggingFace → SpeechSynthesis)
+- Real-time audio feedback using a layered TTS pipeline (Azure Speech Synthesis)
 - Indian-English voice targeting for culturally appropriate pronunciation
 - Mastery badges awarded on game completion
 - Bell/buzzer sound feedback on correct and incorrect answers
@@ -54,7 +54,7 @@ All games track accuracy, time taken, and missed words. Passing threshold is **6
 | Backend | Supabase (Postgres + Auth + Realtime) |
 | Animation | Motion (`motion/react`) |
 | Charts | Recharts |
-| TTS (Primary) | HuggingFace Inference API — `espnet/kan-bayashi_ljspeech_vits` |
+| TTS (Primary) | Azure Speech Synthesis (server-side, authenticated) |
 | TTS (Fallback) | Web Speech API (`SpeechSynthesisUtterance`) with Indian-English voice lock |
 | AI | Google Generative AI (Gemini) |
 | Icons | Lucide React |
@@ -84,14 +84,12 @@ src/
 │       └── GameSessionContext.tsx # Global session + badge state
 ├── data/                          # Static game level data
 ├── hooks/
-│   └── useAudioCache.ts           # HuggingFace TTS pre-fetch hook
+│   └── useAudioCache.ts           # TTS audio pre-fetch hook
 ├── lib/
 │   ├── audioUtils.ts              # TTS + phoneme translation engine
 │   ├── supabase.ts                # Supabase singleton client
 │   ├── telemetryUtils.ts          # Session DB writes + level unlock logic
 │   └── gemini.ts                  # Gemini AI client
-├── utils/
-│   └── huggingFaceTTS.ts          # HF Inference API fetch helper
 └── styles/
     ├── theme.css                  # Design tokens (light + dark)
     └── fonts.css                  # Font-face declarations
@@ -118,14 +116,12 @@ Create a `.env` file in the project root:
 ```env
 VITE_DB_URL=your_supabase_project_url
 VITE_DB_ANON_KEY=your_supabase_anon_key
-VITE_HF_API_KEY=your_huggingface_api_key
 ```
 
 | Variable | Description |
 |---|---|
 | `VITE_DB_URL` | Your Supabase project URL |
 | `VITE_DB_ANON_KEY` | Supabase `anon` public key |
-| `VITE_HF_API_KEY` | HuggingFace API key for TTS inference |
 
 ### Development
 

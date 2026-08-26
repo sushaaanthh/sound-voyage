@@ -22,6 +22,24 @@ interface GameSessionContextType {
 
 const GameSessionContext = createContext<GameSessionContextType | undefined>(undefined);
 
+async function verifyProgressorOwnership(progressorId: string): Promise<boolean> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { data: profile } = await supabase
+      .from('progressors')
+      .select('auth_user_id')
+      .eq('id', progressorId)
+      .maybeSingle();
+
+    if (!profile) return false;
+    return profile.auth_user_id === user.id;
+  } catch {
+    return false;
+  }
+}
+
 export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [progressorId, setProgressorId] = useState<string | null>(() => {
     return sessionStorage.getItem('voyage_progressor_id');
@@ -85,23 +103,30 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       const { data, error } = await supabase
         .from('progressors')
-        .select('name, completed_levels, assigned_levels, earned_badges')
+        .select('name, completed_levels, assigned_levels, earned_badges, auth_user_id')
         .eq('id', id)
         .single();
 
       if (error) {
         console.error('Error fetching progressor profile:', error.message);
-        // Fallback to offline/mock progressor if not found in DB
         updateSession(id, 'Demo Progressor', [], [], []);
-      } else if (data) {
-        updateSession(
-          id, 
-          data.name || '', 
-          data.completed_levels || [], 
-          data.assigned_levels || [],
-          data.earned_badges || []
-        );
+        return;
       }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && data.auth_user_id !== user.id) {
+        console.error('Unauthorized progressor access attempt');
+        updateSession(id, 'Demo Progressor', [], [], []);
+        return;
+      }
+
+      updateSession(
+        id,
+        data.name || '',
+        data.completed_levels || [],
+        data.assigned_levels || [],
+        data.earned_badges || []
+      );
     } catch (err) {
       console.error('Failed to set progressor:', err);
       updateSession(id, 'Demo Progressor', [], [], []);
@@ -119,7 +144,14 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const activeId = progressorId || 'demo';
     
     try {
-      // If score is passing (accuracy >= 60%), append to completedLevels and update progressors table
+      if (activeId !== 'demo') {
+        const owned = await verifyProgressorOwnership(activeId);
+        if (!owned) {
+          console.error('Unauthorized: progressor does not belong to current user');
+          return;
+        }
+      }
+
       if (accuracy >= 60) {
         const compositeKey = `${gameId}-${level}`;
         const updatedLevels = completedLevels.includes(compositeKey)
@@ -150,9 +182,16 @@ export const GameSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const badgeId = `${gameId}-master`;
     
     try {
+      if (activeId !== 'demo') {
+        const owned = await verifyProgressorOwnership(activeId);
+        if (!owned) {
+          console.error('Unauthorized: progressor does not belong to current user');
+          return;
+        }
+      }
+
       let currentBadges = [...earnedBadges];
 
-      // Fetch latest badges from Supabase to avoid overwriting from stale local state
       if (activeId !== 'demo') {
         const { data, error } = await supabase
           .from('progressors')

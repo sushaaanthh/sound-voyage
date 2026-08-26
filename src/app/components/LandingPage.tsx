@@ -93,7 +93,8 @@ export default function LandingPage() {
             profile.id,
             profile.name || '',
             profile.completed_levels || [],
-            profile.assigned_levels || []
+            profile.assigned_levels || [],
+            profile.earned_badges || []
           );
           navigate(`/progressor/${profile.id}`);
         } else {
@@ -209,7 +210,8 @@ export default function LandingPage() {
           progressorProfile.id,
           progressorProfile.name || '',
           progressorProfile.completed_levels || [],
-          progressorProfile.assigned_levels || []
+          progressorProfile.assigned_levels || [],
+          progressorProfile.earned_badges || []
         );
 
         toast.success('Successfully logged in as Progressor');
