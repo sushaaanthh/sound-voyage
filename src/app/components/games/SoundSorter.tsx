@@ -9,6 +9,7 @@ import QuitGameModal from '../ui/QuitGameModal';
 import { FeedbackModal } from '../ui/FeedbackModal';
 import { useGameSession } from '../../context/GameSessionContext';
 import { playAzureAudio } from '../../../lib/audioUtils';
+import { fetchTTSAudio } from '../../../lib/ttsClient';
 import { submitGameSession } from '../../../lib/telemetryUtils';
 
 // Data types
@@ -443,41 +444,11 @@ export default function SoundSorter() {
       const newCache = { ...audioCache };
       const soundsToFetch = [...availableSounds.map(s => s.text), currentQ.word];
 
-      const key = import.meta.env.VITE_AZURE_SPEECH_KEY;
-      const region = import.meta.env.VITE_AZURE_SPEECH_REGION;
-
-      if (!key || !region) {
-        console.error('Azure TTS credentials missing. Set VITE_AZURE_SPEECH_KEY and VITE_AZURE_SPEECH_REGION.');
-        return;
-      }
-
       for (const sound of soundsToFetch) {
         if (!newCache[sound]) {
-          try {
-            const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-IN">
-              <voice name="en-IN-NeerjaNeural">
-                ${sound}
-              </voice>
-            </speak>`;
-
-            const response = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
-              method: 'POST',
-              headers: {
-                'Ocp-Apim-Subscription-Key': key,
-                'Content-Type': 'application/ssml+xml',
-                'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3',
-                'User-Agent': 'SoundVoyageApp',
-              },
-              body: ssml,
-            });
-
-            if (response.ok) {
-              const blob = await response.blob();
-              const url = URL.createObjectURL(blob);
-              newCache[sound] = new Audio(url);
-            }
-          } catch (error) {
-            console.error(`Failed to pre-fetch audio for ${sound}`, error);
+          const url = await fetchTTSAudio(sound);
+          if (url) {
+            newCache[sound] = new Audio(url);
           }
         }
       }
@@ -490,7 +461,11 @@ export default function SoundSorter() {
 
     // Cleanup function to revoke object URLs and avoid memory leaks
     return () => {
-      Object.values(audioCache).forEach(audio => URL.revokeObjectURL(audio.src));
+      Object.values(audioCache).forEach(audio => {
+        if (audio.src && audio.src.startsWith('blob:')) {
+          URL.revokeObjectURL(audio.src);
+        }
+      });
     };
   }, [currentIndex, availableSounds]);
 
