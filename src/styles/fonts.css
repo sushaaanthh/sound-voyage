@@ -9,7 +9,7 @@
 @font-face {
   font-family: 'Google Sans';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 700;
   font-display: swap;
   src: url('/assets/fonts/google-sans.woff2') format('woff2');
 }
