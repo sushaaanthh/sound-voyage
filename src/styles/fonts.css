@@ -112,7 +112,7 @@
 
 :root {
   --font-headline: 'Mozilla Headline', sans-serif;
-  --font-body: 'Google Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
+  --font-body: 'Google Sans';
   --font-poppins: 'Poppins', sans-serif;
   --font-zilla: 'Zilla Slab', serif;
 }
