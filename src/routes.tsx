@@ -1,12 +1,12 @@
 import { createBrowserRouter } from "react-router";
-import LandingPage from "./components/LandingPage";
-import PractitionerDashboard from "./components/PractitionerDashboard";
-import ProgressorDashboard from "./components/ProgressorDashboard";
-import ParentDashboard from "./components/ParentDashboard";
-import GameScreen from "./components/GameScreen";
-import ResultScreen from "./components/ResultScreen";
-import UpdatePassword from "./components/UpdatePassword";
-import NotFound from "./components/NotFound";
+import LandingPage from "@/pages/LandingPage";
+import PractitionerDashboard from "@/pages/PractitionerDashboard";
+import ProgressorDashboard from "@/pages/ProgressorDashboard";
+import ParentDashboard from "@/pages/ParentDashboard";
+import GameScreen from "@/pages/GameScreen";
+import ResultScreen from "@/pages/ResultScreen";
+import UpdatePassword from "@/pages/UpdatePassword";
+import NotFound from "@/pages/NotFound";
 
 export const router = createBrowserRouter([
   {

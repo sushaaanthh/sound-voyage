@@ -1,9 +1,9 @@
--- Create progressor_ids table
 CREATE TABLE IF NOT EXISTS progressor_ids (
   id text PRIMARY KEY,
   practitioner_id uuid REFERENCES auth.users(id),
   is_claimed boolean DEFAULT false NOT NULL,
   assigned_email text,
+  parent_email text,
   auth_user_id uuid REFERENCES auth.users(id),
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );

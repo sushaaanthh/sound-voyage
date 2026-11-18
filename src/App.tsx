@@ -1,8 +1,8 @@
 import { RouterProvider } from 'react-router';
-import { router } from './routes';
-import { ThemeProvider } from './components/ThemeProvider';
-import { Toaster } from './components/ui/sonner';
-import { GameSessionProvider } from './context/GameSessionContext';
+import { router } from '@/routes';
+import { ThemeProvider } from '@/components/common/ThemeProvider';
+import { Toaster } from '@/components/ui/sonner';
+import { GameSessionProvider } from '@/context/GameSessionContext';
 
 export default function App() {
   return (

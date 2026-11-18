@@ -2,17 +2,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router';
 import { Home, Volume2, Music, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ThemeToggle } from '../ThemeToggle';
-import { PhonemeText } from '../PhonemeText';
-import { AudioWaveMask } from '../AudioWaveMask';
-import QuitGameModal from '../ui/QuitGameModal';
-import { FeedbackModal } from '../ui/FeedbackModal';
-import { useGameSession } from '../../context/GameSessionContext';
-import { positionPilotData, PositionPilotQuestion } from '../../../data/positionPilotData';
-import { getOptionIcon } from '../OptionIconMapper';
-import { playAzureAudio } from '../../../lib/audioUtils';
-import { submitGameSession } from '../../../lib/telemetryUtils';
-import { getPhonemeAudioStr } from '../../../data/phonemeAudioMap';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { PhonemeText } from '@/components/common/PhonemeText';
+import { AudioWaveMask } from '@/components/features/AudioWaveMask';
+import QuitGameModal from '@/components/ui/QuitGameModal';
+import { FeedbackModal } from '@/components/ui/FeedbackModal';
+import { useGameSession } from '@/context/GameSessionContext';
+import { positionPilotData, PositionPilotQuestion } from '@/data/positionPilotData';
+import { getOptionIcon } from '@/components/features/OptionIconMapper';
+import { playAzureAudio } from '@/utils/audioUtils';
+import { submitGameSession } from '@/utils/telemetryUtils';
+import { getPhonemeAudioStr } from '@/data/phonemeAudioMap';
 
 const CHOICES = [
   { label: 'First Sound', value: 'START' },

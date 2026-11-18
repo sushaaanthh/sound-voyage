@@ -26,7 +26,8 @@ const SECTIONS: Section[] = [
   {
     title: "3. Eligibility & Supervision",
     paragraphs: [
-      "You represent that you are legally able to enter into a contract. If you are a minor, you may only use the Progressor application under the direct supervision and authorization of a legally responsible Parent or a certified Practitioner who has secured the necessary parental consent to link your account."
+      "You represent that you are legally able to enter into a contract. If you are a minor, you may only use the Progressor application under the direct supervision and authorization of a legally responsible Parent or a certified Practitioner who has secured the necessary parental consent to link your account.",
+      "Children under 13 years of age may not create accounts independently. Account creation for Progressors requires confirmation that the account is being set up by a parent, guardian, or clinician, and collection of the child's age. For children under 13, a parent or guardian email is required for COPPA compliance."
     ]
   },
   {

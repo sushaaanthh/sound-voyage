@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { LogOut, Lock, Target, Map as MapIcon, Route, Shuffle, PackageSearch, LucideIcon, Bell, User, Award } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
-import { useGameSession } from '../context/GameSessionContext';
-import { supabase } from '../../lib/supabase';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { useGameSession } from '@/context/GameSessionContext';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import LogoutConfirmModal from './ui/LogoutConfirmModal';
-import ProfileModal from './ui/ProfileModal';
-import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
+import LogoutConfirmModal from '@/components/ui/LogoutConfirmModal';
+import ProfileModal from '@/components/ui/ProfileModal';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 interface Game {
   id: string;

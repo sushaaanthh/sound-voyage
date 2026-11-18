@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Target, Route, Shuffle, Eye, EyeOff, X } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
-import { useGameSession } from '../context/GameSessionContext';
-import { supabase } from '../../lib/supabase';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { useGameSession } from '@/context/GameSessionContext';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import TermsOfUse from './TermsOfUse';
+import TermsOfUse from '@/components/common/TermsOfUse';
 
 type Role = 'progressor' | 'parent' | 'practitioner';
 
@@ -57,6 +57,9 @@ export default function LandingPage() {
   const [signupPassword, setSignupPassword] = useState('');
   const [signupChildId, setSignupChildId] = useState('');
   const [signupError, setSignupError] = useState('');
+  const [signupChildAge, setSignupChildAge] = useState('');
+  const [signupIsAdultCreating, setIsAdultCreating] = useState(false);
+  const [signupParentEmail, setSignupParentEmail] = useState('');
 
   const navigate = useNavigate();
   const { updateSession } = useGameSession();
@@ -282,8 +285,11 @@ export default function LandingPage() {
         // Clear fields
         setSignupName('');
         setSignupEmail('');
-        setSignupPractitionerId('');
+        setSignupProgressorId('');
         setSignupPassword('');
+        setSignupChildAge('');
+        setIsAdultCreating(false);
+        setSignupParentEmail('');
 
         // Route to PractitionerDashboard
         navigate('/practitioner');
@@ -383,6 +389,35 @@ export default function LandingPage() {
         return;
       }
 
+      if (!signupIsAdultCreating) {
+        const errMsg = 'You must confirm you are a parent, guardian, or clinician creating this account for a child.';
+        setSignupError(errMsg);
+        toast.error(errMsg);
+        return;
+      }
+
+      const childAge = parseInt(signupChildAge, 10);
+      if (isNaN(childAge) || childAge <= 0 || childAge > 120) {
+        const errMsg = 'Please enter a valid age for the child.';
+        setSignupError(errMsg);
+        toast.error(errMsg);
+        return;
+      }
+
+      if (childAge < 13 && !signupParentEmail.trim()) {
+        const errMsg = 'Children under 13 require a parent or guardian email for COPPA compliance.';
+        setSignupError(errMsg);
+        toast.error(errMsg);
+        return;
+      }
+
+      if (childAge < 13 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupParentEmail.trim())) {
+        const errMsg = 'Please enter a valid parent or guardian email address.';
+        setSignupError(errMsg);
+        toast.error(errMsg);
+        return;
+      }
+
       try {
         // 1. Query the progressors table for the provided progressorId.
         const { data: progressorData, error: progressorError } = await supabase
@@ -455,7 +490,9 @@ export default function LandingPage() {
             auth_user_id: signUpData.user.id,
             name: signupName,
             assigned_email: signupEmail,
-            is_claimed: true
+            is_claimed: true,
+            age: parseInt(signupChildAge, 10) || 0,
+            parent_email: signupParentEmail.trim() || null
           })
           .eq('id', signupProgressorId);
 
@@ -470,7 +507,8 @@ export default function LandingPage() {
           .update({
             is_claimed: true,
             auth_user_id: signUpData.user.id,
-            assigned_email: signupEmail
+            assigned_email: signupEmail,
+            parent_email: signupParentEmail.trim() || null
           })
           .eq('id', signupProgressorId);
 
@@ -483,6 +521,9 @@ export default function LandingPage() {
         setSignupEmail('');
         setSignupProgressorId('');
         setSignupPassword('');
+        setSignupChildAge('');
+        setIsAdultCreating(false);
+        setSignupParentEmail('');
       } else {
         // Fallback: standard signUp already run, success toast and state reset
         toast.success('Account successfully created. Please log in.');
@@ -833,7 +874,57 @@ export default function LandingPage() {
                     </div>
                   ) : null}
 
-                  {/* Password Field */}
+                  {selectedRole === 'progressor' && (
+                    <div className="text-left space-y-3">
+                      <div>
+                        <label htmlFor="signup-child-age" className="block mb-1 text-sm font-medium text-foreground">
+                          Child's Age
+                        </label>
+                        <input
+                          id="signup-child-age"
+                          type="number"
+                          required
+                          min="1"
+                          max="120"
+                          value={signupChildAge}
+                          onChange={(e) => setSignupChildAge(e.target.value)}
+                          placeholder="Enter child's age"
+                          className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                        />
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <input
+                          id="signup-is-adult"
+                          type="checkbox"
+                          required
+                          checked={signupIsAdultCreating}
+                          onChange={(e) => setIsAdultCreating(e.target.checked)}
+                          className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                        />
+                        <label htmlFor="signup-is-adult" className="text-xs text-foreground/80 leading-tight">
+                          I confirm I am a parent, guardian, or clinician creating this account for a child. I understand that children cannot create accounts independently.
+                        </label>
+                      </div>
+                      {parseInt(signupChildAge, 10) < 13 && (
+                        <div>
+                          <label htmlFor="signup-parent-email" className="block mb-1 text-sm font-medium text-foreground">
+                            Parent or Guardian Email (required for children under 13)
+                          </label>
+                          <input
+                            id="signup-parent-email"
+                            type="email"
+                            required={parseInt(signupChildAge, 10) < 13}
+                            value={signupParentEmail}
+                            onChange={(e) => setSignupParentEmail(e.target.value)}
+                            placeholder="Enter parent or guardian email"
+                            className="w-full px-5 py-3 rounded-[1.5rem] bg-input-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                          />
+                        </div>
+                      )}
+                     </div>
+                   )}
+
+                   {/* Password Field */}
                   <div className="text-left">
                     <label htmlFor="signup-password" className="block mb-1 text-sm font-medium text-foreground">
                       Password
@@ -1061,6 +1152,16 @@ export default function LandingPage() {
                   </h3>
                   <p className="text-sm opacity-90 pl-8">
                     Sound Voyage operates as a secure clinical utility. We do not use tracking cookies or external background data-harvesting scripts.
+                  </p>
+                </div>
+
+                <div className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold">2</span>
+                    Children's Privacy (COPPA)
+                  </h3>
+                  <p className="text-sm opacity-90 pl-8">
+                    Children under 13 may not create accounts independently. Progressor account creation requires confirmation from a parent, guardian, or clinician, and collection of the child's age. For children under 13, a parent or guardian email is collected. We do not store PII from under-13 signup attempts that fail our verification checks.
                   </p>
                 </div>
 

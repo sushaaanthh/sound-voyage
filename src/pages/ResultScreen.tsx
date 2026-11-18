@@ -3,12 +3,12 @@ import { useLocation, useNavigate } from 'react-router';
 import { Trophy, Target, Clock, RotateCcw, ArrowRight, Star } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
-import { ThemeToggle } from './ThemeToggle';
-import { useGameSession } from '../context/GameSessionContext';
-import { phonemePopData } from '../../data/phonemePopData';
-import { positionPilotData } from '../../data/positionPilotData';
-import { soundTrailData } from '../../data/soundTrailData';
-import { soundSyncData } from '../../data/soundSyncData';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { useGameSession } from '@/context/GameSessionContext';
+import { phonemePopData } from '@/data/phonemePopData';
+import { positionPilotData } from '@/data/positionPilotData';
+import { soundTrailData } from '@/data/soundTrailData';
+import { soundSyncData } from '@/data/soundSyncData';
 
 // Dynamic max levels per game (derived from data array lengths)
 const GAME_MAX_LEVELS: Record<string, number> = {

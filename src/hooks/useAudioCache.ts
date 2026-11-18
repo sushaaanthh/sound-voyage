@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchTTSAudio } from '../lib/ttsClient';
+import { fetchTTSAudio } from '@/lib/ttsClient';
 
 export const useAudioCache = (soundsToCache: (string | undefined)[]) => {
   const [audioCache, setAudioCache] = useState<Record<string, HTMLAudioElement>>({});

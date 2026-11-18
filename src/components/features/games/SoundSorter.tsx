@@ -3,14 +3,14 @@ import { useNavigate, useParams } from 'react-router';
 import { Home, Volume2, RotateCcw, X, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
-import { ThemeToggle } from '../ThemeToggle';
-import { PhonemeText } from '../PhonemeText';
-import QuitGameModal from '../ui/QuitGameModal';
-import { FeedbackModal } from '../ui/FeedbackModal';
-import { useGameSession } from '../../context/GameSessionContext';
-import { playAzureAudio } from '../../../lib/audioUtils';
-import { fetchTTSAudio } from '../../../lib/ttsClient';
-import { submitGameSession } from '../../../lib/telemetryUtils';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { PhonemeText } from '@/components/common/PhonemeText';
+import QuitGameModal from '@/components/ui/QuitGameModal';
+import { FeedbackModal } from '@/components/ui/FeedbackModal';
+import { useGameSession } from '@/context/GameSessionContext';
+import { playAzureAudio } from '@/utils/audioUtils';
+import { fetchTTSAudio } from '@/lib/ttsClient';
+import { submitGameSession } from '@/utils/telemetryUtils';
 
 // Data types
 interface SorterWord {

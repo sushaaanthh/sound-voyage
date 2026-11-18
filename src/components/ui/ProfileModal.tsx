@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { X, User, Upload, Trash2, Loader2 } from 'lucide-react';
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 interface ProfileModalProps {

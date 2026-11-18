@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Home, Volume2, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ThemeToggle } from '../ThemeToggle';
-import QuitGameModal from '../ui/QuitGameModal';
-import { useGameSession } from '../../context/GameSessionContext';
-import { soundSyncData } from '../../../data/soundSyncData';
-import { getOptionIcon } from '../OptionIconMapper';
-import { playAzureAudio } from '../../../lib/audioUtils';
-import { submitGameSession } from '../../../lib/telemetryUtils';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import QuitGameModal from '@/components/ui/QuitGameModal';
+import { useGameSession } from '@/context/GameSessionContext';
+import { soundSyncData } from '@/data/soundSyncData';
+import { getOptionIcon } from '@/components/features/OptionIconMapper';
+import { playAzureAudio } from '@/utils/audioUtils';
+import { submitGameSession } from '@/utils/telemetryUtils';
 
 const playCorrectBell = () => {
   const audio = new Audio('/sounds/correct-bell.mp3');

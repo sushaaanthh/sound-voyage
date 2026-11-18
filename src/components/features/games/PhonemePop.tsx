@@ -3,17 +3,17 @@ import { useNavigate, useParams, useLocation } from 'react-router';
 import { Home, Volume2, HelpCircle, Music, Eye } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ThemeToggle } from '../ThemeToggle';
-import { PhonemeText } from '../PhonemeText';
-import { AudioWaveMask } from '../AudioWaveMask';
-import QuitGameModal from '../ui/QuitGameModal';
-import { FeedbackModal } from '../ui/FeedbackModal';
-import { useGameSession } from '../../context/GameSessionContext';
-import { phonemePopData, PhonemeQuestion } from '../../../data/phonemePopData';
-import { getOptionIcon, getOptionIconComponent } from '../OptionIconMapper';
-import { playAzureAudio } from '../../../lib/audioUtils';
-import { submitGameSession } from '../../../lib/telemetryUtils';
-import { useAudioCache } from '../../../hooks/useAudioCache';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { PhonemeText } from '@/components/common/PhonemeText';
+import { AudioWaveMask } from '@/components/features/AudioWaveMask';
+import QuitGameModal from '@/components/ui/QuitGameModal';
+import { FeedbackModal } from '@/components/ui/FeedbackModal';
+import { useGameSession } from '@/context/GameSessionContext';
+import { phonemePopData, PhonemeQuestion } from '@/data/phonemePopData';
+import { getOptionIcon, getOptionIconComponent } from '@/components/features/OptionIconMapper';
+import { playAzureAudio } from '@/utils/audioUtils';
+import { submitGameSession } from '@/utils/telemetryUtils';
+import { useAudioCache } from '@/hooks/useAudioCache';
 
 interface PhonemePopProps {
   levelData?: any; // kept for compatibility if needed, but we pull dynamically

@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { LogOut, Clock, TrendingUp, MessageSquare, Star, Award, Target, Calendar, User } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ThemeToggle } from './ThemeToggle';
-import { supabase } from '../../lib/supabase';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import LogoutConfirmModal from './ui/LogoutConfirmModal';
+import LogoutConfirmModal from '@/components/ui/LogoutConfirmModal';
 
 interface Progressor {
   id: string;

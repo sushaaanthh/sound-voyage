@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, Plus, X, Trash2, History, ShieldAlert, TrendingUp, LogOut, Users, BarChart3, Target, Map, Route, Shuffle, PackageSearch, LucideIcon, Bell, Award, CheckCircle2, AlertCircle, Clock, User } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ThemeToggle } from './ThemeToggle';
-import { supabase } from '../../lib/supabase';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import LogoutConfirmModal from './ui/LogoutConfirmModal';
-import ProfileModal from './ui/ProfileModal';
+import LogoutConfirmModal from '@/components/ui/LogoutConfirmModal';
+import ProfileModal from '@/components/ui/ProfileModal';
 
 interface Progressor {
   id: string;

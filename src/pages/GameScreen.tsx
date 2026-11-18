@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { Home, Volume2, RotateCcw, Cat, Dog, Fish, Bird, CheckCircle, XCircle } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
-import { PhonemeText } from './PhonemeText';
-import QuitGameModal from './ui/QuitGameModal';
-import PhonemePop from './games/PhonemePop';
-import PositionPilot from './games/PositionPilot';
-import SoundTrail from './games/SoundTrail';
-import SoundSync from './games/SoundSync';
-import SoundSorter from './games/SoundSorter';
-import gameData from '../../data/gameData.json';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { PhonemeText } from '@/components/common/PhonemeText';
+import QuitGameModal from '@/components/ui/QuitGameModal';
+import PhonemePop from '@/components/features/games/PhonemePop';
+import PositionPilot from '@/components/features/games/PositionPilot';
+import SoundTrail from '@/components/features/games/SoundTrail';
+import SoundSync from '@/components/features/games/SoundSync';
+import SoundSorter from '@/components/features/games/SoundSorter';
+import gameData from '@/data/gameData.json';
 
 interface Card {
   id: number;

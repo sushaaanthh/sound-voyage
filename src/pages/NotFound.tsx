@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { HelpCircle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ThemeToggle } from './ThemeToggle';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 
 export default function NotFound() {
   const navigate = useNavigate();
