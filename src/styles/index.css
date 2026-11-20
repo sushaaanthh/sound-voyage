@@ -85,27 +85,27 @@
   }
 }
 
-@keyframes vectorBob {
+@keyframes sailGlide {
+  0% {
+    transform: translateX(-100px);
+  }
+  100% {
+    transform: translateX(calc(100vw + 100px));
+  }
+}
+
+@keyframes boatBob {
   0%, 100% {
     transform: translateY(0) rotate(0deg);
   }
   25% {
-    transform: translateY(-5px) rotate(1deg);
-  }
-  75% {
-    transform: translateY(5px) rotate(-1deg);
-  }
-}
-
-@keyframes vectorDrift {
-  0% {
-    transform: translateX(0);
+    transform: translateY(-4px) rotate(-4deg);
   }
   50% {
-    transform: translateX(15px);
+    transform: translateY(0) rotate(0deg);
   }
-  100% {
-    transform: translateX(0);
+  75% {
+    transform: translateY(4px) rotate(4deg);
   }
 }
 
@@ -123,8 +123,12 @@
   animation-delay: -8s;
 }
 
-.hero-vector {
-  animation: vectorBob 4s ease-in-out infinite, vectorDrift 20s ease-in-out infinite;
+.hero-boat-wrapper {
+  animation: sailGlide 28s linear infinite;
+}
+
+.hero-boat {
+  animation: boatBob 3.5s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -140,7 +144,12 @@
   .hero-wave,
   .hero-wave-layer,
   .hero-wave-layer-2,
-  .hero-vector {
+  .hero-boat-wrapper,
+  .hero-boat {
     animation: none;
+  }
+
+  .hero-boat-wrapper {
+    transform: translateX(calc(50vw - 32px));
   }
 }

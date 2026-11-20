@@ -628,35 +628,45 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Animated wave layers at bottom of hero */}
+        {/* Animated wave layers at bottom of hero with sailing boat */}
         <div className="absolute bottom-0 left-0 right-0 h-32 md:h-40 pointer-events-none select-none z-5 overflow-hidden">
-          <svg className="hero-wave absolute bottom-0 left-0 w-full h-full" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+          {/* Back wave layer - z-10 */}
+          <svg className="hero-wave absolute bottom-0 left-0 w-full h-full z-10" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
             <path
               fill="rgb(255 99 71 / 0.08)"
               d="M0,128 C300,80 600,160 900,128 C1200,96 1440,128 1440,128 L1440,160 L0,160 Z"
             />
           </svg>
-          <svg className="hero-wave-layer absolute bottom-0 left-0 w-full h-full" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+          {/* Middle wave layer - z-15 */}
+          <svg className="hero-wave-layer absolute bottom-0 left-0 w-full h-full z-15" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
             <path
               fill="rgb(255 99 71 / 0.14)"
               d="M0,96 C350,140 650,60 950,100 C1250,140 1440,96 1440,96 L1440,160 L0,160 Z"
             />
           </svg>
-          <svg className="hero-wave-layer-2 absolute bottom-0 left-0 w-full h-full" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+          
+          {/* Boat wrapper - z-20, sails horizontally across the viewport */}
+          <div className="hero-boat-wrapper absolute bottom-0 left-0 w-full h-full z-20">
+            {/* Boat image - positioned so bottom ~15-20% sits behind front wave crest */}
+            <img
+              src="/sv_vector.png"
+              alt=""
+              className="hero-boat absolute bottom-[28%] left-0 w-[56px] md:w-[64px] drop-shadow-[0_4px_12px_rgb(255_99_71/0.3)]"
+              aria-hidden="true"
+            />
+          </div>
+          
+          {/* Front wave layer - z-30, semi-transparent so boat base shows through */}
+          <svg className="hero-wave-layer-2 absolute bottom-0 left-0 w-full h-full z-30" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
             <path
-              fill="rgb(255 99 71 / 0.2)"
+              fill="rgb(255 99 71 / 0.22)"
               d="M0,110 C280,150 580,50 880,120 C1180,190 1440,110 1440,110 L1440,160 L0,160 Z"
             />
           </svg>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4">
-          <img
-            src="/sv_vector.png"
-            alt=""
-            className="hero-vector w-[56px] md:w-[64px] drop-shadow-[0_4px_12px_rgb(255_99_71/0.3)]"
-            aria-hidden="true"
-          />
+        {/* Know More scroll cue - z-40, anchored at bottom center */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40">
           <button
             type="button"
             onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
