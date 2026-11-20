@@ -2,6 +2,7 @@
   font-family: 'Mozilla Headline';
   font-style: normal;
   font-weight: 200 700;
+  font-stretch: 75% 125%;
   font-display: swap;
   src: url('/assets/fonts/mozilla-headline.woff2') format('woff2');
 }
