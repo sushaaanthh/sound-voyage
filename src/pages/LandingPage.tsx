@@ -611,18 +611,18 @@ export default function LandingPage() {
         </div>
 
         <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center">
-          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tight text-foreground mb-4 uppercase">
+          <h1 className="hero-blur-in text-5xl sm:text-6xl md:text-8xl font-black tracking-tight text-foreground mb-4 uppercase">
             Sound Voyage
           </h1>
-          <p className="text-base sm:text-lg md:text-xl font-bold text-primary tracking-[0.08em] uppercase mb-4">
+          <p className="hero-fade-in hero-fade-subtitle text-base sm:text-lg md:text-xl font-bold text-primary tracking-[0.08em] uppercase mb-4">
             Cognitive Assessment App
           </p>
-          <p className="text-sm md:text-base text-foreground/80 max-w-xl mx-auto mb-8 md:mb-10 leading-relaxed">
+          <p className="hero-fade-in hero-fade-description text-sm md:text-base text-foreground/80 max-w-xl mx-auto mb-8 md:mb-10 leading-relaxed">
             Evidence-based programs that help children build stronger language processing, clearer communication, and lifelong confidence.
           </p>
 
           {/* Primary actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center z-10 relative">
+          <div className="hero-fade-in hero-fade-actions flex flex-col sm:flex-row gap-4 justify-center items-center z-10 relative">
             <button
               onClick={() => {
                 setSignupError('');
