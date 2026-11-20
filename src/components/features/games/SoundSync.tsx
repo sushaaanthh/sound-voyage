@@ -7,7 +7,7 @@ import QuitGameModal from '@/components/ui/QuitGameModal';
 import { useGameSession } from '@/context/GameSessionContext';
 import { soundSyncData } from '@/data/soundSyncData';
 import { getOptionIcon } from '@/components/features/OptionIconMapper';
-import { playAzureAudio } from '@/utils/audioUtils';
+import { playAzureAudio, type AudioContentType } from '@/utils/audioUtils';
 import { submitGameSession } from '@/utils/telemetryUtils';
 
 const playCorrectBell = () => {
@@ -135,8 +135,8 @@ export default function SoundSync() {
   };
 
   // Speaks text
-  const speakText = (text: string): Promise<void> => {
-    return playAzureAudio(text);
+  const speakText = (text: string, contentType: AudioContentType = 'word'): Promise<void> => {
+    return playAzureAudio(text, false, contentType);
   };
 
   // Initialize the game grid
@@ -176,7 +176,7 @@ export default function SoundSync() {
     setCards(shuffle(newCards));
 
     // Play welcome instruction
-    speakText(levelConfig.instruction);
+    speakText(levelConfig.instruction, 'question');
   };
 
   // Load level on mount or level change
@@ -205,12 +205,12 @@ export default function SoundSync() {
     const clickedCard = cards[cardIndex];
     if (clickedCard.isFlipped || clickedCard.isMatched) {
       // If already face-up, just speak the word again
-      speakText(clickedCard.word);
+      speakText(clickedCard.word, 'word');
       return;
     }
 
     // Speak word on flip
-    speakText(clickedCard.word);
+    speakText(clickedCard.word, 'word');
 
     // Flip the clicked card
     const updatedCards = [...cards];
@@ -389,7 +389,7 @@ export default function SoundSync() {
                   {levelConfig.instruction}
                 </h2>
                 <button
-                  onClick={() => speakText(levelConfig.instruction)}
+                  onClick={() => speakText(levelConfig.instruction, 'question')}
                   className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
                   aria-label="Speak instruction"
                 >
@@ -435,7 +435,7 @@ export default function SoundSync() {
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
-                            speakText(card.word);
+                            speakText(card.word, 'word');
                           }}
                           className="absolute bottom-1 right-1 p-1 rounded-full bg-background/50 hover:bg-background shadow-sm text-[#FF6347] transition-all cursor-pointer z-10"
                           title="Speak word"

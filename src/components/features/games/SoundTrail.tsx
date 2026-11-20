@@ -8,7 +8,7 @@ import { FeedbackModal } from '@/components/ui/FeedbackModal';
 import { useGameSession } from '@/context/GameSessionContext';
 import { submitGameSession } from '@/utils/telemetryUtils';
 import { soundTrailData, SoundTrailLevel, SoundTrailChain } from '@/data/soundTrailData';
-import { playAzureAudio } from '@/utils/audioUtils';
+import { playAzureAudio, type AudioContentType } from '@/utils/audioUtils';
 
 const playCorrectBell = () => {
   const audio = new Audio('/sounds/correct-bell.mp3');
@@ -140,15 +140,15 @@ export default function SoundTrail() {
   }, []);
 
   // TTS Speech Synthesis Engine (Single play, slowed rate)
-  const speakWord = (word: string): Promise<void> => {
-    return playAzureAudio(word);
+  const speakWord = (word: string, contentType: AudioContentType = 'word'): Promise<void> => {
+    return playAzureAudio(word, false, contentType);
   };
 
   // Single-play node audio click handler
   const handleNodeClick = async (nodeIdx: number) => {
     if (isPlayingSequence || isTransitioning || !nodes[nodeIdx]) return;
     playSynthBeep(nodeIdx);
-    await speakWord(nodes[nodeIdx].word);
+    await speakWord(nodes[nodeIdx].word, 'word');
   };
 
   // Synthesizer note player (Major Pentatonic Pitch Scale)
@@ -203,7 +203,7 @@ export default function SoundTrail() {
       // Highlight and speak Word 1 (Source node)
       setHighlightNodeIndex(currentStepIndex);
       playSynthBeep(currentStepIndex);
-      await speakWord(nodes[currentStepIndex].word);
+      await speakWord(nodes[currentStepIndex].word, 'word');
 
       // Short delay between spoken words
       await new Promise((resolve) => setTimeout(resolve, 400));
@@ -212,7 +212,7 @@ export default function SoundTrail() {
     // Highlight and speak Word 2 (Destination node)
     setHighlightNodeIndex(currentStepIndex + 1);
     playSynthBeep(currentStepIndex + 1);
-    await speakWord(nodes[currentStepIndex + 1].word);
+    await speakWord(nodes[currentStepIndex + 1].word, 'word');
 
     // Clear highlights and return control
     setHighlightNodeIndex(null);
@@ -457,7 +457,7 @@ export default function SoundTrail() {
                   Follow the Sound Trail!
                 </h2>
                 <button
-                  onClick={() => speakWord("Follow the Sound Trail! Listen to the sound change, and click the position block of the phoneme that changed!")}
+                  onClick={() => speakWord("Follow the Sound Trail! Listen to the sound change, and click the position block of the phoneme that changed!", 'question')}
                   className="p-2 rounded-full hover:bg-secondary transition-colors cursor-pointer"
                   aria-label="Speak instruction"
                 >

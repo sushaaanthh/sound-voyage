@@ -11,7 +11,7 @@ import { FeedbackModal } from '@/components/ui/FeedbackModal';
 import { useGameSession } from '@/context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '@/data/phonemePopData';
 import { getOptionIcon, getOptionIconComponent } from '@/components/features/OptionIconMapper';
-import { playAzureAudio } from '@/utils/audioUtils';
+import { playAzureAudio, type AudioContentType } from '@/utils/audioUtils';
 import { submitGameSession } from '@/utils/telemetryUtils';
 import { useAudioCache } from '@/hooks/useAudioCache';
 
@@ -137,8 +137,13 @@ export default function PhonemePop({}: PhonemePopProps) {
     return () => clearInterval(timer);
   }, []);
 
-  const playIndianAudio = (sound: string, _source: string = 'main', wordContext?: string) => {
+  const playIndianAudio = (sound: string, _source: string = 'main', wordContext?: string, contentType?: AudioContentType) => {
     const targetWord = wordContext || currentQuestion?.word || '';
+
+    // Stop any currently playing audio
+    if (isPlaying) {
+      setIsPlaying(false);
+    }
 
     if (audioCache[sound] || audioCache[targetWord]) {
       setIsPlaying(true);
@@ -150,7 +155,7 @@ export default function PhonemePop({}: PhonemePopProps) {
     } else {
       console.warn("Audio not pre-fetched yet!");
       setIsPlaying(true);
-      playAzureAudio(sound).finally(() => setIsPlaying(false));
+      playAzureAudio(sound, false, contentType).finally(() => setIsPlaying(false));
     }
   };
 
@@ -171,13 +176,16 @@ export default function PhonemePop({}: PhonemePopProps) {
     
     // Determine target sound or word to play
     let textToSpeak = '';
+    let contentType: AudioContentType = 'word';
     if (mechanic === 'binary-single') {
       textToSpeak = currentQuestion.word || '';
+      contentType = 'word';
     } else {
       textToSpeak = currentQuestion.targetSound || activeLevelConfig.targetSound || '';
+      contentType = 'phoneme';
     }
     
-    playIndianAudio(textToSpeak, 'main', currentQuestion.word);
+    playIndianAudio(textToSpeak, 'main', currentQuestion.word, contentType);
   };
 
   const formatTime = (seconds: number) => {
@@ -480,7 +488,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                   !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                <AudioWaveMask variant="main" onClick={() => playIndianAudio(getInstructionTitle(), 'question')} />
+                <AudioWaveMask variant="main" onClick={() => playIndianAudio(getInstructionTitle(), 'question', undefined, 'question')} />
               </div>
 
               {/* Unified Toggle Button */}
@@ -489,7 +497,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                   const nextState = !isQuestionRevealed;
                   setIsQuestionRevealed(nextState);
                   if (!nextState) {
-                    playIndianAudio(getInstructionTitle(), 'question');
+                    playIndianAudio(getInstructionTitle(), 'question', undefined, 'question');
                   }
                 }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-secondary transition-colors z-20 cursor-pointer"
@@ -514,7 +522,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                 <div className="flex flex-col sm:flex-row gap-6 w-full mb-12 justify-center items-stretch">
                   {/* Card 1 */}
                   <button
-                    onClick={() => playIndianAudio(currentQuestion.word1 || '', 'word1')}
+                    onClick={() => playIndianAudio(currentQuestion.word1 || '', 'word1', currentQuestion.word1, 'word')}
                     disabled={isTransitioning || isPlaying}
                     className={`flex-1 px-10 py-8 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[140px] min-w-[140px]`}
                   >
@@ -543,7 +551,7 @@ export default function PhonemePop({}: PhonemePopProps) {
 
                   {/* Card 2 */}
                   <button
-                    onClick={() => playIndianAudio(currentQuestion.word2 || '', 'word2')}
+                    onClick={() => playIndianAudio(currentQuestion.word2 || '', 'word2', currentQuestion.word2, 'word')}
                     disabled={isTransitioning || isPlaying}
                     className={`flex-1 px-10 py-8 rounded-[2rem] border-2 bg-primary/10 border-primary/20 hover:border-primary/40 hover:bg-primary/15 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-6 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[140px] min-w-[140px]`}
                   >
@@ -732,7 +740,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            playIndianAudio(optionLabel, `option-${idx}`, optionLabel);
+                            playIndianAudio(optionLabel, `option-${idx}`, optionLabel, 'word');
                           }}
                           disabled={isTransitioning || isPlaying}
                           className="absolute top-4 right-4 p-2 rounded-full hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -836,7 +844,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            playIndianAudio(optionLabel, `option-${idx}`, optionLabel);
+                            playIndianAudio(optionLabel, `option-${idx}`, optionLabel, 'word');
                           }}
                           disabled={isTransitioning || isPlaying}
                           className="absolute top-4 right-4 p-2 rounded-full hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

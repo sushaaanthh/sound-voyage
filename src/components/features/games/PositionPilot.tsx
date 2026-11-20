@@ -10,7 +10,7 @@ import { FeedbackModal } from '@/components/ui/FeedbackModal';
 import { useGameSession } from '@/context/GameSessionContext';
 import { positionPilotData, PositionPilotQuestion } from '@/data/positionPilotData';
 import { getOptionIcon } from '@/components/features/OptionIconMapper';
-import { playAzureAudio } from '@/utils/audioUtils';
+import { playAzureAudio, type AudioContentType } from '@/utils/audioUtils';
 import { submitGameSession } from '@/utils/telemetryUtils';
 import { getPhonemeAudioStr } from '@/data/phonemeAudioMap';
 
@@ -107,10 +107,10 @@ export default function PositionPilot() {
     return () => clearInterval(timer);
   }, []);
 
-  const playIndianAudio = async (text: string) => {
+  const playIndianAudio = async (text: string, contentType?: AudioContentType) => {
     setIsPlaying(true);
     try {
-      await playAzureAudio(text);
+      await playAzureAudio(text, false, contentType);
     } catch {
       // ignore playback errors
     } finally {
@@ -145,7 +145,7 @@ export default function PositionPilot() {
 
   const playSound = () => {
     if (!currentQuestion || isTransitioning) return;
-    playIndianAudio(currentQuestion.word);
+    playIndianAudio(currentQuestion.word, 'word');
   };
 
   const formatTime = (seconds: number) => {
@@ -303,7 +303,7 @@ export default function PositionPilot() {
                   !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                <AudioWaveMask variant="main" onClick={() => playIndianAudio(getQuestionAudioText())} />
+                <AudioWaveMask variant="main" onClick={() => playIndianAudio(getQuestionAudioText(), 'question')} />
               </div>
 
               {/* Unified Toggle Button */}
@@ -312,7 +312,7 @@ export default function PositionPilot() {
                   const nextState = !isQuestionRevealed;
                   setIsQuestionRevealed(nextState);
                   if (!nextState) {
-                    playIndianAudio(getQuestionAudioText());
+                    playIndianAudio(getQuestionAudioText(), 'question');
                   }
                 }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-secondary transition-colors z-20 cursor-pointer"

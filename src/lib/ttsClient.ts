@@ -29,13 +29,13 @@ export function validateTTSEnv(): { mode: TTSMode } {
   return { mode };
 }
 
-export async function fetchTTSAudio(text: string, isPhoneme: boolean = false): Promise<string | null> {
+export async function fetchTTSAudio(text: string, isPhoneme: boolean = false, contentType?: string): Promise<string | null> {
   if (!text?.trim()) return null;
 
   const errors: string[] = [];
 
   try {
-    const serverlessUrl = await fetchViaServerless(text, isPhoneme);
+    const serverlessUrl = await fetchViaServerless(text, isPhoneme, contentType);
     if (serverlessUrl) {
       console.info('[TTS] Serverless route succeeded');
       return serverlessUrl;
@@ -48,7 +48,7 @@ export async function fetchTTSAudio(text: string, isPhoneme: boolean = false): P
 
   if (PROXY_URL) {
     try {
-      const proxyUrl = await fetchViaProxy(text, isPhoneme);
+      const proxyUrl = await fetchViaProxy(text, isPhoneme, contentType);
       if (proxyUrl) {
         console.info('[TTS] Proxy route succeeded');
         return proxyUrl;
@@ -64,7 +64,7 @@ export async function fetchTTSAudio(text: string, isPhoneme: boolean = false): P
   return null;
 }
 
-async function fetchViaServerless(text: string, isPhoneme: boolean): Promise<string> {
+async function fetchViaServerless(text: string, isPhoneme: boolean, contentType?: string): Promise<string> {
   const { supabase } = await import('./supabase');
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -76,7 +76,7 @@ async function fetchViaServerless(text: string, isPhoneme: boolean): Promise<str
   const response = await fetch('/api/tts', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ text, isPhoneme }),
+    body: JSON.stringify({ text, isPhoneme, contentType }),
   });
 
   if (!response.ok) {
@@ -93,12 +93,12 @@ async function fetchViaServerless(text: string, isPhoneme: boolean): Promise<str
   return URL.createObjectURL(blob);
 }
 
-async function fetchViaProxy(text: string, isPhoneme: boolean): Promise<string> {
+async function fetchViaProxy(text: string, isPhoneme: boolean, contentType?: string): Promise<string> {
   const proxyUrl = import.meta.env.VITE_TTS_PROXY_URL!;
   const response = await fetch(proxyUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, isPhoneme }),
+    body: JSON.stringify({ text, isPhoneme, contentType }),
   });
 
   if (!response.ok) {
@@ -109,10 +109,10 @@ async function fetchViaProxy(text: string, isPhoneme: boolean): Promise<string> 
   return URL.createObjectURL(blob);
 }
 
-export async function playTTSAudio(text: string, isPhoneme: boolean = false): Promise<void> {
+export async function playTTSAudio(text: string, isPhoneme: boolean = false, contentType?: string): Promise<void> {
   if (typeof window === 'undefined' || !text) return;
 
-  const url = await fetchTTSAudio(text, isPhoneme);
+  const url = await fetchTTSAudio(text, isPhoneme, contentType);
   if (!url) return;
 
   const audio = new Audio(url);

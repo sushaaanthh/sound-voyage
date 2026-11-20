@@ -10,7 +10,7 @@ import TermsOfUse from '@/components/common/TermsOfUse';
 type Role = 'progressor' | 'parent' | 'practitioner';
 
 const WAVEFORM_HEIGHTS = [
-  25, 45, 30, 55, 75, 45, 65, 95, 120, 85, 100, 130, 150, 110, 125, 140, 170, 190, 140, 95, 
+  25, 45, 30, 55, 75, 45, 65, 95, 120, 85, 100, 130, 150, 110, 125, 140, 170, 190, 140, 95,
   115, 80, 85, 65, 55, 35, 45, 25, 35, 50, 65, 90, 115, 135, 115, 100, 85, 65, 55, 45,
   35, 55, 80, 95, 115, 135, 155, 180, 145, 115, 95, 75, 55, 35, 45, 65, 85, 105, 85, 65,
   45, 35, 25
@@ -69,7 +69,7 @@ export default function LandingPage() {
     async function checkSession() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (!session) {
           return;
         }
@@ -510,7 +510,7 @@ export default function LandingPage() {
         toast.success('Account successfully created. Please log in.');
         setShowSignUp(false);
         setSignupError('');
-        
+
         // Clear fields
         setSignupName('');
         setSignupEmail('');
@@ -645,23 +645,20 @@ export default function LandingPage() {
       {/* Features List (Impact Guides Grid) */}
       <section id="features" className="relative z-10 w-full py-20 md:py-24 px-6 scroll-mt-0">
         <div className="w-full max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {IMPACT_GUIDES.map((guide, index) => {
               const Icon = guide.icon;
               return (
                 <div
                   key={guide.title}
-                  className="bg-card rounded-3xl border border-border shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-in fade-in slide-in-from-bottom-4 flex flex-row items-center gap-4 p-4 sm:p-5 text-left md:flex-col md:items-center md:text-center md:p-8 md:h-full"
+                  className="bg-card rounded-3xl p-8 border border-border shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-in fade-in slide-in-from-bottom-4"
                   style={{ animationDelay: `${index * 150}ms` }}
                 >
-                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 mb-0 md:mb-6">
-                    <Icon className="w-8 h-8 md:w-9 md:h-9 text-primary" />
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 mx-auto">
+                    <Icon className="w-9 h-9 text-primary" />
                   </div>
-                  <div className="w-px self-stretch my-1 bg-black/10 dark:bg-white/10 md:hidden" />
-                  <div className="flex-1 text-left md:text-center">
-                    <h3 className="mb-1 text-base sm:text-lg md:text-xl font-bold tracking-tight">{guide.title}</h3>
-                    <p className="text-xs sm:text-sm leading-relaxed text-foreground/80 md:text-base md:leading-relaxed">{guide.description}</p>
-                  </div>
+                  <h3 className="mb-4 text-xl font-bold tracking-tight text-center">{guide.title}</h3>
+                  <p className="text-foreground/80 leading-relaxed text-center text-sm md:text-base">{guide.description}</p>
                 </div>
               );
             })}
@@ -672,7 +669,7 @@ export default function LandingPage() {
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6">
         {/* Footer */}
         <footer className="mt-12 pb-8 text-center flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground border-t border-border/20 pt-8 w-full">
-          <div className="flex items-center gap-3 font-google-sans">
+          <div className="flex items-center gap-3 font-poppins">
             <button
               onClick={() => setShowTerms(true)}
               className="hover:text-foreground transition-colors underline decoration-dotted underline-offset-4 cursor-pointer"
@@ -687,7 +684,7 @@ export default function LandingPage() {
               Privacy Policy
             </button>
           </div>
-          <p className="text-xs text-muted-foreground/80 font-google-sans">© Samvidh Psych Services</p>
+          <p className="text-xs text-muted-foreground/80 font-poppins">© Samvidh Psych Services</p>
         </footer>
       </div>
 
@@ -766,11 +763,10 @@ export default function LandingPage() {
                           key={role}
                           type="button"
                           onClick={() => setSelectedRole(role)}
-                          className={`flex-1 py-2 text-sm rounded-[1.5rem] transition-all duration-300 capitalize relative z-10 cursor-pointer ${
-                            selectedRole === role
-                              ? 'text-primary-foreground font-semibold'
-                              : 'text-foreground/60 hover:text-foreground'
-                          }`}
+                          className={`flex-1 py-2 text-sm rounded-[1.5rem] transition-all duration-300 capitalize relative z-10 cursor-pointer ${selectedRole === role
+                            ? 'text-primary-foreground font-semibold'
+                            : 'text-foreground/60 hover:text-foreground'
+                            }`}
                         >
                           {role}
                         </button>
@@ -826,9 +822,8 @@ export default function LandingPage() {
                           if (signupError) setSignupError('');
                         }}
                         placeholder="Enter Progressor ID (e.g. E001)"
-                        className={`w-full px-5 py-3 rounded-[1.5rem] bg-input-background border ${
-                          signupError ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary'
-                        } text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all text-sm`}
+                        className={`w-full px-5 py-3 rounded-[1.5rem] bg-input-background border ${signupError ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary'
+                          } text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all text-sm`}
                       />
                       {signupError && (
                         <p className="text-red-500 text-xs mt-1 pl-2">{signupError}</p>
@@ -849,9 +844,8 @@ export default function LandingPage() {
                           if (signupError) setSignupError('');
                         }}
                         placeholder="Enter your Practitioner ID"
-                        className={`w-full px-5 py-3 rounded-[1.5rem] bg-input-background border ${
-                          signupError ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary'
-                        } text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all text-sm`}
+                        className={`w-full px-5 py-3 rounded-[1.5rem] bg-input-background border ${signupError ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary'
+                          } text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 transition-all text-sm`}
                       />
                       {signupError && (
                         <p className="text-red-500 text-xs mt-1 pl-2">{signupError}</p>
@@ -920,10 +914,10 @@ export default function LandingPage() {
                           />
                         </div>
                       )}
-                     </div>
-                   )}
+                    </div>
+                  )}
 
-                   {/* Password Field */}
+                  {/* Password Field */}
                   <div className="text-left">
                     <label htmlFor="signup-password" className="block mb-1 text-sm font-medium text-foreground">
                       Password
@@ -996,11 +990,10 @@ export default function LandingPage() {
                           key={role}
                           type="button"
                           onClick={() => setSelectedRole(role)}
-                          className={`flex-1 py-2 text-sm rounded-[1.5rem] transition-all duration-300 capitalize relative z-10 cursor-pointer ${
-                            selectedRole === role
-                              ? 'text-primary-foreground font-semibold'
-                              : 'text-foreground/60 hover:text-foreground'
-                          }`}
+                          className={`flex-1 py-2 text-sm rounded-[1.5rem] transition-all duration-300 capitalize relative z-10 cursor-pointer ${selectedRole === role
+                            ? 'text-primary-foreground font-semibold'
+                            : 'text-foreground/60 hover:text-foreground'
+                            }`}
                         >
                           {role}
                         </button>
@@ -1132,7 +1125,7 @@ export default function LandingPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6 animate-in fade-in">
           <div className="bg-card rounded-[2rem] p-8 max-w-lg w-full shadow-2xl border border-border animate-in zoom-in duration-300 text-left">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold font-mozilla">Privacy Policy</h2>
+              <h2 className="text-2xl font-bold">Privacy Policy</h2>
               <button
                 onClick={() => setShowPrivacy(false)}
                 className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer"
@@ -1145,51 +1138,51 @@ export default function LandingPage() {
             <div className="space-y-6 text-sm md:text-base text-foreground/90 overflow-y-auto max-h-[60vh] pr-2">
               <div className="space-y-4">
                 <div className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
-                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base font-mozilla">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold font-mozilla">1</span>
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold">1</span>
                     Data Collection
                   </h3>
-                  <p className="text-sm opacity-90 pl-8 font-google-sans">
+                  <p className="text-sm opacity-90 pl-8">
                     Sound Voyage operates as a secure clinical utility. We do not use tracking cookies or external background data-harvesting scripts.
                   </p>
                 </div>
 
                 <div className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
-                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base font-mozilla">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold font-mozilla">2</span>
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold">2</span>
                     Children's Privacy (COPPA)
                   </h3>
-                  <p className="text-sm opacity-90 pl-8 font-google-sans">
+                  <p className="text-sm opacity-90 pl-8">
                     Children under 13 may not create accounts independently. Progressor account creation requires confirmation from a parent, guardian, or clinician, and collection of the child's age. For children under 13, a parent or guardian email is collected. We do not store PII from under-13 signup attempts that fail our verification checks.
                   </p>
                 </div>
 
                 <div className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
-                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base font-mozilla">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold font-mozilla">2</span>
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold">2</span>
                     Clinical Consent
                   </h3>
-                  <p className="text-sm opacity-90 pl-8 font-google-sans">
+                  <p className="text-sm opacity-90 pl-8">
                     All personal information and medical history required for therapy are collected exclusively within the physical clinic via written consent.
                   </p>
                 </div>
 
                 <div className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
-                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base font-mozilla">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold font-mozilla">3</span>
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold">3</span>
                     Account Authentication
                   </h3>
-                  <p className="text-sm opacity-90 pl-8 font-google-sans">
+                  <p className="text-sm opacity-90 pl-8">
                     We securely store only your email address, an encrypted password hash, and the practitioner-assigned ID to authenticate your session.
                   </p>
                 </div>
 
                 <div className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
-                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base font-mozilla">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold font-mozilla">4</span>
+                  <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs text-primary font-bold">4</span>
                     Third-Party Sharing
                   </h3>
-                  <p className="text-sm opacity-90 pl-8 font-google-sans">
+                  <p className="text-sm opacity-90 pl-8">
                     We do not sell, trade, or transfer any user data to external marketing agencies or unauthorized third parties.
                   </p>
                 </div>
@@ -1198,7 +1191,7 @@ export default function LandingPage() {
               <div className="pt-4 flex justify-end">
                 <button
                   onClick={() => setShowPrivacy(false)}
-                  className="px-8 py-3 rounded-full bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 font-semibold font-google-sans cursor-pointer"
+                  className="px-8 py-3 rounded-full bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 font-semibold cursor-pointer"
                 >
                   Close
                 </button>

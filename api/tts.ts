@@ -59,7 +59,7 @@ export default async function handler(req: any, res: any) {
     return res.status(401).json({ error: 'Invalid or expired session' });
   }
 
-  const { text, isPhoneme } = req.body;
+  const { text, isPhoneme, contentType } = req.body;
   const region = process.env.AZURE_SPEECH_REGION;
   const key = process.env.AZURE_SPEECH_KEY;
 
@@ -78,9 +78,20 @@ export default async function handler(req: any, res: any) {
   const endpoint = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
   const escapedText = escapeXml(text);
 
+  // Determine prosody rate based on content type
+  // Questions: 20% slower (rate="80%"), Words: 25% slower (rate="75%"), Phonemes: 15% slower (rate="85%")
+  let prosodyRate = '85%';
+  if (contentType === 'question') {
+    prosodyRate = '80%';
+  } else if (contentType === 'word') {
+    prosodyRate = '75%';
+  } else if (contentType === 'phoneme') {
+    prosodyRate = '85%';
+  }
+
   const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-IN">
     <voice name="en-IN-NeerjaNeural">
-      <prosody rate="85%">
+      <prosody rate="${prosodyRate}">
         ${isPhoneme ? `<phoneme alphabet="ipa" ph="${escapedText}">${escapedText}</phoneme>` : escapedText}
       </prosody>
     </voice>

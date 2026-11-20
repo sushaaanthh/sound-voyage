@@ -8,7 +8,7 @@ import { PhonemeText } from '@/components/common/PhonemeText';
 import QuitGameModal from '@/components/ui/QuitGameModal';
 import { FeedbackModal } from '@/components/ui/FeedbackModal';
 import { useGameSession } from '@/context/GameSessionContext';
-import { playAzureAudio } from '@/utils/audioUtils';
+import { playAzureAudio, type AudioContentType } from '@/utils/audioUtils';
 import { fetchTTSAudio } from '@/lib/ttsClient';
 import { submitGameSession } from '@/utils/telemetryUtils';
 
@@ -357,13 +357,13 @@ export default function SoundSorter() {
   const startTimeRef = useRef<number>(Date.now());
 
   // Speak text using pre-fetched audio or fallback
-  const speak = (sound: string) => {
+  const speak = (sound: string, contentType: AudioContentType = 'word') => {
     if (audioCache[sound]) {
       audioCache[sound].currentTime = 0; // Reset to start
       audioCache[sound].play();
     } else {
       console.warn("Audio not pre-fetched yet!");
-      playAzureAudio(sound);
+      playAzureAudio(sound, false, contentType);
     }
   };
 
@@ -421,7 +421,7 @@ export default function SoundSorter() {
     // Play target word audio automatically for Audio-Only mode
     if (levelNum >= 6) {
       setTimeout(() => {
-        speak(q.word);
+        speak(q.word, 'word');
       }, 500);
     }
   };
@@ -477,7 +477,7 @@ export default function SoundSorter() {
     if (!targetPart || targetPart.isUsed) return;
 
     // Speak phoneme or syllable on click
-    speak(targetPart.text);
+    speak(targetPart.text, 'phoneme');
 
     // Find first empty index in placed slots
     const emptyIdx = placedParts.indexOf(null);
@@ -689,7 +689,7 @@ export default function SoundSorter() {
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => speak(currentQ.word)}
+              onClick={() => speak(currentQ.word, 'word')}
               className="mb-8 p-6 md:p-8 rounded-[2rem] bg-[#FF6347]/10 border-2 border-[#FF6347]/30 text-foreground flex items-center justify-center gap-4 cursor-pointer hover:border-[#FF6347]/50 shadow-sm"
               title="Click to play target word"
             >
@@ -767,7 +767,7 @@ export default function SoundSorter() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            speak(part.text);
+                            speak(part.text, 'phoneme');
                           }}
                           className="absolute bottom-1.5 right-1.5 p-1 rounded-full bg-background/80 hover:bg-background border border-border/50 text-[#FF6347] shadow-sm z-10"
                           title="Speak sound"
