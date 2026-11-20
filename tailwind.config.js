@@ -3,9 +3,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        mozilla: ['"Mozilla Headline"', 'sans-serif'],
-        sans: ['"Google Sans"'],
-        'google-sans': ['"Google Sans"'],
+        sans: ['Google Sans', 'sans-serif'],
+        headline: ['"Mozilla Headline"', 'sans-serif'],
+        poppins: ['Poppins', 'sans-serif'],
+        zilla: ['Zilla Slab', 'serif'],
       },
     },
   },

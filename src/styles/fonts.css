@@ -118,11 +118,30 @@
   --font-zilla: 'Zilla Slab', serif;
 }
 
-body {
-  font-family: var(--font-body);
+/* Global font enforcement - Google Sans as default for all UI elements */
+html, body, button, input, textarea, select, a, p, span, label, li, td, th, div {
+  font-family: var(--font-body) !important;
 }
 
+/* Headings use Mozilla Headline */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-headline);
+  font-family: var(--font-headline) !important;
   font-weight: 700;
+}
+
+/* Utility classes for specific font usage */
+.font-google-sans {
+  font-family: var(--font-body) !important;
+}
+
+.font-mozilla {
+  font-family: var(--font-headline) !important;
+}
+
+.font-poppins {
+  font-family: var(--font-poppins) !important;
+}
+
+.font-zilla {
+  font-family: var(--font-zilla) !important;
 }

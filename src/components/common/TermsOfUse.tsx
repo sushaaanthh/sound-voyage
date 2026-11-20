@@ -96,7 +96,7 @@ export default function TermsOfUse({ isOpen, onClose }: TermsOfUseProps) {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6 animate-in fade-in">
       <div className="bg-card rounded-[2rem] p-8 max-w-lg w-full shadow-2xl border border-border animate-in zoom-in duration-300 text-left">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold font-sans text-foreground">Terms of Use</h2>
+          <h2 className="text-2xl font-bold font-mozilla text-foreground">Terms of Use</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-secondary rounded-[1rem] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer text-foreground/80 hover:text-foreground"
@@ -116,12 +116,12 @@ export default function TermsOfUse({ isOpen, onClose }: TermsOfUseProps) {
               return (
                 <div key={index} className="bg-secondary/40 p-5 rounded-2xl border border-border/50">
                   <h3 className="font-semibold text-primary mb-2 flex items-center gap-2 text-base">
-                    <span className="flex items-center justify-center w-6 h-6 min-w-[1.5rem] rounded-full bg-primary/10 text-xs text-primary font-bold">
+                    <span className="flex items-center justify-center w-6 h-6 min-w-[1.5rem] rounded-full bg-primary/10 text-xs text-primary font-bold font-mozilla">
                       {number}
                     </span>
-                    <span className="font-sans font-bold text-foreground">{name}</span>
+                    <span className="font-google-sans font-bold text-foreground">{name}</span>
                   </h3>
-                  <div className="text-sm opacity-90 pl-8 space-y-3 leading-relaxed font-poppins text-foreground/90">
+                  <div className="text-sm opacity-90 pl-8 space-y-3 leading-relaxed font-google-sans text-foreground/90">
                     {section.paragraphs.map((p, pIndex) => (
                       <p key={pIndex}>{p}</p>
                     ))}
@@ -134,7 +134,7 @@ export default function TermsOfUse({ isOpen, onClose }: TermsOfUseProps) {
           <div className="pt-4 flex justify-end">
             <button
               onClick={onClose}
-              className="px-8 py-3 rounded-full bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 font-semibold cursor-pointer"
+              className="px-8 py-3 rounded-full bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 font-semibold font-google-sans cursor-pointer"
             >
               Close
             </button>
