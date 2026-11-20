@@ -645,20 +645,23 @@ export default function LandingPage() {
       {/* Features List (Impact Guides Grid) */}
       <section id="features" className="relative z-10 w-full py-20 md:py-24 px-6 scroll-mt-0">
         <div className="w-full max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="flex flex-col gap-3.5 sm:gap-4 md:gap-8">
             {IMPACT_GUIDES.map((guide, index) => {
               const Icon = guide.icon;
               return (
                 <div
                   key={guide.title}
-                  className="bg-card rounded-3xl p-8 border border-border shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-in fade-in slide-in-from-bottom-4"
+                  className="bg-card rounded-3xl border border-border shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-in fade-in slide-in-from-bottom-4 flex flex-row items-center gap-4 p-4 sm:p-5 text-left md:flex-col md:items-center md:text-center md:p-8"
                   style={{ animationDelay: `${index * 150}ms` }}
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 mx-auto">
-                    <Icon className="w-9 h-9 text-primary" />
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 mb-0 md:mb-6">
+                    <Icon className="w-8 h-8 md:w-9 md:h-9 text-primary" />
                   </div>
-                  <h3 className="mb-4 text-xl font-bold tracking-tight text-center">{guide.title}</h3>
-                  <p className="text-foreground/80 leading-relaxed text-center text-sm md:text-base">{guide.description}</p>
+                  <div className="w-px self-stretch my-1 bg-black/10 dark:bg-white/10 md:hidden" />
+                  <div className="flex-1 text-left md:text-center">
+                    <h3 className="mb-1 text-base sm:text-lg md:text-xl font-bold tracking-tight">{guide.title}</h3>
+                    <p className="text-xs sm:text-sm leading-relaxed text-foreground/80 md:text-base md:leading-relaxed">{guide.description}</p>
+                  </div>
                 </div>
               );
             })}
