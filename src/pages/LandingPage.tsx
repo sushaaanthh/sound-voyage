@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Target, Route, Shuffle, Eye, EyeOff, X } from 'lucide-react';
+import { Target, Route, Shuffle, Eye, EyeOff, X, ChevronDown } from 'lucide-react';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { useGameSession } from '@/context/GameSessionContext';
 import { supabase } from '@/lib/supabase';
@@ -579,8 +579,8 @@ export default function LandingPage() {
       {/* Centered Hero Section */}
       <section className="relative min-h-[100dvh] w-full flex flex-col items-center justify-center px-6 py-20 text-center overflow-hidden">
         {/* Waveform background backdrop */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center opacity-[0.06] dark:opacity-[0.04] pointer-events-none select-none z-0 overflow-hidden">
-          <div className="flex items-center gap-1 md:gap-1.5 w-full max-w-6xl justify-between px-4 md:px-8">
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center opacity-[0.08] dark:opacity-[0.05] pointer-events-none select-none z-0 overflow-hidden">
+          <div className="flex items-center gap-1 md:gap-1.5 w-full max-w-[90rem] justify-between px-4 md:px-8">
             {WAVEFORM_HEIGHTS.map((height, i) => (
               <div
                 key={i}
@@ -592,13 +592,13 @@ export default function LandingPage() {
         </div>
 
         <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center">
-          <h1 className="hero-blur-in text-5xl sm:text-6xl md:text-8xl font-black tracking-tight text-foreground mb-4 uppercase">
+          <h1 className="hero-blur-in text-[clamp(3.25rem,7.5vw,6rem)] leading-none font-black tracking-tight text-foreground mb-4 uppercase">
             Sound Voyage
           </h1>
-          <p className="hero-fade-in hero-fade-subtitle text-base sm:text-lg md:text-xl font-bold text-primary tracking-[0.08em] uppercase mb-4">
+          <p className="hero-fade-in hero-fade-subtitle text-sm md:text-base font-bold text-primary tracking-[0.2em] uppercase mb-4">
             Cognitive Assessment App
           </p>
-          <p className="hero-fade-in hero-fade-description text-sm md:text-base text-foreground/80 max-w-xl mx-auto mb-8 md:mb-10 leading-relaxed">
+          <p className="hero-fade-in hero-fade-description text-base md:text-lg text-foreground/80 max-w-xl mx-auto mb-8 md:mb-10 leading-relaxed">
             Evidence-based programs that help children build stronger language processing, clearer communication, and lifelong confidence.
           </p>
 
@@ -611,7 +611,7 @@ export default function LandingPage() {
                 setShowResetPassword(false);
                 setIsLoginModalOpen(true);
               }}
-              className="px-10 py-4.5 rounded-[2rem] bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 text-base cursor-pointer"
+              className="px-8 py-3.5 rounded-[2rem] bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 text-base cursor-pointer"
             >
               Get Started
             </button>
@@ -621,16 +621,56 @@ export default function LandingPage() {
                 setShowResetPassword(false);
                 setIsLoginModalOpen(true);
               }}
-              className="px-10 py-4.5 rounded-[2rem] bg-secondary hover:bg-secondary/80 text-foreground font-semibold rounded-full border border-border/50 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 text-base cursor-pointer"
+              className="px-8 py-3.5 rounded-[2rem] bg-secondary hover:bg-secondary/80 text-foreground font-semibold rounded-full border border-border/50 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 text-base cursor-pointer"
             >
               Log in
             </button>
           </div>
         </div>
+
+        {/* Animated wave layers at bottom of hero */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 md:h-40 pointer-events-none select-none z-5 overflow-hidden">
+          <svg className="hero-wave absolute bottom-0 left-0 w-full h-full" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+            <path
+              fill="rgb(255 99 71 / 0.08)"
+              d="M0,128 C300,80 600,160 900,128 C1200,96 1440,128 1440,128 L1440,160 L0,160 Z"
+            />
+          </svg>
+          <svg className="hero-wave-layer absolute bottom-0 left-0 w-full h-full" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+            <path
+              fill="rgb(255 99 71 / 0.14)"
+              d="M0,96 C350,140 650,60 950,100 C1250,140 1440,96 1440,96 L1440,160 L0,160 Z"
+            />
+          </svg>
+          <svg className="hero-wave-layer-2 absolute bottom-0 left-0 w-full h-full" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+            <path
+              fill="rgb(255 99 71 / 0.2)"
+              d="M0,110 C280,150 580,50 880,120 C1180,190 1440,110 1440,110 L1440,160 L0,160 Z"
+            />
+          </svg>
+        </div>
+
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4">
+          <img
+            src="/sv_vector.png"
+            alt=""
+            className="hero-vector w-[56px] md:w-[64px] drop-shadow-[0_4px_12px_rgb(255_99_71/0.3)]"
+            aria-hidden="true"
+          />
+          <button
+            type="button"
+            onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+            className="hero-fade-in hero-fade-scroll flex flex-col items-center gap-1 text-xs md:text-sm text-foreground/60 hover:text-foreground transition-colors cursor-pointer"
+            aria-label="Know more"
+          >
+            <span>Know More</span>
+            <ChevronDown className="hero-chevron w-5 h-5" aria-hidden="true" />
+          </button>
+        </div>
       </section>
 
       {/* Features List (Impact Guides Grid) */}
-      <section className="relative z-10 w-full py-20 md:py-24 px-6">
+      <section id="features" className="relative z-10 w-full py-20 md:py-24 px-6 scroll-mt-0">
         <div className="w-full max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {IMPACT_GUIDES.map((guide, index) => {
