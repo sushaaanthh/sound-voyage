@@ -453,7 +453,7 @@ export default function SoundTrail() {
             {/* Instruction Banner */}
             <div className="mb-6 text-center">
               <div className="flex items-center justify-center gap-3 mb-2">
-                <h2 className="text-2xl md:text-3xl font-extrabold font-poppins flex items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-extrabold font-google-sans flex items-center gap-2">
                   Follow the Sound Trail!
                 </h2>
                 <button
@@ -568,7 +568,7 @@ export default function SoundTrail() {
                 const isReached = userSequence.includes(node.index);
                 
                 // Base dimensions and layout
-                const baseClasses = 'relative z-10 flex flex-col items-center justify-center rounded-full transition-all duration-300 font-poppins select-none cursor-pointer w-20 h-20 md:w-24 md:h-24 border-[3px]';
+                const baseClasses = 'relative z-10 flex flex-col items-center justify-center rounded-full transition-all duration-300 font-google-sans select-none cursor-pointer w-20 h-20 md:w-24 md:h-24 border-[3px]';
 
                 // Determine container styling
                 let containerClasses = '';

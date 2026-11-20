@@ -677,7 +677,7 @@ export default function SoundSorter() {
           >
             {/* Instructions */}
             <div className="mb-6 text-center max-w-2xl">
-              <h2 className="text-2xl md:text-3xl font-extrabold font-poppins leading-tight mb-2">
+              <h2 className="text-2xl md:text-3xl font-extrabold font-google-sans leading-tight mb-2">
                 {levelConfig.instruction}
               </h2>
               <p className="text-muted-foreground text-sm font-sans">
@@ -697,7 +697,7 @@ export default function SoundSorter() {
                 <Volume2 className="w-7 h-7" />
               </div>
               <div className="text-left">
-                <h4 className="font-black text-xl tracking-wide uppercase text-[#FF6347] font-poppins">
+                <h4 className="font-black text-xl tracking-wide uppercase text-[#FF6347] font-google-sans">
                   {levelNum <= 5 ? currentQ.word : '???'}
                 </h4>
                 <p className="text-xs text-muted-foreground font-sans mt-0.5">
@@ -723,7 +723,7 @@ export default function SoundSorter() {
                       whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handlePlacedClick(idx)}
-                      className="w-full h-full flex flex-col items-center justify-center p-2 relative text-foreground font-poppins"
+                      className="w-full h-full flex flex-col items-center justify-center p-2 relative text-foreground font-google-sans"
                     >
                       <PhonemeText
                         phoneme={part.toLowerCase()}

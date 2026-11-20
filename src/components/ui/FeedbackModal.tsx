@@ -67,7 +67,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ status }) => {
             </div>
 
             {/* Typography */}
-            <h3 className="text-[26px] font-bold text-slate-900 dark:text-white mb-2 tracking-tight font-poppins">
+            <h3 className="text-[26px] font-bold text-slate-900 dark:text-white mb-2 tracking-tight font-google-sans">
               {isCorrect ? 'Correct Answer!' : 'Keep Trying!'}
             </h3>
 

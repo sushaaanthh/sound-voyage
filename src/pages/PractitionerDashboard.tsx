@@ -544,7 +544,7 @@ export default function PractitionerDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center font-poppins">
+      <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center font-google-sans">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="mt-4 text-muted-foreground text-sm font-medium">Verifying credentials and loading dashboard...</p>
       </div>

@@ -385,7 +385,7 @@ export default function SoundSync() {
             {/* Instruction Banner */}
             <div className="mb-8 text-center max-w-2xl">
               <div className="flex items-center justify-center gap-3 mb-2">
-                <h2 className="text-2xl md:text-3xl font-extrabold font-poppins leading-tight">
+                <h2 className="text-2xl md:text-3xl font-extrabold font-google-sans leading-tight">
                   {levelConfig.instruction}
                 </h2>
                 <button

@@ -465,7 +465,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                   isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                <h2 className="text-2xl md:text-3xl font-bold text-center font-poppins text-foreground leading-relaxed px-12">
+                <h2 className="text-2xl md:text-3xl font-bold text-center font-google-sans text-foreground leading-relaxed px-12">
                   {getInstructionTitle().split(/(\/[^\/]+\/)/g).map((part, idx) => 
                     part.startsWith('/') && part.endsWith('/') && part.length > 2 
                       ? <PhonemeText key={idx} phoneme={part} /> 
@@ -524,7 +524,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                           isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                         }`}
                       >
-                        <h1 className="text-3xl font-extrabold tracking-wide uppercase text-foreground font-poppins text-center">
+                        <h1 className="text-3xl font-extrabold tracking-wide uppercase text-foreground font-google-sans text-center">
                           {currentQuestion.word1}
                         </h1>
                       </div>
@@ -553,7 +553,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                           isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                         }`}
                       >
-                        <h1 className="text-3xl font-extrabold tracking-wide uppercase text-foreground font-poppins text-center">
+                        <h1 className="text-3xl font-extrabold tracking-wide uppercase text-foreground font-google-sans text-center">
                           {currentQuestion.word2}
                         </h1>
                       </div>
@@ -630,7 +630,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                             isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                           }`}
                         >
-                          <h1 className="text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-poppins text-center">
+                          <h1 className="text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-google-sans text-center">
                             {currentQuestion.word}
                           </h1>
                         </div>

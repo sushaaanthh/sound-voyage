@@ -120,8 +120,6 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "Google Sans", sans-serif;
   --font-headline: "Mozilla Headline", sans-serif;
-  --font-poppins: "Poppins", sans-serif;
-  --font-zilla: "Zilla Slab", serif;
 }
 
 @layer base {

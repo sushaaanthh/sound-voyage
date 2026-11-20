@@ -7,7 +7,7 @@ export default function NotFound() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-secondary/30 flex flex-col items-center justify-center p-6 relative overflow-hidden font-poppins">
+    <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-secondary/30 flex flex-col items-center justify-center p-6 relative overflow-hidden font-google-sans">
       {/* Mesh gradient background effect matching LandingPage */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.12),transparent_50%)] pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,99,71,0.18),transparent_50%)] pointer-events-none" />
@@ -54,13 +54,13 @@ export default function NotFound() {
           </span>
         </div>
 
-        {/* Branded Title - Zilla Slab Serif Font */}
-        <h1 className="font-zilla text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4 leading-tight">
+        {/* Branded Title - Mozilla Headline Font */}
+        <h1 className="font-mozilla text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4 leading-tight">
           Looks like you've drifted off course!
         </h1>
 
-        {/* Subtext message - Poppins Sans Font */}
-        <p className="font-poppins text-base text-foreground/75 dark:text-foreground/80 leading-relaxed mb-10 max-w-sm">
+        {/* Subtext message - Google Sans Font */}
+        <p className="font-google-sans text-base text-foreground/75 dark:text-foreground/80 leading-relaxed mb-10 max-w-sm">
           You may have reloaded the page or your session expired. Let's get you back to your voyage.
         </p>
 
@@ -69,7 +69,7 @@ export default function NotFound() {
           whileHover={{ scale: 1.05, translateY: -2 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate('/')}
-          className="px-10 py-4 rounded-[2rem] bg-primary text-primary-foreground font-semibold font-poppins shadow-[0_8px_20px_rgba(255,99,71,0.3)] hover:shadow-[0_12px_24px_rgba(255,99,71,0.4)] transition-all duration-300 text-base cursor-pointer border-0 w-full sm:w-auto"
+          className="px-10 py-4 rounded-[2rem] bg-primary text-primary-foreground font-semibold font-google-sans shadow-[0_8px_20px_rgba(255,99,71,0.3)] hover:shadow-[0_12px_24px_rgba(255,99,71,0.4)] transition-all duration-300 text-base cursor-pointer border-0 w-full sm:w-auto"
         >
           Return to Login
         </motion.button>
@@ -77,7 +77,7 @@ export default function NotFound() {
 
       {/* Branded watermark style footer */}
       <div className="absolute bottom-6 left-0 right-0 text-center pointer-events-none z-0">
-        <span className="font-zilla text-xs uppercase tracking-[0.2em] text-foreground/30 font-bold">
+        <span className="font-google-sans text-xs uppercase tracking-[0.2em] text-foreground/30 font-bold">
           Sound Voyage
         </span>
       </div>

@@ -292,7 +292,7 @@ export default function PositionPilot() {
                   isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                <h2 className="text-2xl md:text-3xl font-bold text-center font-poppins text-foreground leading-relaxed px-12">
+                <h2 className="text-2xl md:text-3xl font-bold text-center font-google-sans text-foreground leading-relaxed px-12">
                   Where do you hear the <PhonemeText phoneme={`/${currentQuestion.targetSound}/`} word={currentQuestion.word} /> sound, in the word <span className="text-primary font-extrabold ml-1">'{currentQuestion.word.toUpperCase()}'</span>?
                 </h2>
               </div>
@@ -337,7 +337,7 @@ export default function PositionPilot() {
                       isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                     }`}
                   >
-                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-poppins text-center">
+                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-wide uppercase text-foreground font-google-sans text-center">
                       {currentQuestion.word}
                     </h1>
                   </div>
@@ -387,7 +387,7 @@ export default function PositionPilot() {
                     key={choice.value}
                     onClick={() => handleChoiceSelect(choice.value)}
                     disabled={isLocked}
-                    className={`py-8 rounded-[2rem] border-2 text-base md:text-xl font-extrabold font-poppins transition-all duration-300 flex items-center justify-center gap-3 shadow-md disabled:cursor-not-allowed ${buttonStyle}`}
+                    className={`py-8 rounded-[2rem] border-2 text-base md:text-xl font-extrabold font-google-sans transition-all duration-300 flex items-center justify-center gap-3 shadow-md disabled:cursor-not-allowed ${buttonStyle}`}
                   >
                     {getOptionIcon(choice.label)}
                     <span>{choice.label}</span>
