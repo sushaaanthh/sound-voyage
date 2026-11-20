@@ -73,64 +73,6 @@
   animation: gentleFloat 1.8s ease-in-out infinite;
 }
 
-@keyframes waveFlow {
-  0% {
-    transform: translateX(0) translateY(0);
-  }
-  50% {
-    transform: translateX(-2%) translateY(-3px);
-  }
-  100% {
-    transform: translateX(0) translateY(0);
-  }
-}
-
-@keyframes sailGlide {
-  0% {
-    transform: translateX(-100px);
-  }
-  100% {
-    transform: translateX(calc(100vw + 100px));
-  }
-}
-
-@keyframes boatBob {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  25% {
-    transform: translateY(-4px) rotate(-4deg);
-  }
-  50% {
-    transform: translateY(0) rotate(0deg);
-  }
-  75% {
-    transform: translateY(4px) rotate(4deg);
-  }
-}
-
-.hero-wave {
-  animation: waveFlow 12s ease-in-out infinite;
-}
-
-.hero-wave-layer {
-  animation: waveFlow 16s ease-in-out infinite;
-  animation-delay: -4s;
-}
-
-.hero-wave-layer-2 {
-  animation: waveFlow 20s ease-in-out infinite;
-  animation-delay: -8s;
-}
-
-.hero-boat-wrapper {
-  animation: sailGlide 28s linear infinite;
-}
-
-.hero-boat {
-  animation: boatBob 3.5s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .hero-blur-in,
   .hero-fade-in {
@@ -140,16 +82,7 @@
     animation: none;
   }
 
-  .hero-chevron,
-  .hero-wave,
-  .hero-wave-layer,
-  .hero-wave-layer-2,
-  .hero-boat-wrapper,
-  .hero-boat {
+  .hero-chevron {
     animation: none;
-  }
-
-  .hero-boat-wrapper {
-    transform: translateX(calc(50vw - 32px));
   }
 }
