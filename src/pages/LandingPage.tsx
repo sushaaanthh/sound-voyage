@@ -585,42 +585,42 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-secondary/30 flex flex-col items-center justify-start p-6 md:p-12 relative overflow-y-auto overflow-x-hidden">
+    <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-secondary/30 relative overflow-x-hidden">
       {/* Mesh gradient background effect */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.1),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,99,71,0.15),transparent_50%)]" />
-
-      {/* Waveform background backdrop */}
-      <div className="absolute inset-x-0 top-36 flex items-center justify-center opacity-[0.06] dark:opacity-[0.04] pointer-events-none select-none z-0 overflow-hidden">
-        <div className="flex items-center gap-1 md:gap-1.5 w-full max-w-6xl justify-between px-4 md:px-8">
-          {WAVEFORM_HEIGHTS.map((height, i) => (
-            <div
-              key={i}
-              className="w-1 bg-primary rounded-full transition-all duration-300"
-              style={{ height: `${height}px` }}
-            />
-          ))}
-        </div>
-      </div>
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(255,99,71,0.1),transparent_50%)]" />
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_80%_20%,rgba(255,99,71,0.15),transparent_50%)]" />
 
       {/* Theme toggle */}
       <div className="absolute top-8 right-8 z-50">
         <ThemeToggle />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center text-center pt-12 md:pt-16 pb-8">
-        {/* Centered Hero Section */}
-        <div className="mb-12 flex flex-col items-center">
-          <h1 className="text-6xl md:text-8xl font-black tracking-tight text-foreground mb-4 uppercase">
+      {/* Centered Hero Section */}
+      <section className="relative min-h-[100dvh] w-full flex flex-col items-center justify-center px-6 py-20 text-center overflow-hidden">
+        {/* Waveform background backdrop */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center opacity-[0.06] dark:opacity-[0.04] pointer-events-none select-none z-0 overflow-hidden">
+          <div className="flex items-center gap-1 md:gap-1.5 w-full max-w-6xl justify-between px-4 md:px-8">
+            {WAVEFORM_HEIGHTS.map((height, i) => (
+              <div
+                key={i}
+                className="w-1 bg-primary rounded-full transition-all duration-300"
+                style={{ height: `${height}px` }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center">
+          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tight text-foreground mb-4 uppercase">
             Sound Voyage
           </h1>
-          <p className="text-lg md:text-xl font-bold text-primary tracking-[0.08em] uppercase mb-4">
+          <p className="text-base sm:text-lg md:text-xl font-bold text-primary tracking-[0.08em] uppercase mb-4">
             Cognitive Assessment App
           </p>
-          <p className="text-sm md:text-base text-foreground/80 max-w-xl mx-auto mb-10 leading-relaxed">
+          <p className="text-sm md:text-base text-foreground/80 max-w-xl mx-auto mb-8 md:mb-10 leading-relaxed">
             Evidence-based programs that help children build stronger language processing, clearer communication, and lifelong confidence.
           </p>
-          
+
           {/* Primary actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center z-10 relative">
             <button
@@ -646,10 +646,11 @@ export default function LandingPage() {
             </button>
           </div>
         </div>
+      </section>
 
-
-        {/* Features List (Impact Guides Grid) */}
-        <div className="w-full mb-16 px-4">
+      {/* Features List (Impact Guides Grid) */}
+      <section className="relative z-10 w-full py-20 md:py-24 px-6">
+        <div className="w-full max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {IMPACT_GUIDES.map((guide, index) => {
               const Icon = guide.icon;
@@ -669,8 +670,9 @@ export default function LandingPage() {
             })}
           </div>
         </div>
+      </section>
 
-
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-6">
         {/* Footer */}
         <footer className="mt-12 pb-8 text-center flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground border-t border-border/20 pt-8 w-full">
           <div className="flex items-center gap-3 font-poppins">
