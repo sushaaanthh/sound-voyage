@@ -29,6 +29,43 @@ async function verifyToken(token: string): Promise<boolean> {
   }
 }
 
+const MULTI_OR_VOWEL_PHONEMES: Record<string, string> = {
+  'sh': 'shh',
+  'th': 'th',
+  'ch': 'ch',
+  'sp': 'sp',
+  'ae': 'aa',
+  'a': 'aa',
+  'i': 'ih',
+  'o': 'aw',
+  'u': 'uh',
+};
+
+function formatSSMLBody(text: string, isPhoneme: boolean): string {
+  if (isPhoneme) {
+    const clean = text.replace(/^\/+|\/+$/g, '').toLowerCase();
+    if (MULTI_OR_VOWEL_PHONEMES[clean]) {
+      return `<sub alias="${MULTI_OR_VOWEL_PHONEMES[clean]}">${escapeXml(clean)}</sub>`;
+    }
+    // Single-letter phonemes (/b/, /c/, /d/, etc.): Speak directly without IPA tags
+    return escapeXml(clean);
+  }
+
+  // If text already contains valid SSML tags (<break .../>, <sub ...>...</sub>), preserve them safely
+  if (/<(break|sub)\b[^>]*>/i.test(text)) {
+    const tagRegex = /(<break\s+[^>]*\/>|<sub\s+alias="[^"]*">.*?<\/sub>)/gis;
+    const parts = text.split(tagRegex);
+    return parts.map(part => {
+      if (part.startsWith('<') && part.endsWith('>')) {
+        return part;
+      }
+      return escapeXml(part);
+    }).join('');
+  }
+
+  return escapeXml(text);
+}
+
 export default async function handler(req: any, res: any) {
   const corsOrigin = APP_ORIGIN || '*';
 
@@ -76,23 +113,21 @@ export default async function handler(req: any, res: any) {
   }
 
   const endpoint = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
-  const escapedText = escapeXml(text);
 
-  // Determine prosody rate based on content type
-  // Questions: 20% slower (rate="80%"), Words: 25% slower (rate="75%"), Phonemes: 15% slower (rate="85%")
-  let prosodyRate = '85%';
+  // Lock voice to en-IN-NeerjaNeural with <prosody rate="-20%"> for full questions and <prosody rate="-25%"> for isolated words
+  let prosodyRate = '-25%';
   if (contentType === 'question') {
-    prosodyRate = '80%';
-  } else if (contentType === 'word') {
-    prosodyRate = '75%';
-  } else if (contentType === 'phoneme') {
-    prosodyRate = '85%';
+    prosodyRate = '-20%';
+  } else if (contentType === 'word' || contentType === 'phoneme') {
+    prosodyRate = '-25%';
   }
+
+  const ssmlContent = formatSSMLBody(text, Boolean(isPhoneme));
 
   const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-IN">
     <voice name="en-IN-NeerjaNeural">
       <prosody rate="${prosodyRate}">
-        ${isPhoneme ? `<phoneme alphabet="ipa" ph="${escapedText}">${escapedText}</phoneme>` : escapedText}
+        ${ssmlContent}
       </prosody>
     </voice>
   </speak>`;

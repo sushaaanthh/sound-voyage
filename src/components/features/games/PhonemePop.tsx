@@ -11,7 +11,7 @@ import { FeedbackModal } from '@/components/ui/FeedbackModal';
 import { useGameSession } from '@/context/GameSessionContext';
 import { phonemePopData, PhonemeQuestion } from '@/data/phonemePopData';
 import { getOptionIcon, getOptionIconComponent } from '@/components/features/OptionIconMapper';
-import { playAzureAudio, type AudioContentType } from '@/utils/audioUtils';
+import { playAzureAudio, formatQuestionForTTS, type AudioContentType } from '@/utils/audioUtils';
 import { submitGameSession } from '@/utils/telemetryUtils';
 import { useAudioCache } from '@/hooks/useAudioCache';
 
@@ -138,25 +138,29 @@ export default function PhonemePop({}: PhonemePopProps) {
   }, []);
 
   const playIndianAudio = (sound: string, _source: string = 'main', wordContext?: string, contentType?: AudioContentType) => {
-    const targetWord = wordContext || currentQuestion?.word || '';
-
     // Stop any currently playing audio
     if (isPlaying) {
       setIsPlaying(false);
     }
 
-    if (audioCache[sound] || audioCache[targetWord]) {
+    // For questions, check exact sound in audioCache; do not fall back to currentQuestion.word
+    const cachedAudio = audioCache[sound] || (contentType !== 'question' && wordContext ? audioCache[wordContext] : undefined);
+
+    if (cachedAudio) {
       setIsPlaying(true);
-      const audio = audioCache[sound] || audioCache[targetWord];
-      audio.currentTime = 0;
-      audio.onended = () => setIsPlaying(false);
-      audio.onerror = () => setIsPlaying(false);
-      audio.play();
+      cachedAudio.currentTime = 0;
+      cachedAudio.onended = () => setIsPlaying(false);
+      cachedAudio.onerror = () => setIsPlaying(false);
+      cachedAudio.play();
     } else {
-      console.warn("Audio not pre-fetched yet!");
       setIsPlaying(true);
       playAzureAudio(sound, false, contentType).finally(() => setIsPlaying(false));
     }
+  };
+
+  const playQuestionAudio = () => {
+    const spoken = formatQuestionForTTS(levelNum, currentQuestion, activeLevelConfig.targetSound);
+    playIndianAudio(spoken, 'question', undefined, 'question');
   };
 
   if (currentQuestions.length === 0) {
@@ -276,8 +280,13 @@ export default function PhonemePop({}: PhonemePopProps) {
     let isCorrect = false;
     let correctLabel = '';
 
-    if (currentQuestion.correctAnswer && typeof currentQuestion.correctAnswer === 'string') {
-      isCorrect = selectedAnswer === currentQuestion.correctAnswer;
+    if (currentQuestion.correctAnswers && Array.isArray(currentQuestion.correctAnswers)) {
+      isCorrect = currentQuestion.correctAnswers.some(
+        ans => ans.toLowerCase() === selectedAnswer.toLowerCase()
+      );
+      correctLabel = currentQuestion.correctAnswer || currentQuestion.correctAnswers.join(', ');
+    } else if (currentQuestion.correctAnswer && typeof currentQuestion.correctAnswer === 'string') {
+      isCorrect = selectedAnswer.toLowerCase() === currentQuestion.correctAnswer.toLowerCase();
       correctLabel = currentQuestion.correctAnswer;
     } else if (currentQuestion.options) {
       const correctOpt = currentQuestion.options.find((o: any) => typeof o === 'object' && o.isCorrect);
@@ -389,24 +398,44 @@ export default function PhonemePop({}: PhonemePopProps) {
 
   // Determine instruction title dynamically based on level config
   const getInstructionTitle = () => {
-    const soundText = currentQuestion.targetSound || activeLevelConfig.targetSound;
+    const rawSound = currentQuestion.targetSound || activeLevelConfig.targetSound;
+    const cleanSound = rawSound ? rawSound.replace(/^\/+|\/+$/g, '') : '';
+    const soundDisplay = cleanSound ? `/${cleanSound}/` : '';
+
+    if (levelNum === 1) {
+      return `Does the word have the ${soundDisplay} sound?`;
+    }
+    if (levelNum === 2) {
+      return `Do both words have the ${soundDisplay} sound?`;
+    }
+    if (levelNum === 3) {
+      return `Select the picture with the ${soundDisplay} sound.`;
+    }
+    if (levelNum === 4) {
+      return `Select all the pictures that have the ${soundDisplay} sound.`;
+    }
+    if (levelNum === 5) {
+      return `Select the word with the ${soundDisplay} sound.`;
+    }
+
+    // Fallback for higher levels (6-10)
     let base = activeLevelConfig.instruction;
-    if (soundText !== 'varies' && soundText) {
+    if (rawSound !== 'varies' && rawSound) {
       if (mechanic === 'binary-dual') {
         const w1 = currentQuestion.word1?.toUpperCase() || '';
         const w2 = currentQuestion.word2?.toUpperCase() || '';
-        base = `Do the words '${w1}' and '${w2}' both contain the ${soundText} sound?`;
+        base = `Do the words '${w1}' and '${w2}' both contain the ${rawSound} sound?`;
       } else if (mechanic === 'binary-single') {
         const w = currentQuestion.word?.toUpperCase() || '';
-        base = `Does the word '${w}' contain the ${soundText} sound?`;
+        base = `Does the word '${w}' contain the ${rawSound} sound?`;
       } else if (mechanic === 'multiple-choice') {
         if (levelNum === 7) {
-          base = `Select the word that ends with the ${soundText} sound`;
+          base = `Select the word that ends with the ${rawSound} sound`;
         } else {
-          base = `Select the word that contains the ${soundText} sound`;
+          base = `Select the word that contains the ${rawSound} sound`;
         }
       } else if (mechanic === 'select-all') {
-        base = `Select all the words that contain the ${soundText} sound`;
+        base = `Select all the words that contain the ${rawSound} sound`;
       }
     }
     return base;
@@ -488,7 +517,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                   !isQuestionRevealed ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                <AudioWaveMask variant="main" onClick={() => playIndianAudio(getInstructionTitle(), 'question', undefined, 'question')} />
+                <AudioWaveMask variant="main" onClick={playQuestionAudio} />
               </div>
 
               {/* Unified Toggle Button */}
@@ -497,7 +526,7 @@ export default function PhonemePop({}: PhonemePopProps) {
                   const nextState = !isQuestionRevealed;
                   setIsQuestionRevealed(nextState);
                   if (!nextState) {
-                    playIndianAudio(getInstructionTitle(), 'question', undefined, 'question');
+                    playQuestionAudio();
                   }
                 }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-secondary transition-colors z-20 cursor-pointer"
@@ -818,7 +847,9 @@ export default function PhonemePop({}: PhonemePopProps) {
                     const Icon = getIcon(optionIcon, optionLabel);
                     const isSelected = selectedAnswer === optionLabel;
                     const isOptionCorrect = typeof option === 'string'
-                      ? option === currentQuestion.correctAnswer
+                      ? (currentQuestion.correctAnswers && Array.isArray(currentQuestion.correctAnswers)
+                          ? currentQuestion.correctAnswers.some((ans: string) => ans.toLowerCase() === option.toLowerCase())
+                          : option.toLowerCase() === currentQuestion.correctAnswer?.toLowerCase())
                       : option.isCorrect;
 
                     let cardStyles = 'border-border bg-card hover:shadow-xl hover:scale-105 active:scale-95 text-foreground';

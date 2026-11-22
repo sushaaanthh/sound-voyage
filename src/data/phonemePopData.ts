@@ -25,7 +25,7 @@ export interface PhonemeLevel {
 }
 
 export const phonemePopLevel3Data = [
-  { targetSound: '/k/', options: ['kite', 'balloon', 'ship', 'table'], correctAnswer: 'kite' },
+  { targetSound: '/c/', options: ['cat', 'balloon', 'ship', 'table'], correctAnswer: 'cat' },
   { targetSound: '/m/', options: ['clock', 'dog', 'map', 'cake'], correctAnswer: 'map' },
   { targetSound: '/f/', options: ['dance', 'rabbit', 'milk', 'fish'], correctAnswer: 'fish' },
   { targetSound: '/d/', options: ['doll', 'man', 'sun', 'apple'], correctAnswer: 'doll' },
@@ -33,14 +33,16 @@ export const phonemePopLevel3Data = [
   { targetSound: '/r/', options: ['red', 'fox', 'lion', 'sun'], correctAnswer: 'red' },
   { targetSound: '/w/', options: ['door', 'table', 'window', 'cat'], correctAnswer: 'window' },
   { targetSound: '/n/', options: ['gift', 'swim', 'hat', 'nest'], correctAnswer: 'nest' },
-  { targetSound: '/pa/', options: ['rose', 'penguin', 'carrot', 'ball'], correctAnswer: 'penguin' },
+  { targetSound: '/p/', options: ['rose', 'penguin', 'carrot', 'ball'], correctAnswer: 'penguin' },
   { targetSound: '/t/', options: ['tap', 'man', 'shop', 'sea'], correctAnswer: 'tap' },
   { targetSound: '/h/', options: ['fan', 'hat', 'clock', 'pin'], correctAnswer: 'hat' },
+  { targetSound: '/g/', options: ['banana', 'apple', 'cherry', 'grapes'], correctAnswer: 'grapes' },
   { targetSound: '/l/', options: ['key', 'leaf', 'stone', 'ink'], correctAnswer: 'leaf' },
-  { targetSound: '/æ/', options: ['ship', 'mom', 'ant', 'pink'], correctAnswer: 'ant' },
+  { targetSound: '/a/', options: ['ship', 'mom', 'ant', 'pink'], correctAnswer: 'ant' },
+  { targetSound: '/z/', options: ['tub', 'grass', 'frog', 'zebra'], correctAnswer: 'zebra' },
   { targetSound: '/s/', options: ['sock', 'glove', 'tie', 'ring'], correctAnswer: 'sock' },
   { targetSound: '/b/', options: ['cap', 'king', 'diamond', 'bucket'], correctAnswer: 'bucket' },
-  { targetSound: '/ka/', options: ['one', 'dolphin', 'finger', 'cot'], correctAnswer: 'cot' },
+  { targetSound: '/c/', options: ['one', 'dolphin', 'finger', 'cot'], correctAnswer: 'cot' },
   { targetSound: '/r/', options: ['lock', 'key', 'rock', 'desk'], correctAnswer: 'rock' },
   { targetSound: '/f/', options: ['feet', 'chips', 'clock', 'cake'], correctAnswer: 'feet' }
 ];
@@ -51,17 +53,22 @@ export const phonemePopLevel5Data = [
   { targetSound: '/sp/', options: ['crisp', 'winter', 'afternoon', 'behind'], correctAnswer: 'crisp' },
   { targetSound: '/t/', options: ['drink', 'pale', 'wipe', 'battle'], correctAnswer: 'battle' },
   { targetSound: '/f/', options: ['dress', 'meter', 'life', 'again'], correctAnswer: 'life' },
+  { targetSound: '/sh/', options: ['same', 'safe', 'shape', 'sand'], correctAnswer: 'shape' },
   { targetSound: '/th/', options: ['tape', 'bath', 'sent', 'task'], correctAnswer: 'bath' },
+  // Level 5 item 8: both 'Map' and 'ant' are valid answers. Handled via correctAnswers: ['Map', 'ant']
+  { targetSound: '/ae/', options: ['Map', 'bake', 'ant', 'allow'], correctAnswer: 'Map', correctAnswers: ['Map', 'ant'] },
   { targetSound: '/i/', options: ['ink', 'pet', 'bell', 'sheep'], correctAnswer: 'ink' },
-  { targetSound: '/k/', options: ['near', 'mango', 'same', 'ask'], correctAnswer: 'ask' },
+  { targetSound: '/c/', options: ['near', 'mango', 'same', 'ask'], correctAnswer: 'ask' },
   { targetSound: '/l/', options: ['break', 'band', 'ball', 'take'], correctAnswer: 'ball' },
-  { targetSound: '/n/', options: ['bend', 'belt', 'cattle', 'free'], correctAnswer: 'bend' },
+  { targetSound: '/n/', options: ['Bend', 'belt', 'cattle', 'free'], correctAnswer: 'Bend' },
   { targetSound: '/m/', options: ['after', 'white', 'batter', 'lemon'], correctAnswer: 'lemon' },
   { targetSound: '/r/', options: ['dress', 'post', 'mail', 'basket'], correctAnswer: 'dress' },
-  { targetSound: '/ga/', options: ['frill', 'noise', 'again', 'sand'], correctAnswer: 'again' },
+  { targetSound: '/g/', options: ['frill', 'noise', 'again', 'sand'], correctAnswer: 'again' },
   { targetSound: '/h/', options: ['utter', 'happy', 'shade', 'bunk'], correctAnswer: 'happy' },
-  { targetSound: '/uh/', options: ['bun', 'sleep', 'mat', 'doubt'], correctAnswer: 'bun' },
-  { targetSound: '/pa/', options: ['take', 'make', 'bark', 'shape'], correctAnswer: 'shape' }
+  { targetSound: '/o/', options: ['fig', 'mop', 'shoe', 'book'], correctAnswer: 'mop' },
+  { targetSound: '/u/', options: ['bun', 'sleep', 'mat', 'doubt'], correctAnswer: 'bun' },
+  { targetSound: '/p/', options: ['take', 'make', 'bark', 'shape'], correctAnswer: 'shape' },
+  { targetSound: '/a/', options: ['air', 'ate', 'fame', 'ant'], correctAnswer: 'ant' }
 ];
 
 export const phonemePopLevel6Data = [
@@ -183,7 +190,7 @@ export const phonemePopData: PhonemeLevel[] = [
     level: 1,
     targetSound: '/b/',
     mechanic: 'binary-single',
-    instruction: 'Does this word contain the /b/ sound?',
+    instruction: 'Does the word have the /b/ sound?',
     questions: [
       { word: 'Dress', correctAnswer: 'no' },
       { word: 'Banana', correctAnswer: 'yes' },
@@ -210,7 +217,7 @@ export const phonemePopData: PhonemeLevel[] = [
     level: 2,
     targetSound: '/b/',
     mechanic: 'binary-dual',
-    instruction: 'Do both words contain the /b/ sound?',
+    instruction: 'Do both words have the /b/ sound?',
     questions: [
       { word1: 'Flag', word2: 'Open', correctAnswer: 'no' },
       { word1: 'Bread', word2: 'Bun', correctAnswer: 'yes' },
@@ -238,14 +245,14 @@ export const phonemePopData: PhonemeLevel[] = [
     level: 3,
     targetSound: 'varies',
     mechanic: 'multiple-choice',
-    instruction: 'Select the word that contains the target sound',
+    instruction: 'Select the picture with the /{sound}/ sound.',
     questions: phonemePopLevel3Data as any[]
   },
   {
     level: 4,
     targetSound: 'varies',
     mechanic: 'select-all',
-    instruction: 'Select all pictures that contain the target sound',
+    instruction: 'Select all the pictures that have the /{sound}/ sound.',
     questions: [
       {
         targetSound: '/f/',
@@ -370,7 +377,8 @@ export const phonemePopData: PhonemeLevel[] = [
           { label: 'fire', isCorrect: false, icon: 'Flame' },
           { label: 'dish', isCorrect: true, icon: 'Disc' },
           { label: 'shop', isCorrect: true, icon: 'Store' },
-          { label: 'fan', isCorrect: false, icon: 'Wind' }
+          { label: 'fan', isCorrect: false, icon: 'Wind' },
+          { label: 'doll', isCorrect: false, icon: 'Smile' }
         ]
       },
       {
@@ -388,7 +396,7 @@ export const phonemePopData: PhonemeLevel[] = [
           { label: 'blue', isCorrect: true, icon: 'Palette' },
           { label: 'sand', isCorrect: false, icon: 'Waves' },
           { label: 'cab', isCorrect: true, icon: 'Car' },
-          { label: 'bread', isCorrect: false, icon: 'Cookie' } // following underlined sheet
+          { label: 'bread', isCorrect: true, icon: 'Cookie' }
         ]
       },
       {
@@ -404,7 +412,7 @@ export const phonemePopData: PhonemeLevel[] = [
         targetSound: '/o/',
         options: [
           { label: 'hot', isCorrect: true, icon: 'Flame' },
-          { label: 'pot', isCorrect: true, icon: 'Soup' },
+          { label: 'boat', isCorrect: false, icon: 'Ship' },
           { label: 'cry', isCorrect: false, icon: 'Frown' },
           { label: 'stop', isCorrect: true, icon: 'Octagon' }
         ]
@@ -433,7 +441,7 @@ export const phonemePopData: PhonemeLevel[] = [
     level: 5,
     targetSound: 'varies',
     mechanic: 'multiple-choice',
-    instruction: 'Select the word that contains the target sound',
+    instruction: 'Select the word with the /{sound}/ sound.',
     questions: phonemePopLevel5Data as any[]
   },
   {
